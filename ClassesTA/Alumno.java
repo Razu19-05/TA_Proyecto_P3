@@ -1,15 +1,15 @@
 class Alumno {
-    private int idAlumno;
-    private String codigo;
-    private String nombres;
-    private String apellidos;
-    private String dni;
-    private String direccion;
-    private String telefono;
-    private boolean estadoAlumno; // activo, retirado
-    private int edad;
-    private boolean discapacidad;
-    private String correo;
+    protected int idAlumno;
+    protected String codigo;
+    protected String nombres;
+    protected String apellidos;
+    protected String dni;
+    protected String direccion;
+    protected String telefono;
+    protected boolean estadoAlumno; // activo, retirado
+    protected int edad;
+    protected boolean discapacidad;
+    protected String correo;
     
     Matricula matricula; // relación 1:1 (actual)
 }

@@ -12,4 +12,6 @@ class Alumno {
     protected String correo;
     
     Matricula matricula; // relación 1:1 (actual)
+    Apoderado aporado;
+    Descuento descuento;
 }

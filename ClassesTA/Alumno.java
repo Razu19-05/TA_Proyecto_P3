@@ -1,4 +1,6 @@
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
 class Alumno {
     protected int idAlumno;
     protected String codigo;
@@ -11,10 +13,12 @@ class Alumno {
     protected int edad;
     protected boolean discapacidad;
     protected String correo;
+    protected Date fechaNacimiento;
     
-    protected Matricula matricula; // relación 1:1 (actual)
-    protected Apoderado aporado;
+    protected List<Matricula> matriculas; // relación 1:1 (actual)
+    protected List<Apoderado> apoderados;
+    protected List<TrabajadorAlumno> trabajadores;
     protected Descuento descuento;
-    protected List<DeudaPasada> deuda;
-    protected GradoSeccion grado;
+    protected List<DeudaPasada> deudasPasadas;
+    protected GradoSeccion gradoSeccion;
 }

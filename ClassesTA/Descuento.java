@@ -1,5 +1,5 @@
 enum TipoDescuento{
-    BECAS, FAMILIAR
+    BECAS, FAMILIAR, OTRAS_RAZONES
 }
 
 class Descuento {
@@ -7,5 +7,4 @@ class Descuento {
     private TipoDescuento tipoDescuento;
     private String descripcion;
     private double descuento;
-
 }

@@ -5,8 +5,7 @@ class Salon {
     private int idSalon;
     private String tipo; /// unico o polidocencia
     private int capacidad;
-
-    List<Profesor> profesores;
+    private List<Profesor> profesores;
     
     
     

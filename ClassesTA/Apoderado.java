@@ -1,8 +1,8 @@
 class Apoderado {
-    int idApoderado;
-    String nombres;
-    String apellidos;
-    String dni;
-    String telefono;
-    String direccion;
+    private int idApoderado;
+    private String nombres;
+    private String apellidos;
+    private String dni;
+    private String telefono;
+    private String direccion;
 }

@@ -11,7 +11,7 @@ class Alumno {
     protected boolean discapacidad;
     protected String correo;
     
-    Matricula matricula; // relación 1:1 (actual)
-    Apoderado aporado;
-    Descuento descuento;
+    protected Matricula matricula; // relación 1:1 (actual)
+    protected Apoderado aporado;
+    protected Descuento descuento;
 }

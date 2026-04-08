@@ -4,5 +4,4 @@ class GradoSeccion {
     private String seccion; // A, B
     private Salon salonAsignado;
     
-    Salon salon;
 }

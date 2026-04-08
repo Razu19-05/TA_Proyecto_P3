@@ -1,5 +1,5 @@
 class TrabajadorFamilia{
-    int id_TrabajadorFamilia;
+    private int id_TrabajadorFamilia;
 
     private Trabajador trabajador;
     private Alumno alumno;

@@ -1,6 +1,7 @@
 import java.util.List;
 
 class ProfesorSalon {
-    private List<Salon> salones;
-    private List<Profesor>profesores;
+    private int idProfesorSalon;
+    private Profesor profesor;
+    private Salon salon;
 }

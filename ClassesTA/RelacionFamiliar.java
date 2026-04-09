@@ -2,8 +2,11 @@ import java.util.List;
 import java.util.ArrayList;
 
 class RelacionFamiliar {
-    private int id_relacionFamiliar;
+    private int idApoderadoAlumno;
+    private String tipoRelacion; // hermano,primo
+    private String contactoEmergencia;
+    private String observaciones;
+    //relaciones
     private Apoderado apoderado;
-    private List<Alumno> alumnos;
-    private String tipo; // hermano,primo
+    private Alumno alumno;
 }

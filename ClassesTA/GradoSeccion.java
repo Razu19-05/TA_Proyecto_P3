@@ -8,5 +8,4 @@ class GradoSeccion {
     
     private Salon salonAsignado;
     private List<Alumno> alumnos;
-    
 }

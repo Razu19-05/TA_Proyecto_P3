@@ -7,5 +7,5 @@ class Matricula {
     private double monto;
     
     private Alumno alumno; // FK
-    private GradoSeccion gradoSeccion;
+    private Periodo periodo;
 }

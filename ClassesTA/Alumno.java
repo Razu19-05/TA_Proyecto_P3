@@ -17,7 +17,7 @@ class Alumno {
     
     protected List<Matricula> matriculas; // relación 1:1 (actual)
     protected List<Apoderado> apoderados;
-    protected List<TrabajadorAlumno> trabajadores;
+    protected List<Trabajador> trabajadores;
     protected Descuento descuento;
     protected List<DeudaPasada> deudasPasadas;
     protected GradoSeccion gradoSeccion;

@@ -11,7 +11,7 @@ public class Alumno {
     private String direccion;
     private String telefono;
     private String correo;
-    private boolean estadoAlumno; //activo, retirado
+    private boolean estado; //activo, retirado
     private boolean alumnoNuevo;
     private double montoInscripcion;
     private double montoExamenPsicologico;
@@ -91,11 +91,11 @@ public class Alumno {
     }
 
     public boolean isEstadoAlumno() {
-        return estadoAlumno;
+        return estado;
     }
 
     public void setEstadoAlumno(boolean estadoAlumno) {
-        this.estadoAlumno = estadoAlumno;
+        this.estado = estadoAlumno;
     }
 
     public boolean isAlumnoNuevo() {

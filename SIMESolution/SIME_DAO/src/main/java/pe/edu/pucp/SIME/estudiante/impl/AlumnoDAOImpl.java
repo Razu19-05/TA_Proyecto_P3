@@ -36,7 +36,7 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
     }
     @Override
     public Alumno save(Alumno alumno) {
-        String sql = "insert producto (nombres, apellido_paterno, apellido_materno, direccion,telefono,correo) values (?, ?, ?, ?, ?, ?)";
+        String sql = "insert alumno (nombres, apellido_paterno, apellido_materno, direccion,telefono,correo) values (?, ?, ?, ?, ?, ?)";
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql)) {
             pstm.setString(1, alumno.getNombres());

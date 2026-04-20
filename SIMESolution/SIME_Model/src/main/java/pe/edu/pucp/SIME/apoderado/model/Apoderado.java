@@ -12,6 +12,7 @@ public class Apoderado {
     private String telefono;
     private String direccion;
     private String correo;
+    private Boolean activo; //para eliminación lógica de la db
 
     private List<Alumno> alumnosApoderados;
 
@@ -22,6 +23,7 @@ public class Apoderado {
     public void setIdApoderado(int idApoderado) {
         this.idApoderado = idApoderado;
     }
+
 
     public String getNombres() {
         return nombres;
@@ -77,6 +79,14 @@ public class Apoderado {
 
     public void setCorreo(String correo) {
         this.correo = correo;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 
     public List<Alumno> getAlumnosApoderados() {

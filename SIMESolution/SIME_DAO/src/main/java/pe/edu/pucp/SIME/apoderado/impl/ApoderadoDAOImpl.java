@@ -4,16 +4,13 @@ import pe.edu.pucp.SIME.apoderado.DAO.ApoderadoDAO;
 import pe.edu.pucp.SIME.apoderado.model.Apoderado;
 import pe.edu.pucp.SIME.configuracion.DBManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class ApoderadoDAOImpl implements ApoderadoDAO {
 
     @Override
     public Apoderado load(Integer apoderadoID) {
-        String sql = "SELECT id_apoderado, nombres, apellido_paterno, apellido_materno, dni, telefono, direccion, correo from apoderado where id_apoderado = ?";
+        String sql = "SELECT id_apoderado, nombres, apellido_paterno, apellido_materno, dni, telefono, direccion, correo ,activo from apoderado where id_apoderado = ?";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setInt(1,apoderadoID);
@@ -28,6 +25,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
                     apoderado.setTelefono(rs.getString(6));
                     apoderado.setDireccion(rs.getString(7));
                     apoderado.setCorreo(rs.getString(8));
+                    apoderado.setActivo(rs.getBoolean(9));
                 }
             }
             return null;
@@ -39,10 +37,11 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
 
     @Override
     public Apoderado save(Apoderado apoderado) {
-        String sql = "INSERT Apoderado(nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo) values (?,?,?,?,?,?,?)";
+        apoderado.setActivo(true);
+        String sql = "INSERT Apoderado(nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo,activo) values (?,?,?,?,?,?,?.?)";
         try(Connection connection = DBManager.getInstance().getConnection();
-            PreparedStatement pstm = connection.prepareStatement(sql)){
-
+            PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+            //Statement.RETURN_GENERATED_KEYS permite recuperar el id que la db genero
             pstm.setString(1,apoderado.getNombres());
             pstm.setString(2,apoderado.getApellidoPaterno());
             pstm.setString(3,apoderado.getApellidoMaterno());
@@ -50,6 +49,17 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
             pstm.setString(5,apoderado.getTelefono());
             pstm.setString(6,apoderado.getDireccion());
             pstm.setString(7,apoderado.getCorreo());
+            pstm.setBoolean(8,apoderado.getActivo());
+
+            int affectedRows = pstm.executeUpdate();
+            if(affectedRows > 0){
+                try(ResultSet generatedKeys = pstm.getGeneratedKeys()){
+                    if(generatedKeys.next()){
+                        int newId = generatedKeys.getInt(1);
+                        apoderado.setIdApoderado(newId);
+                    }
+                }
+            }
         } catch (SQLException e){
             throw new RuntimeException(e);
         }
@@ -59,11 +69,25 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
 
     @Override
     public Apoderado update(Apoderado apoderado) {
-        return null;
+        String sql ="UPDATE apoderado SET telefono = ?, correo = ? WHERE id_apoderado = ?";
+        try (Connection connection = DBManager.getInstance().getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql)){
+            pstm.setString(1,apoderado.getTelefono());
+            pstm.setString(2,apoderado.getCorreo());
+            pstm.setInt(3,apoderado.getIdApoderado());
+            int resultado = pstm.executeUpdate();
+            if (resultado == 0) {
+                // Opcional: Manejar el caso donde el ID no existe
+                System.out.println("No se encontró el apoderado con ID: " + apoderado.getIdApoderado());
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return apoderado;
     }
 
     @Override
     public void remove(Apoderado apoderado) {
-
+        String sql =
     }
 }

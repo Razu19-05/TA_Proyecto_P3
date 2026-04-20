@@ -12,7 +12,7 @@ public class TestApoderado {
 
         Apoderado newApoderado = new Apoderado();
         newApoderado.setNombres("Daniel");
-        newApoderado.setApellidoPaterno("Ramire<");
+        newApoderado.setApellidoPaterno("Ramirez");
         newApoderado.setApellidoMaterno("Tuesta");
         newApoderado.setDireccion("San Miguel");
         newApoderado.setTelefono("956888650");

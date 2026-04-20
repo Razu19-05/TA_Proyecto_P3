@@ -26,6 +26,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
                     apoderado.setDireccion(rs.getString(7));
                     apoderado.setCorreo(rs.getString(8));
                     apoderado.setActivo(rs.getBoolean(9));
+                    return apoderado;
                 }
             }
             return null;
@@ -38,7 +39,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
     @Override
     public Apoderado save(Apoderado apoderado) {
         apoderado.setActivo(true);
-        String sql = "INSERT Apoderado(nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo,activo) values (?,?,?,?,?,?,?.?)";
+        String sql = "INSERT Apoderado(nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo,activo) values (?,?,?,?,?,?,?,?)";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             //Statement.RETURN_GENERATED_KEYS permite recuperar el id que la db genero
@@ -93,6 +94,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setBoolean(1,apoderado.getActivo());
+            pstm.setInt(2, apoderado.getIdApoderado());
             int res = pstm.executeUpdate();
             if (res == 0){
                 System.out.println("No se encontró el alumno con ID: " + apoderado.getIdApoderado());

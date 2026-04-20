@@ -39,7 +39,22 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
 
     @Override
     public Apoderado save(Apoderado apoderado) {
-        return null;
+        String sql = "INSERT Apoderado(nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo) values (?,?,?,?,?,?,?)";
+        try(Connection connection = DBManager.getInstance().getConnection();
+            PreparedStatement pstm = connection.prepareStatement(sql)){
+
+            pstm.setString(1,apoderado.getNombres());
+            pstm.setString(2,apoderado.getApellidoPaterno());
+            pstm.setString(3,apoderado.getApellidoMaterno());
+            pstm.setString(4,apoderado.getDni());
+            pstm.setString(5,apoderado.getTelefono());
+            pstm.setString(6,apoderado.getDireccion());
+            pstm.setString(7,apoderado.getCorreo());
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+
+        return apoderado;
     }
 
     @Override

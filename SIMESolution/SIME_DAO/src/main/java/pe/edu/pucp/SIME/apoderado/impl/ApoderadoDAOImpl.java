@@ -88,6 +88,17 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
 
     @Override
     public void remove(Apoderado apoderado) {
-        String sql =
+        apoderado.setActivo(false);
+        String sql = "UPDATE apoderado SET activo = ? WHERE id_apoderado = ?";
+        try(Connection connection = DBManager.getInstance().getConnection();
+            PreparedStatement pstm = connection.prepareStatement(sql)){
+            pstm.setBoolean(1,apoderado.getActivo());
+            int res = pstm.executeUpdate();
+            if (res == 0){
+                System.out.println("No se encontró el alumno con ID: " + apoderado.getIdApoderado());
+            }
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
     }
 }

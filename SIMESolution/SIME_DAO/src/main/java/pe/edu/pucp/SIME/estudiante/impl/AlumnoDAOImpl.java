@@ -46,6 +46,18 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
             pstm.setString(5, alumno.getTelefono());
             pstm.setString(6, alumno.getCorreo());
             pstm.executeUpdate();
+
+            //id_alumno
+            int affectedRows = pstm.executeUpdate();
+            if(affectedRows > 0){
+                try(ResultSet generatedKeys = pstm.getGeneratedKeys()){
+                    if(generatedKeys.next()){
+                        int newId = generatedKeys.getInt(1);
+                        alumno.setIdAlumno(newId);
+                    }
+                }
+            }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

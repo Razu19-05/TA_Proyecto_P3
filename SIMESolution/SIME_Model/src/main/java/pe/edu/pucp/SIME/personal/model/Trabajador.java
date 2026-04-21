@@ -5,8 +5,9 @@ import java.util.List;
 
 public class Trabajador {
     protected int idTrabajador;
-    protected String nombre;
-    protected String apellido;
+    protected String nombres;
+    protected String apellidoPaterno;
+    protected String getApellidoMaterno;
     protected String dni;
     protected String telefono;
     protected String correo;
@@ -22,20 +23,28 @@ public class Trabajador {
         this.idTrabajador = idTrabajador;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getNombres() {
+        return nombres;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setNombres(String nombres) {
+        this.nombres = nombres;
     }
 
-    public String getApellido() {
-        return apellido;
+    public String getApellidoPaterno() {
+        return apellidoPaterno;
     }
 
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
+    public void setApellidoPaterno(String apellidoPaterno) {
+        this.apellidoPaterno = apellidoPaterno;
+    }
+
+    public String getGetApellidoMaterno() {
+        return getApellidoMaterno;
+    }
+
+    public void setGetApellidoMaterno(String getApellidoMaterno) {
+        this.getApellidoMaterno = getApellidoMaterno;
     }
 
     public String getDni() {

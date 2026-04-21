@@ -7,6 +7,8 @@ import pe.edu.pucp.SIME.matricula.model.Matricula;
 import pe.edu.pucp.SIME.matricula.model.Periodo;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MatriculaDAOImpl implements MatriculaDAO {
     @Override
@@ -101,6 +103,35 @@ public class MatriculaDAOImpl implements MatriculaDAO {
         } catch (SQLException e){
             throw new RuntimeException(e);
         }
+    }
 
+    @Override
+    public List<Matricula> listAll(){
+        List<Matricula> matriculas = null;
+        String sql = "SELECT id_matricula, fecha, estado, monto , id_alumno ,id_periodo from matricula where id_matricula = 1";
+        try (Connection connection = DBManager.getInstance().getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql);
+             ResultSet rs = pstm.executeQuery()) {
+
+            while (rs.next()) {
+                if(matriculas == null) matriculas = new ArrayList<>();
+                Matricula matricula = new Matricula();
+                matricula.setIdMatricula(rs.getInt(1));
+                matricula.setFecha(rs.getDate(2));
+                matricula.setEstado(rs.getString(3));
+                matricula.setMonto(rs.getDouble(4));
+
+                Alumno alu = new Alumno();
+                Periodo per = new Periodo();
+                alu.setIdAlumno(rs.getInt(5));
+                per.setIdPeriodo(rs.getInt(6));
+                matricula.setAlumno(alu);
+                matricula.setPeriodo(per);
+                matriculas.add(matricula);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return matriculas;
     }
 }

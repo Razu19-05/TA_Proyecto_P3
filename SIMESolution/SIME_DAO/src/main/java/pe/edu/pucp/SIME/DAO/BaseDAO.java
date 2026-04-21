@@ -7,4 +7,5 @@ public interface BaseDAO <T, ID> {
     T save(T t);
     T update(T t);
     void remove(T t);
+    List<T>listAll();
 }

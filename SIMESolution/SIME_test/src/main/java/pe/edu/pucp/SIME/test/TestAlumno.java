@@ -4,19 +4,28 @@ import pe.edu.pucp.SIME.estudiante.DAO.AlumnoDAO;
 import pe.edu.pucp.SIME.estudiante.impl.AlumnoDAOImpl;
 import pe.edu.pucp.SIME.estudiante.model.Alumno;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TestAlumno {
     public static void main(String[] args) {
         AlumnoDAO alumnoDAO = new AlumnoDAOImpl();
-        Alumno alumno = alumnoDAO.load(3);
-        System.out.println(alumno.getNombres());
-
+        List<Alumno> alumnos = alumnoDAO.listAll();
+//        Alumno alumno = alumnoDAO.load(3);
+//        System.out.println(alumno.getNombres());
+//
         Alumno newAlumno = new Alumno();
-        newAlumno.setNombres("Gabriel");
-        newAlumno.setApellidoPaterno("Huarote");
-        newAlumno.setApellidoMaterno("Serrano");
-        newAlumno.setDireccion("Chorrillos");
-        newAlumno.setTelefono("995951026");
-        newAlumno.setCorreo("a20231846@pucp.edu.pe");
+        newAlumno.setNombres("Diego");
+        newAlumno.setApellidoPaterno("AAAA");
+        newAlumno.setApellidoMaterno("BBBB");
+        newAlumno.setDireccion("C");
+        newAlumno.setTelefono("999999");
+        newAlumno.setDNI("72161621");
+        newAlumno.setCorreo("a20221351@pucp.edu.pe");
         alumnoDAO.save(newAlumno);
+        for(Alumno alu : alumnos){
+            int id = alu.getIdAlumno();
+            System.out.println(id);
+        }
     }
 }

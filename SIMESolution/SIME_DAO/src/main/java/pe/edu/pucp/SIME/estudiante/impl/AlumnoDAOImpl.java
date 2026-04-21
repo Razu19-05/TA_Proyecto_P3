@@ -5,6 +5,8 @@ import pe.edu.pucp.SIME.estudiante.DAO.AlumnoDAO;
 import pe.edu.pucp.SIME.estudiante.model.Alumno;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AlumnoDAOImpl implements AlumnoDAO  {
     @Override
@@ -33,7 +35,7 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
     }
     @Override
     public Alumno save(Alumno alumno) {
-        String sql = "insert alumno (nombres, apellido_paterno, apellido_materno, direccion,telefono,correo) values (?, ?, ?, ?, ?, ?)";
+        String sql = "insert alumno (nombres, apellido_paterno, apellido_materno, direccion,telefono,correo,dni) values (?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstm.setString(1, alumno.getNombres());
@@ -42,7 +44,7 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
             pstm.setString(4, alumno.getDireccion());
             pstm.setString(5, alumno.getTelefono());
             pstm.setString(6, alumno.getCorreo());
-
+            pstm.setString(7,alumno.getDNI());
             //id_alumno
             int affectedRows = pstm.executeUpdate();
             if(affectedRows > 0){
@@ -90,5 +92,30 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
         }catch (SQLException e){
             throw new RuntimeException(e);
         }
+    }
+    @Override
+    public List<Alumno>listAll(){
+        List<Alumno> alumnos = new ArrayList<>();
+        String sql = "select id_alumno, nombres, apellido_paterno, apellido_materno, direccion, telefono, correo from alumno where estado = 1";
+        try (Connection connection = DBManager.getInstance().getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql);
+             ResultSet rs = pstm.executeQuery()) {
+
+            while (rs.next()) {
+                //if(alumnos == null) alumnos = new ArrayList<>();
+                Alumno alumno = new Alumno();
+                alumno.setIdAlumno(rs.getInt(1));
+                alumno.setNombres(rs.getString(2));
+                alumno.setApellidoPaterno(rs.getString(3));
+                alumno.setApellidoMaterno(rs.getString(4));
+                alumno.setDireccion(rs.getString(5));
+                alumno.setTelefono(rs.getString(6));
+                alumno.setCorreo(rs.getString(7));
+                alumnos.add(alumno);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return alumnos;
     }
 }

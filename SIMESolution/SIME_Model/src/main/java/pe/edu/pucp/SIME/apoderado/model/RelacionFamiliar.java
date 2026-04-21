@@ -3,7 +3,7 @@ package pe.edu.pucp.SIME.apoderado.model;
 import pe.edu.pucp.SIME.estudiante.model.Alumno;
 
 public class RelacionFamiliar {
-    private int idApoderadoAlumno;
+    //private int idApoderadoAlumno; la pk es la comb de id_alumn y id_apo
     private String tipoRelacion; // hermano,primo
     private String contactoEmergencia;
     private String observaciones;
@@ -11,13 +11,13 @@ public class RelacionFamiliar {
     private Apoderado apoderado;
     private Alumno alumno;
 
-    public int getIdApoderadoAlumno() {
-        return idApoderadoAlumno;
-    }
-
-    public void setIdApoderadoAlumno(int idApoderadoAlumno) {
-        this.idApoderadoAlumno = idApoderadoAlumno;
-    }
+//    public int getIdApoderadoAlumno() {
+//        return idApoderadoAlumno;
+//    }
+//
+//    public void setIdApoderadoAlumno(int idApoderadoAlumno) {
+//        this.idApoderadoAlumno = idApoderadoAlumno;
+//    }
 
     public String getTipoRelacion() {
         return tipoRelacion;

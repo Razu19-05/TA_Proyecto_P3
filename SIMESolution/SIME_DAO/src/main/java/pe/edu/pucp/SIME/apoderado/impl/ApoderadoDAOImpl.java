@@ -3,8 +3,11 @@ package pe.edu.pucp.SIME.apoderado.impl;
 import pe.edu.pucp.SIME.apoderado.DAO.ApoderadoDAO;
 import pe.edu.pucp.SIME.apoderado.model.Apoderado;
 import pe.edu.pucp.SIME.configuracion.DBManager;
+import pe.edu.pucp.SIME.estudiante.model.Alumno;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ApoderadoDAOImpl implements ApoderadoDAO {
 
@@ -102,5 +105,32 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
         } catch (SQLException e){
             throw new RuntimeException(e);
         }
+    }
+    @Override
+    public List<Apoderado>listAll(){
+        List<Apoderado> apoderados = null;
+        String sql = "SELECT id_apoderado, nombres, apellido_paterno, apellido_materno, dni, telefono, direccion, correo ,activo from apoderado where id_apoderado = 1";
+        try (Connection connection = DBManager.getInstance().getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql);
+             ResultSet rs = pstm.executeQuery()) {
+
+            while (rs.next()) {
+                if(apoderados == null) apoderados = new ArrayList<>();
+                Apoderado apoderado = new Apoderado();
+                apoderado.setIdApoderado(rs.getInt(1));
+                apoderado.setNombres(rs.getString(2));
+                apoderado.setApellidoPaterno(rs.getString(3));
+                apoderado.setApellidoMaterno(rs.getString(4));
+                apoderado.setDni(rs.getString(5));
+                apoderado.setTelefono(rs.getString(6));
+                apoderado.setDireccion(rs.getString(7));
+                apoderado.setCorreo(rs.getString(8));
+                apoderado.setActivo(rs.getBoolean(9));
+                apoderados.add(apoderado);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return apoderados;
     }
 }

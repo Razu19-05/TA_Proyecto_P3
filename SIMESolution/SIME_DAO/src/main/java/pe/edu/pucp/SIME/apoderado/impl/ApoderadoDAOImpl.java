@@ -94,6 +94,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setBoolean(1,apoderado.getActivo());
+            pstm.setInt(2, apoderado.getIdApoderado());
             int res = pstm.executeUpdate();
             if (res == 0){
                 System.out.println("No se encontró el alumno con ID: " + apoderado.getIdApoderado());

@@ -58,7 +58,7 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
 
             pstm.setString(1,relacionFamiliar.getTipoRelacion());
             pstm.setString(2, relacionFamiliar.getContactoEmergencia());
-            pstm.setString(4,relacionFamiliar.getObservaciones());
+            pstm.setString(3,relacionFamiliar.getObservaciones());
             pstm.setInt(4,relacionFamiliar.getApoderado().getIdApoderado());
             pstm.setInt(5,relacionFamiliar.getAlumno().getIdAlumno());
             pstm.executeUpdate();
@@ -102,16 +102,36 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
     @Override
     public void remove(RelacionFamiliar relacionFamiliar) {
         //TODO
+        String sql = "DELETE FROM relacion_familiar WHERE id_apoderado = ? AND id_alumno = ?";
+
+        try (Connection con = DBManager.getInstance().getConnection();
+             PreparedStatement pstm = con.prepareStatement(sql)) {
+
+            // Extraemos los IDs de los objetos anidados
+            pstm.setInt(1, relacionFamiliar.getApoderado().getIdApoderado());
+            pstm.setInt(2, relacionFamiliar.getAlumno().getIdAlumno());
+
+            int filasAfectadas = pstm.executeUpdate();
+
+            if (filasAfectadas == 0) {
+                System.out.println("No se encontró la relación para eliminar.");
+            } else {
+                System.out.println("Relación eliminada exitosamente.");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al eliminar la relación familiar", e);
+        }
     }
 
     @Override
     public List<RelacionFamiliar> listAll() {
         List<RelacionFamiliar> lista = new ArrayList<>();
-        String sql = "select rf.tipo_relacion, rf.contacto_emergencia, rf.observaciones," +
-                "a.id_alumno, a.nombres as nomb_alumn, a.apellido_paterno as apell_alum" +
-                "apo.id_apoderado, apo.nombres as nomb_apode, apo.apellido_paterno as apell_apo"+
-                "from relacion_familiar rf, alumno a,apoderado ap"+
-                "where rd.id_alumno = a.id_alumno AND rf.id_apoderado = ap.id_apoderado";
+        String sql = "SELECT rf.tipo_relacion, rf.contacto_emergencia, rf.observaciones, " +
+                "a.id_alumno, a.nombres AS nomb_alumn, a.apellido_paterno AS apell_alum, " +
+                "apo.id_apoderado, apo.nombres AS nomb_apode, apo.apellido_paterno AS apell_apo " +
+                "FROM relacion_familiar rf, alumno a, apoderado apo " +
+                "WHERE rf.id_alumno = a.id_alumno AND rf.id_apoderado = apo.id_apoderado";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql);
             ResultSet rs = pstm.executeQuery()){

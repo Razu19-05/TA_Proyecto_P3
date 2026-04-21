@@ -1,18 +1,17 @@
 package pe.edu.pucp.SIME.matricula.impl;
 
 import pe.edu.pucp.SIME.configuracion.DBManager;
+import pe.edu.pucp.SIME.estudiante.model.Alumno;
 import pe.edu.pucp.SIME.matricula.DAO.MatriculaDAO;
 import pe.edu.pucp.SIME.matricula.model.Matricula;
+import pe.edu.pucp.SIME.matricula.model.Periodo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class MatriculaDAOImpl implements MatriculaDAO {
     @Override
     public Matricula load(Integer matriculaId) {
-        String sql = "SELECT id_matricula, fecha, estado, monto from matricula where id_matriucla = ?";
+        String sql = "SELECT id_matricula, fecha, estado, monto , id_alumno ,id_periodo from matricula where id_matricula = ?";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setInt(1,matriculaId);
@@ -23,6 +22,14 @@ public class MatriculaDAOImpl implements MatriculaDAO {
                     matricula.setFecha(rs.getDate(2));
                     matricula.setEstado(rs.getString(3));
                     matricula.setMonto(rs.getDouble(4));
+
+                    Alumno alu = new Alumno();
+                    Periodo per = new Periodo();
+                    alu.setIdAlumno(rs.getInt(5));
+                    per.setIdPeriodo(rs.getInt(6));
+                    matricula.setAlumno(alu);
+                    matricula.setPeriodo(per);
+
                     return matricula;
                 }
             }
@@ -36,18 +43,53 @@ public class MatriculaDAOImpl implements MatriculaDAO {
 
     @Override
     public Matricula save(Matricula matricula) {
-        return null;
+        matricula.setEstado("ACTIVO");
+        String sql = "INSERT matricula(fecha,estado,monto, id_alumno, id_periodo) values (?,?,?,?,?)";
+        try(Connection connection = DBManager.getInstance().getConnection();
+            PreparedStatement pstm = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)){
+            //se pasa la  fecha un obj sql.Date -> fecha
+            pstm.setDate(1,new java.sql.Date(matricula.getFecha().getTime()));
+            pstm.setString(2, matricula.getEstado());
+            pstm.setDouble(3,matricula.getMonto());
+            pstm.setInt(4,matricula.getAlumno().getIdAlumno());
+            pstm.setInt(5,matricula.getPeriodo().getIdPeriodo());
+
+            int affectedRows = pstm.executeUpdate();
+            if(affectedRows > 0){
+                try(ResultSet generatedKeys = pstm.getGeneratedKeys()){
+                    if(generatedKeys.next()){
+                        int newId = generatedKeys.getInt(1);
+                        matricula.setIdMatricula(newId);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return matricula;
     }
 
     @Override
     public Matricula update(Matricula matricula) {
-        return null;
+        String sql = "UPDATE matricula SET monto = ? WHERE id_matricula = ?";
+        try(Connection connection = DBManager.getInstance().getConnection();
+            PreparedStatement pstm = connection.prepareStatement(sql)){
+            pstm.setDouble(1, matricula.getMonto());
+            pstm.setInt(2,matricula.getIdMatricula());
+            int resultado = pstm.executeUpdate();
+            if(resultado == 0){
+                System.out.println("No se encontró la matricula con ID: " + matricula.getIdMatricula());
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return matricula;
     }
 
     @Override
     public void remove(Matricula matricula) {
-        matricula.setEstado("retirado");
-        String sql = "UPDATE apoderado SET estado = ? WHERE id_matricula = ?";
+        matricula.setEstado("RETIRADO");
+        String sql = "UPDATE matricula SET estado = ? WHERE id_matricula = ?";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setString(1,matricula.getEstado());

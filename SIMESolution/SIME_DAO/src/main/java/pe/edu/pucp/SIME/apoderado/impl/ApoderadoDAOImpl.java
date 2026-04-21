@@ -38,7 +38,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
     @Override
     public Apoderado save(Apoderado apoderado) {
         apoderado.setActivo(true);
-        String sql = "INSERT Apoderado(nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo,activo) values (?,?,?,?,?,?,?.?)";
+        String sql = "INSERT apoderado(nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo,activo) values (?,?,?,?,?,?,?.?)";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             //Statement.RETURN_GENERATED_KEYS permite recuperar el id que la db genero

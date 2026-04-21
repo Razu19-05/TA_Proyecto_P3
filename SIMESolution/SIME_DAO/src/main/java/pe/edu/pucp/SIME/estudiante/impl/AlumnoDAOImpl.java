@@ -4,10 +4,7 @@ import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.estudiante.DAO.AlumnoDAO;
 import pe.edu.pucp.SIME.estudiante.model.Alumno;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class AlumnoDAOImpl implements AlumnoDAO  {
     @Override
@@ -38,14 +35,13 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
     public Alumno save(Alumno alumno) {
         String sql = "insert alumno (nombres, apellido_paterno, apellido_materno, direccion,telefono,correo) values (?, ?, ?, ?, ?, ?)";
         try (Connection connection = DBManager.getInstance().getConnection();
-             PreparedStatement pstm = connection.prepareStatement(sql)) {
+             PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstm.setString(1, alumno.getNombres());
             pstm.setString(2, alumno.getApellidoPaterno());
             pstm.setString(3, alumno.getApellidoMaterno());
             pstm.setString(4, alumno.getDireccion());
             pstm.setString(5, alumno.getTelefono());
             pstm.setString(6, alumno.getCorreo());
-            pstm.executeUpdate();
 
             //id_alumno
             int affectedRows = pstm.executeUpdate();

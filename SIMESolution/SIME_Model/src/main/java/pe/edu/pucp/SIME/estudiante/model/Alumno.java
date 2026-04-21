@@ -1,6 +1,12 @@
 package pe.edu.pucp.SIME.estudiante.model;
 
+import pe.edu.pucp.SIME.apoderado.model.Apoderado;
+import pe.edu.pucp.SIME.aula.model.GradoSeccion;
+import pe.edu.pucp.SIME.matricula.model.Matricula;
+import pe.edu.pucp.SIME.personal.model.Trabajador;
+
 import java.util.Date;
+import java.util.List;
 
 public class Alumno {
     private int idAlumno;
@@ -18,12 +24,12 @@ public class Alumno {
     private Date fechaDeNacimiento;
     private int edad;
 
-//    private List<Matricula> matriculas; // relación 1:1 (actual)
-//    private List<Apoderado> apoderados;
-//    private List<Trabajador> trabajadores;
-//    private Descuento descuento;
-//    private List<DeudaPasada> deudasPasadas;
-//    private GradoSeccion gradoSeccion;
+    private List<Matricula> matriculas; // relación 1:1 (actual)
+    private List<Apoderado> apoderados;
+    private List<Trabajador> trabajadores;
+    private Descuento descuento;
+    private List<DeudaPasada> deudasPasadas;
+    private GradoSeccion gradoSeccion;
 
 
     public int getIdAlumno() {
@@ -136,5 +142,61 @@ public class Alumno {
 
     public void setEdad(int edad) {
         this.edad = edad;
+    }
+
+    public boolean isEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
+    }
+
+    public List<Matricula> getMatriculas() {
+        return matriculas;
+    }
+
+    public void setMatriculas(List<Matricula> matriculas) {
+        this.matriculas = matriculas;
+    }
+
+    public List<Apoderado> getApoderados() {
+        return apoderados;
+    }
+
+    public void setApoderados(List<Apoderado> apoderados) {
+        this.apoderados = apoderados;
+    }
+
+    public List<Trabajador> getTrabajadores() {
+        return trabajadores;
+    }
+
+    public void setTrabajadores(List<Trabajador> trabajadores) {
+        this.trabajadores = trabajadores;
+    }
+
+    public Descuento getDescuento() {
+        return descuento;
+    }
+
+    public void setDescuento(Descuento descuento) {
+        this.descuento = descuento;
+    }
+
+    public List<DeudaPasada> getDeudasPasadas() {
+        return deudasPasadas;
+    }
+
+    public void setDeudasPasadas(List<DeudaPasada> deudasPasadas) {
+        this.deudasPasadas = deudasPasadas;
+    }
+
+    public GradoSeccion getGradoSeccion() {
+        return gradoSeccion;
+    }
+
+    public void setGradoSeccion(GradoSeccion gradoSeccion) {
+        this.gradoSeccion = gradoSeccion;
     }
 }

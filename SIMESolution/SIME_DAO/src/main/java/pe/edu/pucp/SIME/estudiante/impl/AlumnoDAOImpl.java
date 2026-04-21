@@ -35,16 +35,14 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
     }
     @Override
     public Alumno save(Alumno alumno) {
-        String sql = "insert alumno (nombres, apellido_paterno, apellido_materno, direccion,telefono,correo,dni) values (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "insert alumno (dni,nombres,apellido_paterno,apellido_materno,id_grado) values (?, ?, ?, ?, ?)";
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstm.setString(1, alumno.getNombres());
-            pstm.setString(2, alumno.getApellidoPaterno());
-            pstm.setString(3, alumno.getApellidoMaterno());
-            pstm.setString(4, alumno.getDireccion());
-            pstm.setString(5, alumno.getTelefono());
-            pstm.setString(6, alumno.getCorreo());
-            pstm.setString(7,alumno.getDNI());
+            pstm.setString(1, alumno.getDNI());
+            pstm.setString(2, alumno.getNombres());
+            pstm.setString(3, alumno.getApellidoPaterno());
+            pstm.setString(4, alumno.getApellidoMaterno());
+            pstm.setInt(5, alumno.getGradoSeccion().getIdGrado());
             //id_alumno
             int affectedRows = pstm.executeUpdate();
             if(affectedRows > 0){
@@ -100,7 +98,6 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql);
              ResultSet rs = pstm.executeQuery()) {
-
             while (rs.next()) {
                 //if(alumnos == null) alumnos = new ArrayList<>();
                 Alumno alumno = new Alumno();

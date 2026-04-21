@@ -7,17 +7,14 @@ import pe.edu.pucp.SIME.apoderado.model.Apoderado;
 public class TestApoderado {
     public static void main(String[] args) {
         ApoderadoDAO apoderadoDAO = new ApoderadoDAOImpl();
-        Apoderado apoderado = apoderadoDAO.load(1);
-        System.out.println(apoderado.getNombres());
+//        Apoderado apoderado = apoderadoDAO.load(1);
+//        System.out.println(apoderado.getNombres());
 
-//        Apoderado newApoderado = new Apoderado();
-//        newApoderado.setNombres("Daniel");
-//        newApoderado.setApellidoPaterno("Ramirez");
-//        newApoderado.setApellidoMaterno("Tuesta");
-//        newApoderado.setDireccion("San Miguel");
-//        newApoderado.setTelefono("956888650");
-//        newApoderado.setDni("72512121");
-//        newApoderado.setCorreo("a20221462@pucp.edu.pe");
-//        apoderadoDAO.save(newApoderado);
+        Apoderado newApoderado = new Apoderado();
+        newApoderado.setNombres("Daniel");
+        newApoderado.setApellidoPaterno("Ramirez");
+        newApoderado.setApellidoMaterno("Tuesta");
+        newApoderado.setDni("72512121");
+        apoderadoDAO.save(newApoderado);
     }
 }

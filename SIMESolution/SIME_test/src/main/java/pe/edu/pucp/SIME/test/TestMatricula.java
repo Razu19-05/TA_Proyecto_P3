@@ -11,34 +11,16 @@ public class TestMatricula {
     public static void main(String[] args) {
         MatriculaDAO matriculaDAO = new MatriculaDAOImpl();
 
-        // --- PROBAR SAVE ---
-        System.out.println("--- Probando Guardado ---");
-        Matricula nuevaMat = new Matricula();
-        nuevaMat.setFecha(new Date());
-        nuevaMat.setMonto(1500.00);
-
-        // Importante: Estos IDs deben existir en tu DB
+        Matricula newMatricula = new Matricula();
+        newMatricula.setFecha(java.sql.Date.valueOf("2026-04-23"));
+        newMatricula.setEstado("ACTIVO");
+        newMatricula.setMonto(330);
         Alumno alu = new Alumno();
-        alu.setIdAlumno(1);
-        nuevaMat.setAlumno(alu);
-
-        Periodo per = new Periodo();
-        per.setIdPeriodo(1);
-        nuevaMat.setPeriodo(per);
-
-        matriculaDAO.save(nuevaMat);
-        System.out.println("Matrícula guardada con ID: " + nuevaMat.getIdMatricula());
-
-        // --- PROBAR LOAD ---
-        System.out.println("\n--- Probando Carga ---");
-        Matricula cargada = matriculaDAO.load(nuevaMat.getIdMatricula());
-        if (cargada != null) {
-            System.out.println("ID Cargado: " + cargada.getIdMatricula());
-            System.out.println("Monto: " + cargada.getMonto());
-            System.out.println("Estado: " + cargada.getEstado());
-            System.out.println("ID Alumno asociado: " + cargada.getAlumno().getIdAlumno());
-        }
-
-
+        alu.setIdAlumno(8);
+        newMatricula.setAlumno(alu);
+        Periodo periodo =new Periodo();
+        periodo.setIdPeriodo(1);
+        newMatricula.setPeriodo(periodo);
+        matriculaDAO.save(newMatricula);
     }
 }

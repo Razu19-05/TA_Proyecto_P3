@@ -28,7 +28,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
                     apoderado.setTelefono(rs.getString(6));
                     apoderado.setDireccion(rs.getString(7));
                     apoderado.setCorreo(rs.getString(8));
-                    apoderado.setActivo(rs.getBoolean(9));
+                    apoderado.setActivo(rs.getInt(9));
                     return apoderado;
                 }
             }
@@ -41,8 +41,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
 
     @Override
     public Apoderado save(Apoderado apoderado) {
-        apoderado.setActivo(true);
-        String sql = "insert apoderado (nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo,activo) values (?,?,?,?,?,?,?,?)";
+        String sql = "insert apoderado (nombres, apellido_paterno, apellido_materno,dni,telefono,direccion,correo) values (?,?,?,?,?,?,?)";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             //Statement.RETURN_GENERATED_KEYS permite recuperar el id que la db genero
@@ -53,7 +52,6 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
             pstm.setString(5,apoderado.getTelefono());
             pstm.setString(6,apoderado.getDireccion());
             pstm.setString(7,apoderado.getCorreo());
-            pstm.setBoolean(8,apoderado.getActivo());
 
             int affectedRows = pstm.executeUpdate();
             if(affectedRows > 0){
@@ -92,11 +90,11 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
 
     @Override
     public void remove(Apoderado apoderado) {
-        apoderado.setActivo(false);
+        apoderado.setActivo(0);
         String sql = "UPDATE apoderado SET activo = ? WHERE id_apoderado = ?";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
-            pstm.setBoolean(1,apoderado.getActivo());
+            pstm.setInt(1,apoderado.getActivo());
             pstm.setInt(2, apoderado.getIdApoderado());
             int res = pstm.executeUpdate();
             if (res == 0){
@@ -125,7 +123,7 @@ public class ApoderadoDAOImpl implements ApoderadoDAO {
                 apoderado.setTelefono(rs.getString(6));
                 apoderado.setDireccion(rs.getString(7));
                 apoderado.setCorreo(rs.getString(8));
-                apoderado.setActivo(rs.getBoolean(9));
+                apoderado.setActivo(rs.getInt(9));
                 apoderados.add(apoderado);
             }
         } catch (SQLException e) {

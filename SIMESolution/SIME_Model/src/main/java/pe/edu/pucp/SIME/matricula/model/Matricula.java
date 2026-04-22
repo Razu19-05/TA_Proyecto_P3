@@ -1,8 +1,10 @@
 package pe.edu.pucp.SIME.matricula.model;
 
+import pe.edu.pucp.SIME.aula.model.GradoSeccion;
 import pe.edu.pucp.SIME.estudiante.model.Alumno;
 
 import java.util.Date;
+import java.util.List;
 
 public class Matricula {
     private int idMatricula;
@@ -12,6 +14,7 @@ public class Matricula {
 
     private Alumno alumno; // FK
     private Periodo periodo;
+    private GradoSeccion grado;
 
     public int getIdMatricula() {
         return idMatricula;
@@ -59,5 +62,13 @@ public class Matricula {
 
     public void setPeriodo(Periodo periodo) {
         this.periodo = periodo;
+    }
+
+    public GradoSeccion getGrado() {
+        return grado;
+    }
+
+    public void setGrado(GradoSeccion grado) {
+        this.grado = grado;
     }
 }

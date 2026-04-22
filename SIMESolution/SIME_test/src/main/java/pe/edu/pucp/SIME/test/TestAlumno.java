@@ -11,24 +11,34 @@ import java.util.List;
 public class TestAlumno {
     public static void main(String[] args) {
         AlumnoDAO alumnoDAO = new AlumnoDAOImpl();
-        List<Alumno> alumnos = alumnoDAO.listAll();
-        Alumno alumno = alumnoDAO.load(2);
-//        System.out.println(alumno.getNombres());
-//
-        Alumno newAlumno = new Alumno();
-        newAlumno.setDNI("77420924");
-        newAlumno.setNombres("Gabriel");
-        newAlumno.setApellidoPaterno("AAAA");
-        newAlumno.setApellidoMaterno("BBBB");
-        GradoSeccion newGrado = new GradoSeccion();
-        newGrado.setIdGrado(1);
-        newAlumno.setGradoSeccion(newGrado);
-        alumnoDAO.save(newAlumno);
+        //Prueba de Save
+//        Alumno newAlumno = new Alumno();
+//        newAlumno.setDNI("09823746");
+//        newAlumno.setNombres("Gabriel");
+//        newAlumno.setApellidoPaterno("Yauri");
+//        newAlumno.setApellidoMaterno("Mendoza");
+//        alumnoDAO.save(newAlumno);
 
-//        System.out.println(newAlumno.getIdAlumno());
-        for(Alumno alu : alumnos){
-            int id = alu.getIdAlumno();
-            System.out.println(id);
-        }
+//        Prueba de load
+//        Alumno alumnoElegido = new Alumno();
+//        alumnoElegido = alumnoDAO.load(1);
+//        System.out.println(alumnoElegido.getNombres());
+
+//        //Prueba de update
+//        Alumno alumnoModificado = new Alumno();
+//        alumnoModificado.setTelefono("995951026");
+//        alumnoModificado.setIdAlumno(1);
+//        alumnoDAO.update(alumnoModificado);
+//
+//        //Prueba de remove
+//        newAlumno.setIdAlumno(1);
+//        alumnoDAO.remove(newAlumno);
+//
+//        // Prueba de listAll
+//        List<Alumno> alumnos = alumnoDAO.listAll();
+//        for(Alumno alu : alumnos){
+//            String nombre = alu.getNombres();
+//            System.out.println(nombre);
+//        }
     }
 }

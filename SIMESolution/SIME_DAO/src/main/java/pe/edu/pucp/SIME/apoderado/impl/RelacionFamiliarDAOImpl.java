@@ -54,7 +54,7 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
     public RelacionFamiliar save(RelacionFamiliar relacionFamiliar) {
         String sql = "INSERT relacion_familiar(tipo_relacion, contacto_emergencia, observaciones, id_apoderado,id_alumno) values (?,?,?,?,?)";
         try(Connection connection = DBManager.getInstance().getConnection();
-            PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            PreparedStatement pstm = connection.prepareStatement(sql)) {
 
             pstm.setString(1,relacionFamiliar.getTipoRelacion());
             pstm.setString(2, relacionFamiliar.getContactoEmergencia());

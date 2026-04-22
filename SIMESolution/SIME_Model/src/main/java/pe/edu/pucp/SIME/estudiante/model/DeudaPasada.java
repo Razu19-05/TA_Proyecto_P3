@@ -2,6 +2,7 @@ package pe.edu.pucp.SIME.estudiante.model;
 
 public class DeudaPasada {
     private int idDeudaPasada;
+    private int idAlumno;
     private TipoDeuda tipoDeuda; // buzo, pension, libro, documento
     private double monto;
     private String estado; // pendiente, pagado
@@ -12,6 +13,14 @@ public class DeudaPasada {
 
     public void setIdDeudaPasada(int idDeudaPasada) {
         this.idDeudaPasada = idDeudaPasada;
+    }
+
+    public int getIdAlumno() {
+        return idAlumno;
+    }
+
+    public void setIdAlumno(int idAlumno) {
+        this.idAlumno = idAlumno;
     }
 
     public TipoDeuda getTipoDeuda() {

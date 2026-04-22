@@ -1,6 +1,8 @@
 package pe.edu.pucp.SIME.aula.model;
 
 import pe.edu.pucp.SIME.estudiante.model.Alumno;
+import pe.edu.pucp.SIME.matricula.model.Matricula;
+
 import java.util.List;
 
 public class GradoSeccion {
@@ -9,7 +11,8 @@ public class GradoSeccion {
     private String seccion; // A, B
 
     private Salon salonAsignado;
-    private List<Alumno> alumnos;
+    private List<Matricula>matriculados; // cuando hago e
+
 
     public int getIdGrado() {
         return idGrado;
@@ -43,11 +46,11 @@ public class GradoSeccion {
         this.salonAsignado = salonAsignado;
     }
 
-    public List<Alumno> getAlumnos() {
-        return alumnos;
+    public List<Matricula> getMatriculados() {
+        return matriculados;
     }
 
-    public void setAlumnos(List<Alumno> alumnos) {
-        this.alumnos = alumnos;
+    public void setMatriculados(List<Matricula> matriculados) {
+        this.matriculados = matriculados;
     }
 }

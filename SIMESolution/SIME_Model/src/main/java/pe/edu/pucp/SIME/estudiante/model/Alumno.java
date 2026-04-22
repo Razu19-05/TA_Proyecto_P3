@@ -17,7 +17,7 @@ public class Alumno {
     private String direccion;
     private String telefono;
     private String correo;
-    private boolean estado; //activo, retirado
+    private int estado; //activo, retirado
     private boolean alumnoNuevo;
     private double montoInscripcion;
     private double montoExamenPsicologico;
@@ -29,8 +29,6 @@ public class Alumno {
     private List<Trabajador> trabajadores;
     private Descuento descuento;
     private List<DeudaPasada> deudasPasadas;
-    private GradoSeccion gradoSeccion;
-
 
     public int getIdAlumno() {
         return idAlumno;
@@ -96,12 +94,12 @@ public class Alumno {
         this.correo = correo;
     }
 
-    public boolean isEstadoAlumno() {
+    public int getEstado() {
         return estado;
     }
 
-    public void setEstadoAlumno(boolean estadoAlumno) {
-        this.estado = estadoAlumno;
+    public void setEstado(int estado) {
+        this.estado = estado;
     }
 
     public boolean isAlumnoNuevo() {
@@ -144,14 +142,6 @@ public class Alumno {
         this.edad = edad;
     }
 
-    public boolean isEstado() {
-        return estado;
-    }
-
-    public void setEstado(boolean estado) {
-        this.estado = estado;
-    }
-
     public List<Matricula> getMatriculas() {
         return matriculas;
     }
@@ -190,13 +180,5 @@ public class Alumno {
 
     public void setDeudasPasadas(List<DeudaPasada> deudasPasadas) {
         this.deudasPasadas = deudasPasadas;
-    }
-
-    public GradoSeccion getGradoSeccion() {
-        return gradoSeccion;
-    }
-
-    public void setGradoSeccion(GradoSeccion gradoSeccion) {
-        this.gradoSeccion = gradoSeccion;
     }
 }

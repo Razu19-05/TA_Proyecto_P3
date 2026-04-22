@@ -35,14 +35,15 @@ public class AlumnoDAOImpl implements AlumnoDAO  {
     }
     @Override
     public Alumno save(Alumno alumno) {
-        String sql = "insert alumno (dni,nombres,apellido_paterno,apellido_materno,id_grado) values (?, ?, ?, ?, ?)";
+        alumno.setEstado(1);
+        String sql = "insert alumno (dni,nombres,apellido_paterno,apellido_materno,estado) values (?, ?, ?, ?, ?)";
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstm.setString(1, alumno.getDNI());
             pstm.setString(2, alumno.getNombres());
             pstm.setString(3, alumno.getApellidoPaterno());
             pstm.setString(4, alumno.getApellidoMaterno());
-            pstm.setInt(5, alumno.getGradoSeccion().getIdGrado());
+            pstm.setInt(5, alumno.getEstado());
             //id_alumno
             int affectedRows = pstm.executeUpdate();
             if(affectedRows > 0){

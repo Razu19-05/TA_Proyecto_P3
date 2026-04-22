@@ -12,7 +12,7 @@ public class Apoderado {
     private String telefono;
     private String direccion;
     private String correo;
-    private Boolean activo; //para eliminación lógica de la db
+    private int activo; //para eliminación lógica de la db
 
     private List<Alumno> alumnosApoderados;
 
@@ -81,11 +81,11 @@ public class Apoderado {
         this.correo = correo;
     }
 
-    public Boolean getActivo() {
+    public int getActivo() {
         return activo;
     }
 
-    public void setActivo(Boolean activo) {
+    public void setActivo(int activo) {
         this.activo = activo;
     }
 

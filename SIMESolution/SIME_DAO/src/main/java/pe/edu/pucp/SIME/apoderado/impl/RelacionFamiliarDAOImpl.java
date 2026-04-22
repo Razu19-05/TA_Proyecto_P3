@@ -18,7 +18,7 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
     }
     //pk compuesta
     public RelacionFamiliar load(int apoderadoID,int alumnoID ) {
-        String sql = "SELECT tipo_relacion, contacto_emergencia, observaciones FROM relacion_familiar WHERE id_apoderado = ? AND id_alumno = ?";
+        String sql = "SELECT tipo_relacion, contacto_emergencia, observaciones ,id_apoderado ,id_alumno FROM relacion_familiar WHERE id_apoderado = ? AND id_alumno = ?";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setInt(1,apoderadoID);
@@ -32,8 +32,8 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
 
                     Alumno alu = new Alumno();
                     Apoderado apo = new Apoderado();
-                    apo.setIdApoderado(rs.getInt(5));
-                    alu.setIdAlumno(rs.getInt(6));
+                    apo.setIdApoderado(rs.getInt(4));
+                    alu.setIdAlumno(rs.getInt(5));
 
                     rf.setAlumno(alu);
                     rf.setApoderado(apo);

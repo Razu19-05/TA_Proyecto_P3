@@ -1,12 +1,15 @@
 package pe.edu.pucp.SIME.matricula.model;
 
 import java.util.Date;
+import java.util.List;
 
 public class Periodo {
     private int idPeriodo;
     private int anioEscolar;
     private Date fechaInicio;
     private Date fechaFin;
+
+    private List<Matricula> matriculas;
 
     public int getIdPeriodo() {
         return idPeriodo;

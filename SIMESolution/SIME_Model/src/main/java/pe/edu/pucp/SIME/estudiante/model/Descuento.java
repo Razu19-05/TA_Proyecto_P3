@@ -2,6 +2,7 @@ package pe.edu.pucp.SIME.estudiante.model;
 
 public class Descuento {
     private int idDescuento;
+    private int idAlumno;
     private TipoDescuento tipoDescuento;
     private String descripcion;
     private double descuento;
@@ -12,6 +13,14 @@ public class Descuento {
 
     public void setIdDescuento(int idDescuento) {
         this.idDescuento = idDescuento;
+    }
+
+    public int getIdAlumno() {
+        return idAlumno;
+    }
+
+    public void setIdAlumno(int idAlumno) {
+        this.idAlumno = idAlumno;
     }
 
     public TipoDescuento getTipoDescuento() {

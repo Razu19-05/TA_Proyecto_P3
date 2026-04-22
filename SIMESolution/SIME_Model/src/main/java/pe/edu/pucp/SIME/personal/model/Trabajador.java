@@ -7,7 +7,7 @@ public class Trabajador {
     protected int idTrabajador;
     protected String nombres;
     protected String apellidoPaterno;
-    protected String getApellidoMaterno;
+    protected String apellidoMaterno;
     protected String dni;
     protected String telefono;
     protected String correo;
@@ -39,12 +39,12 @@ public class Trabajador {
         this.apellidoPaterno = apellidoPaterno;
     }
 
-    public String getGetApellidoMaterno() {
-        return getApellidoMaterno;
+    public String getApellidoMaterno() {
+        return apellidoMaterno;
     }
 
-    public void setGetApellidoMaterno(String getApellidoMaterno) {
-        this.getApellidoMaterno = getApellidoMaterno;
+    public void setApellidoMaterno(String apellidoMaterno) {
+        this.apellidoMaterno = apellidoMaterno;
     }
 
     public String getDni() {

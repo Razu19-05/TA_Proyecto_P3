@@ -1,5 +1,6 @@
 package pe.edu.pucp.SIME.matricula.impl;
 
+import pe.edu.pucp.SIME.aula.model.GradoSeccion;
 import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.estudiante.model.Alumno;
 import pe.edu.pucp.SIME.matricula.DAO.MatriculaDAO;
@@ -13,7 +14,7 @@ import java.util.List;
 public class MatriculaDAOImpl implements MatriculaDAO {
     @Override
     public Matricula load(Integer matriculaId) {
-        String sql = "SELECT id_matricula, fecha, estado, monto , id_alumno ,id_periodo from matricula where id_matricula = ?";
+        String sql = "SELECT id_matricula, fecha, estado, monto , id_alumno ,id_periodo ,id_grado_seccion  from matricula where id_matricula = ?";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setInt(1,matriculaId);
@@ -27,11 +28,13 @@ public class MatriculaDAOImpl implements MatriculaDAO {
 
                     Alumno alu = new Alumno();
                     Periodo per = new Periodo();
+                    GradoSeccion gs = new GradoSeccion();
                     alu.setIdAlumno(rs.getInt(5));
                     per.setIdPeriodo(rs.getInt(6));
+                    gs.setIdGrado(rs.getInt(7));
                     matricula.setAlumno(alu);
                     matricula.setPeriodo(per);
-
+                    matricula.setGrado(gs);
                     return matricula;
                 }
             }
@@ -46,7 +49,7 @@ public class MatriculaDAOImpl implements MatriculaDAO {
     @Override
     public Matricula save(Matricula matricula) {
         matricula.setEstado("ACTIVO");
-        String sql = "INSERT matricula(fecha,estado,monto, id_alumno, id_periodo) values (?,?,?,?,?)";
+        String sql = "INSERT matricula(fecha,estado,monto, id_alumno, id_periodo, id_grado_seccion ) values (?,?,?,?,?,?)";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)){
             //se pasa la  fecha un obj sql.Date -> fecha
@@ -55,6 +58,7 @@ public class MatriculaDAOImpl implements MatriculaDAO {
             pstm.setDouble(3,matricula.getMonto());
             pstm.setInt(4,matricula.getAlumno().getIdAlumno());
             pstm.setInt(5,matricula.getPeriodo().getIdPeriodo());
+            pstm.setInt(6,matricula.getGrado().getIdGrado());
 
             int affectedRows = pstm.executeUpdate();
             if(affectedRows > 0){
@@ -73,11 +77,13 @@ public class MatriculaDAOImpl implements MatriculaDAO {
 
     @Override
     public Matricula update(Matricula matricula) {
-        String sql = "UPDATE matricula SET monto = ? WHERE id_matricula = ?";
+        matricula.setEstado("ACTIVO");
+        String sql = "UPDATE matricula SET monto = ? ,estado = ? WHERE id_matricula = ?";
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setDouble(1, matricula.getMonto());
-            pstm.setInt(2,matricula.getIdMatricula());
+            pstm.setString(2,matricula.getEstado());
+            pstm.setInt(3,matricula.getIdMatricula());
             int resultado = pstm.executeUpdate();
             if(resultado == 0){
                 System.out.println("No se encontró la matricula con ID: " + matricula.getIdMatricula());
@@ -108,7 +114,7 @@ public class MatriculaDAOImpl implements MatriculaDAO {
     @Override
     public List<Matricula> listAll(){
         List<Matricula> matriculas = null;
-        String sql = "SELECT id_matricula, fecha, estado, monto , id_alumno ,id_periodo from matricula where id_matricula = 1";
+        String sql = "SELECT id_matricula, fecha, estado, monto , id_alumno ,id_periodo ,id_grado_seccion from matricula where estado = 'ACTIVO'";
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql);
              ResultSet rs = pstm.executeQuery()) {
@@ -123,10 +129,13 @@ public class MatriculaDAOImpl implements MatriculaDAO {
 
                 Alumno alu = new Alumno();
                 Periodo per = new Periodo();
+                GradoSeccion gs = new GradoSeccion();
                 alu.setIdAlumno(rs.getInt(5));
                 per.setIdPeriodo(rs.getInt(6));
+                gs.setIdGrado(rs.getInt(7));
                 matricula.setAlumno(alu);
                 matricula.setPeriodo(per);
+                matricula.setGrado(gs);
                 matriculas.add(matricula);
             }
         } catch (SQLException e) {

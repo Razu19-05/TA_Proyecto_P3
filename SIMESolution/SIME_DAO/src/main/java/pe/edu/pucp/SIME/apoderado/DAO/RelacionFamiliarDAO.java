@@ -4,4 +4,5 @@ import pe.edu.pucp.SIME.apoderado.model.RelacionFamiliar;
 
 
 public interface RelacionFamiliarDAO extends BaseDAO <RelacionFamiliar, Integer>{
+    RelacionFamiliar load(int id_apoderado, int id_alumno);
 }

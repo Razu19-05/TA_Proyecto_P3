@@ -1,13 +1,11 @@
 package pe.edu.pucp.SIME.apoderado.impl;
 
-import pe.edu.pucp.SIME.apoderado.DAO.ApoderadoDAO;
 import pe.edu.pucp.SIME.apoderado.DAO.RelacionFamiliarDAO;
 import pe.edu.pucp.SIME.apoderado.model.Apoderado;
 import pe.edu.pucp.SIME.apoderado.model.RelacionFamiliar;
 import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.estudiante.model.Alumno;
-import pe.edu.pucp.SIME.matricula.model.Matricula;
-import pe.edu.pucp.SIME.matricula.model.Periodo;
+
 
 import java.sql.*;
 import java.util.ArrayList;

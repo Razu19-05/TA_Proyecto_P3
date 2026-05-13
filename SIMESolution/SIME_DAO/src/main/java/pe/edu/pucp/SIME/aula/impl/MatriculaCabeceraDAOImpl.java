@@ -108,7 +108,7 @@ public class MatriculaCabeceraDAOImpl implements MatriculaCabeceraDAO {
 
     @Override
     public void remove(MatriculaCabecera matriculaCabecera) {
-        String sql = "UPDATE SIME_MATRICULA_CABECERA SET activo = 0 WHERE id_periodo_academico = ?";
+        String sql = "UPDATE SIME_MATRICULA_CABECERA SET activo = 0 WHERE id_matricula_cabecera = ?";
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql)) {
             pstm.setInt(1,matriculaCabecera.getIdMatriculaCabecera());

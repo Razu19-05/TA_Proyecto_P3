@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="BlazorSIMESolution/BlazorSIMESolution.csproj" />
+  <Project Path="SIMESolutionBL/SIMESolutionBL.csproj" />
+  <Project Path="SIMESolutionDAO/SIMESolutionDAO.csproj" />
+  <Project Path="SIMESolutionDBManager/SIMESolutionDBManager.csproj" />
+  <Project Path="SIMESolutionDomain/SIMESolutionDomain.csproj" />
+</Solution>

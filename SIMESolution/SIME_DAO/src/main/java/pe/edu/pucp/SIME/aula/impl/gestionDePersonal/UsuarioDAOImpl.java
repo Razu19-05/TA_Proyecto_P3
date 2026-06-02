@@ -18,8 +18,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 correo,
                 contrasena,                
                 rol,
-                activo,
-                where id_usuario = ?              
+                activo from SIME_USUARIO where id_usuario = ?              
                 """;
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql)) {
@@ -27,12 +26,12 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             try (ResultSet rs = pstm.executeQuery()) {
                 if (rs.next()) {
                     Usuario usuario = new Usuario();
-                    usuario.setIdUsuario(rs.getInt(2));
-                    usuario.setNombreUsuario(rs.getString(3));
-                    usuario.setCorreo(rs.getString(4));
-                    usuario.setContrasena(rs.getString(5));
-                    usuario.setTipo(TipoUsuario.valueOf(rs.getString(6)));
-                    usuario.setActivo(rs.getBoolean(7));
+                    usuario.setIdUsuario(rs.getInt(1));
+                    usuario.setNombreUsuario(rs.getString(2));
+                    usuario.setCorreo(rs.getString(2));
+                    usuario.setContrasena(rs.getString(4));
+                    usuario.setTipo(TipoUsuario.valueOf(rs.getString(5)));
+                    usuario.setActivo(rs.getBoolean(6));
 
                     return usuario;
                 }

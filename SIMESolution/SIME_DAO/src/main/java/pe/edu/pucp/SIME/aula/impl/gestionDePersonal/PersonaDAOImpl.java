@@ -27,6 +27,7 @@ public class PersonaDAOImpl implements PersonaDAO {
     private Persona mapearPersona(ResultSet rs) throws SQLException {
         String tipoBD = rs.getString("tipo");
         Persona persona = new Persona();
+        persona.setTipo(TipoPersona.valueOf(tipoBD));
 
         if ("PROFESOR".equals(tipoBD)) {
             persona.setEspecialidad(rs.getString("especialidad"));
@@ -94,7 +95,8 @@ public class PersonaDAOImpl implements PersonaDAO {
         activo
         from SIME_PERSONA where id_persona = ?
         """;
-        try(Connection connection = DBManager.getInstance().getConnection();
+        Connection connection = TransactionContext.getConnection();
+        try(
             PreparedStatement pstm = connection.prepareStatement(sql)){
             pstm.setInt(1,personaId);
             try(ResultSet rs = pstm.executeQuery()){

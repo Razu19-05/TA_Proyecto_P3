@@ -4,7 +4,7 @@ public class Usuario {
     private int IdUsuario;
     private String nombreUsuario;
     private String correo;
-    private String contraseña;
+    private String contrasena;
     private TipoUsuario tipo;
     private boolean activo;
 
@@ -32,12 +32,12 @@ public class Usuario {
         this.correo = correo;
     }
 
-    public String getContraseña() {
-        return contraseña;
+    public String getContrasena() {
+        return contrasena;
     }
 
-    public void setContraseña(String contraseña) {
-        this.contraseña = contraseña;
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
     }
 
     public TipoUsuario getTipo() {

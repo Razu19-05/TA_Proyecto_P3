@@ -1,4 +1,8 @@
 package pe.edu.pucp.SIME.aula.DAO.gestionDescuento;
 
-public interface DescuentoDAO {
+import pe.edu.pucp.SIME.aula.DAO.BaseDAO;
+import pe.edu.pucp.SIME.model.gestionDescuento.Descuento;
+
+public interface DescuentoDAO extends BaseDAO <Descuento,Integer> {
+
 }

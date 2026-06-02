@@ -2,6 +2,7 @@ package pe.edu.pucp.SIME.aula.impl.gestionDePersonal;
 
 import pe.edu.pucp.SIME.aula.DAO.gestionDePersonal.UsuarioDAO;
 import pe.edu.pucp.SIME.configuracion.DBManager;
+import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionDePersonal.TipoUsuario;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Usuario;
 
@@ -23,7 +24,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         try (Connection connection = DBManager.getInstance().getConnection();
              PreparedStatement pstm = connection.prepareStatement(sql)) {
             pstm.setInt(1, usuarioId);
-            try(ResultSet rs = pstm.executeQuery()) {
+            try (ResultSet rs = pstm.executeQuery()) {
                 if (rs.next()) {
                     Usuario usuario = new Usuario();
                     usuario.setIdUsuario(rs.getInt(2));
@@ -42,7 +43,6 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         }
     }
 
-    @Override
     public Usuario save(Usuario usuario) throws SQLException {
         String sql = """
                 insert into SIME_USUARIO
@@ -52,25 +52,27 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 rol) values (?,?,?,?)
                 """;
 
-        try (Connection connection = DBManager.getInstance().getConnection();
-             PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstm.setString(1,usuario.getNombreUsuario());
+        // 1. Obtenemos la conexión que fue abierta por la Capa de Servicio
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstm.setString(1, usuario.getNombreUsuario());
             pstm.setString(2, usuario.getCorreo());
-            pstm.setString(3,usuario.getContrasena());
-            pstm.setString(4,usuario.getTipo().name());
+            pstm.setString(3, usuario.getContrasena());
+            pstm.setString(4, usuario.getTipo().name());
 
             int affectedRows = pstm.executeUpdate();
-            if(affectedRows > 0){
-                try(ResultSet generatedKeys = pstm.getGeneratedKeys()){
-                    if(generatedKeys.next()){
+
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = pstm.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
                         int newId = generatedKeys.getInt(1);
                         usuario.setIdUsuario(newId);
                     }
                 }
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
+        // La conexión NO se cierra aquí, sigue viva para el commit del Service
         return usuario;
     }
 
@@ -78,17 +80,16 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     public Usuario update(Usuario usuario) throws SQLException {
         String sql = "UPDATE SIME_USUARIO SET nombre_usuario = ?, correo = ?, contrasena = ?, rol = ? WHERE id_usuario = ?";
 
-        try (Connection conn = DBManager.getInstance().getConnection();
-             PreparedStatement pstm = conn.prepareStatement(sql)) {
+        Connection conn = TransactionContext.getConnection();
 
+        try (PreparedStatement pstm = conn.prepareStatement(sql)) {
             pstm.setString(1, usuario.getNombreUsuario());
             pstm.setString(2, usuario.getCorreo());
             pstm.setString(3, usuario.getContrasena());
             pstm.setString(4, usuario.getTipo().name());
             pstm.setInt(5, usuario.getIdUsuario());
+
             pstm.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
         return usuario;
     }
@@ -96,15 +97,13 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     @Override
     public void remove(Usuario usuario) throws SQLException {
         String sql = "UPDATE SIME_USUARIO SET activo = 0 WHERE id_usuario = ?";
-        try (Connection connection = DBManager.getInstance().getConnection();
-             PreparedStatement pstm = connection.prepareStatement(sql)) {
-            pstm.setInt(1,usuario.getIdUsuario());
+        Connection connection = TransactionContext.getConnection();
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setInt(1, usuario.getIdUsuario());
             int resultado = pstm.executeUpdate();
             if (resultado == 0) {
-                System.out.println("No se encontró el alumno con ID: " + usuario.getIdUsuario());
+                System.out.println("No se encontró el usuario con ID: " + usuario.getIdUsuario());
             }
-        }catch (SQLException e){
-            throw new RuntimeException(e);
         }
     }
 }

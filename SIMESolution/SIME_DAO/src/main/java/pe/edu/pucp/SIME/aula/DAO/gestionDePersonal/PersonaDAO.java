@@ -1,4 +1,7 @@
 package pe.edu.pucp.SIME.aula.DAO.gestionDePersonal;
 
-public interface PersonaDAO {
+import pe.edu.pucp.SIME.aula.DAO.BaseDAO;
+import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
+
+public interface PersonaDAO extends BaseDAO<Persona, Integer> {
 }

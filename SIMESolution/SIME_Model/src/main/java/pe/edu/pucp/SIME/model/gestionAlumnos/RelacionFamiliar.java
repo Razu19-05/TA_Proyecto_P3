@@ -8,6 +8,7 @@ public class RelacionFamiliar {
     private Alumno alumno;
     private Persona persona;
     private TipoRelacionFamiliar parentesco;
+    private boolean contactoEmergencia;
     private String observaciones;
     private boolean activo;
 
@@ -41,6 +42,18 @@ public class RelacionFamiliar {
 
     public void setParentesco(TipoRelacionFamiliar parentesco) {
         this.parentesco = parentesco;
+    }
+
+    public void setAlumno(Alumno alumno) {
+        this.alumno = alumno;
+    }
+
+    public boolean isContactoEmergencia() {
+        return contactoEmergencia;
+    }
+
+    public void setContactoEmergencia(boolean contactoEmergencia) {
+        this.contactoEmergencia = contactoEmergencia;
     }
 
     public String getObservaciones() {

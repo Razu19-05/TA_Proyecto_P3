@@ -7,10 +7,7 @@ import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
 import pe.edu.pucp.SIME.model.gestionMatricula.TipoMatricula;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
     @Override
@@ -53,7 +50,7 @@ public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
                 VALUES (?, ?, ?, ?, ?)
                 """;
         Connection connection = TransactionContext.getConnection();
-        try(PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try(PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, matriculaDetalle.getMatriculaCabecera().getIdMatriculaCabecera());
             stmt.setInt(2, matriculaDetalle.getAlumno().getIdAlumno());
             if (matriculaDetalle.getFechaMatricula() != null) {

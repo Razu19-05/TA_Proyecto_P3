@@ -10,10 +10,7 @@ import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
 import pe.edu.pucp.SIME.model.gestionMatricula.TipoMatricula;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DescuentoDAOImpl implements DescuentoDAO {
 
@@ -224,7 +221,31 @@ public class DescuentoDAOImpl implements DescuentoDAO {
 
     @Override
     public Descuento save(Descuento descuento) throws SQLException {
-        return null;
+        String sql = """
+                Insert into SIME_DESCUENTO 
+                (id_matricula_detalle, id_tipo_descuento, porcentaje, motivo, activo)
+                values (?,?,?,?,?)
+                """;
+        Connection connection = TransactionContext.getConnection();
+        try(PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+            stmt.setInt(1,descuento.getMatriculaDetalle().getIdMatriculaDetalle());
+            stmt.setInt(2,descuento.getTipoDeDescuento().getIdTipoDeDescuento());
+            stmt.setDouble(3,descuento.getPorcentaje());
+            stmt.setString(4,descuento.getMotivo());
+            stmt.setBoolean(5,descuento.isActivo());
+
+            int affectedRows = stmt.executeUpdate();
+
+            if(affectedRows > 0){
+                try(ResultSet generatedKeys = stmt.getGeneratedKeys()){
+                    if(generatedKeys.next()){
+                        int newId = generatedKeys.getInt(1);
+                        descuento.setIdDescuento(newId);
+                    }
+                }
+            }
+        }
+        return descuento;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package pe.edu.pucp.SIME.aula.impl.gestionAlumnos;
 
 import pe.edu.pucp.SIME.aula.DAO.gestionAlumnos.RelacionFamiliarDAO;
+import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 import pe.edu.pucp.SIME.model.gestionAlumnos.RelacionFamiliar;
@@ -116,5 +117,22 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
             }
 
         }
+    }
+
+    public int contarApoderadosActivos(int idAlumno) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM SIME_RELACION_FAMILIAR WHERE id_alumno = ? AND activo = 1";
+
+        try (Connection connection = DBManager.getInstance().getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql)) {
+
+            pstm.setInt(1, idAlumno);
+
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1); // Retorna el número de familiares
+                }
+            }
+        }
+        return 0; // Si no hay registros, retorna 0
     }
 }

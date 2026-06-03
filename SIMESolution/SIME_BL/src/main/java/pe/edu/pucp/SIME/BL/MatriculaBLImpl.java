@@ -148,7 +148,7 @@ public class MatriculaBLImpl implements IMatriculaBL {
             pagoMatricula.setMontoDescuento(montoDescontado);
             pagoMatricula.setMontoFinal(montoFinal);
             pagoMatricula.setFechaEmision(new Date());
-            // Generamos vencimiento a 7 días, por ejemplo:
+            // Generamos vencimiento a 7 días, ejemplo:
             pagoMatricula.setFechaVencimiento(new Date(System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000)));
             pagoMatricula.setEstado(TipoEstado.PENDIENTE);
             pagoMatricula.setObservacion("Derecho de matrícula anual");
@@ -170,7 +170,7 @@ public class MatriculaBLImpl implements IMatriculaBL {
                 pagoInscripcion.setObservacion("Cuota de nuevo ingreso");
                 pagoInscripcion.setActivo(true);
                 pagoDAO.save(pagoInscripcion);
-                // Examen psicologico
+                //  Concepto ID 4 = Examen psicologico
                 ConceptoPago conceptoExamen = conceptoDAO.load(4);
                 Pago pagoExamen = new Pago();
                 pagoExamen.setMatriculaDetalle(detalle);

@@ -3,6 +3,7 @@ package pe.edu.pucp.SIME.aula.impl.gestionDePersonal;
 import pe.edu.pucp.SIME.aula.DAO.gestionDePersonal.PersonaDAO;
 import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
+import pe.edu.pucp.SIME.model.DTO.ResumenPersonalDTO;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 import pe.edu.pucp.SIME.model.gestionDePersonal.TipoPersona;
 
@@ -193,5 +194,65 @@ public class PersonaDAOImpl implements PersonaDAO {
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Persona buscarPorDni(String dni) throws SQLException{
+        String sql = """
+        SELECT id_persona, 
+        nombres, 
+        apellido_paterno, 
+        apellido_materno, 
+        dni, 
+        telefono, 
+        correo ,
+        direccion
+        ,tipo ,
+        especialidad, 
+        cargo, 
+        area, 
+        activo
+        from SIME_PERSONA where dni = ?
+        """;
+        Connection connection = TransactionContext.getConnection();
+        try(
+                PreparedStatement pstm = connection.prepareStatement(sql)){
+            pstm.setString(1,dni);
+            try(ResultSet rs = pstm.executeQuery()){
+                if(rs.next()){
+                    Persona persona = null;
+                    persona = mapearPersona(rs);
+                    return persona;
+                }
+            }
+
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    public ResumenPersonalDTO obtenerEstadisticas() throws SQLException{
+        ResumenPersonalDTO resumen = new ResumenPersonalDTO();
+        String sql = "SELECT tipo, COUNT(*) as total FROM SIME_PERSONA WHERE activo = 1 GROUP BY tipo";
+
+        try (Connection conn = DBManager.getInstance().getConnection();
+             PreparedStatement pstm = conn.prepareStatement(sql);
+             ResultSet rs = pstm.executeQuery()) {
+
+            while (rs.next()) {
+                String tipo = rs.getString("tipo");
+                int total = rs.getInt("total");
+
+                // Asigna los valores según cómo estén escritos en tu BD
+                if ("PROFESOR".equals(tipo)) {
+                    resumen.setCantidadProfesores(total);
+                } else if ("ADMINISTRADOR".equals(tipo)) {
+                    resumen.setCantidadAdministrativos(total);
+                } else if ("PERSONAL_SERVICIO".equals(tipo)) {
+                    resumen.setCantidadServicio(total);
+                }
+            }
+        }
+        return resumen;
     }
 }

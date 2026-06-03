@@ -1,6 +1,9 @@
 package pe.edu.pucp.SIME.aula.impl.gestionPagos;
 
+import pe.edu.pucp.SIME.aula.DAO.gestionMatricula.MatriculaDetalleDAO;
+import pe.edu.pucp.SIME.aula.DAO.gestionPagos.ConceptoPagoDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionPagos.PagoDAO;
+import pe.edu.pucp.SIME.aula.impl.gestionMatricula.MatriculaDetalleDAOImpl;
 import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
@@ -11,6 +14,17 @@ import pe.edu.pucp.SIME.model.gestionPagos.TipoEstado;
 import java.sql.*;
 
 public class PagoDAOImpl implements PagoDAO {
+
+    public MatriculaDetalle buscarMatricula (int id) throws SQLException{
+        MatriculaDetalleDAO matriculaDetalleDAO = new MatriculaDetalleDAOImpl();
+        MatriculaDetalle matriculaDetalle = matriculaDetalleDAO.load(id);
+        return matriculaDetalle;
+    }
+    public ConceptoPago busarConcepto (int id) throws SQLException{
+        ConceptoPagoDAO conceptoPagoDAO = new ConceptoPagoDAOImpl();
+        ConceptoPago conceptoPago = conceptoPagoDAO.load(id);
+        return conceptoPago;
+    }
 
     @Override
     public Pago load(Integer pagoID) throws SQLException {
@@ -54,12 +68,10 @@ public class PagoDAOImpl implements PagoDAO {
                     pago.setObservacion(rs.getString("observacion"));
                     pago.setActivo(rs.getBoolean("activo"));
 
-                    MatriculaDetalle detalle = new MatriculaDetalle();
-                    detalle.setIdMatriculaDetalle(rs.getInt("id_matricula_detalle"));
+                    MatriculaDetalle detalle = buscarMatricula(rs.getInt("id_matricula_detalle"));
                     pago.setMatriculaDetalle(detalle);
 
-                    ConceptoPago concepto = new ConceptoPago();
-                    concepto.setIdConceptoPago(rs.getInt("id_concepto"));
+                    ConceptoPago concepto = busarConcepto(rs.getInt("id_concepto"));
                     pago.setConceptoPago(concepto);
 
                     return pago;

@@ -11,36 +11,32 @@ import java.util.List;
 public class AlumnoDAOImpl implements AlumnoDAO {
     @Override
     public Alumno load(Integer alumnoID) throws SQLException {
-        String sql = """
-                select id_alumno, dni,nombres, apellido_paterno, apellido_materno, direccion, telefono, correo ,
-                fecha_nacimiento,alumno_nuevo,activo
-                from SIME_ALUMNO where id_alumno = ?
-                """;
+        String sql = "select id_alumno, dni, nombres, apellido_paterno, apellido_materno, direccion, telefono, correo, " +
+                "fecha_nacimiento, alumno_nuevo, activo from SIME_ALUMNO where id_alumno = ? ";
         Connection connection = TransactionContext.getConnection();
-        try(PreparedStatement pstm = connection.prepareStatement(sql)){
-            pstm.setInt(1,alumnoID);
-            try(ResultSet rs = pstm.executeQuery()){
-                if(rs.next()) {
+        try(PreparedStatement stmt = connection.prepareStatement(sql)){
+            stmt.setInt(1,alumnoID);
+            try (ResultSet rs = stmt.executeQuery()){
+                if(rs.next()){
                     Alumno alumno = new Alumno();
-                    alumno.setIdAlumno(rs.getInt(1));
-                    alumno.setDni(rs.getString(2));
-                    alumno.setNombres(rs.getString(3));
-                    alumno.setApellidoPaterno(rs.getString(4));
-                    alumno.setApellidoMaterno(rs.getString(5));
-                    alumno.setDireccion(rs.getString(6));
-                    alumno.setTelefono(rs.getString(7));
-                    alumno.setCorreo(rs.getString(8));
-                    alumno.setFechaNacimiento(rs.getDate(9));
-                    alumno.setAlumnoNuevo(rs.getBoolean(10));
-                    alumno.setActivo(rs.getBoolean(11));
+                    alumno.setIdAlumno(rs.getInt("id_alumno"));
+                    alumno.setDni(rs.getString("dni"));
+                    alumno.setNombres(rs.getString("nombres"));
+                    alumno.setApellidoPaterno(rs.getString("apellido_paterno"));
+                    alumno.setApellidoMaterno(rs.getString("apellido_materno"));
+                    alumno.setDireccion(rs.getString("direccion"));
+                    alumno.setTelefono(rs.getString("telefono"));
+                    alumno.setCorreo(rs.getString("correo"));
+                    alumno.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                    alumno.setAlumnoNuevo(rs.getBoolean("alumno_nuevo"));
+                    alumno.setActivo(rs.getBoolean("activo"));
                     return alumno;
                 }
             }
-            return null;
-        }catch (SQLException e) {
+        }catch (SQLException e){
             throw new RuntimeException(e);
         }
-
+        return null;
     }
     @Override
     public Alumno save(Alumno alumno) throws SQLException {

@@ -1,7 +1,10 @@
 package pe.edu.pucp.SIME.aula.impl.gestionAlumnos;
 
+import pe.edu.pucp.SIME.aula.DAO.gestionAlumnos.AlumnoDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionAlumnos.RelacionFamiliarDAO;
 import pe.edu.pucp.SIME.configuracion.DBManager;
+import pe.edu.pucp.SIME.aula.DAO.gestionDePersonal.PersonaDAO;
+import pe.edu.pucp.SIME.aula.impl.gestionDePersonal.PersonaDAOImpl;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 import pe.edu.pucp.SIME.model.gestionAlumnos.RelacionFamiliar;
@@ -11,6 +14,16 @@ import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 import java.sql.*;
 
 public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
+    public Alumno buscarAlumno (int id) throws SQLException{
+        AlumnoDAO alumnoDAO = new AlumnoDAOImpl();
+        Alumno alumno = alumnoDAO.load(id);
+        return alumno;
+    }
+    public Persona buscarPersona(int id) throws SQLException{
+        PersonaDAO personaDAO = new PersonaDAOImpl();
+        Persona persona = personaDAO.load(id);
+        return persona;
+    }
     @Override
     public RelacionFamiliar load(Integer rf_Id) throws SQLException {
         String sql = """
@@ -26,11 +39,9 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
                 if (rs.next()) {
                     RelacionFamiliar relacion = new RelacionFamiliar();
                     relacion.setIdRelacionFamiliar(rs.getInt(1));
-                    Alumno alumno = new Alumno();
-                    alumno.setIdAlumno(rs.getInt("id_alumno"));
+                    Alumno alumno = buscarAlumno(rs.getInt("id_alumno"));
                     relacion.setAlumnos(alumno);
-                    Persona persona = new Persona();
-                    persona.setIdPersona(rs.getInt("id_persona"));
+                    Persona persona = buscarPersona(rs.getInt("id_persona"));
                     relacion.setPersona(persona);
                     relacion.setContactoEmergencia(rs.getBoolean("contacto_emergencia"));
                     relacion.setParentesco(TipoRelacionFamiliar.valueOf(rs.getString("parentesco")));

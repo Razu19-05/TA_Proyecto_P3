@@ -9,29 +9,26 @@ import java.sql.*;
 public class PeriodoAcademicoDAOImpl implements PeriodoAcademicoDAO {
     @Override
     public PeriodoAcademico load(Integer periodoID) throws SQLException {
-        String sql = """
-                SELECT id_periodo_academico,
-                anio_escolar,
-                fecha_inicio,
-                fecha_fin,
-                activo FROM SIME_PERIODO_ACADEMICO WHERE id_periodo_academico = ?
-                """;
+        String sql = "select id_periodo_academico, anio_escolar, fecha_inicio, fecha_fin, activo " +
+                "from SIME_PERIODO_ACADEMICO where id_periodo_academico = ?";
         Connection connection = TransactionContext.getConnection();
-        try(PreparedStatement pstm = connection.prepareStatement(sql)){
-            pstm.setInt(1,periodoID);
-            try(ResultSet rs = pstm.executeQuery()){
+        try(PreparedStatement stmt = connection.prepareStatement(sql)){
+            stmt.setInt(1,periodoID);
+            try (ResultSet rs = stmt.executeQuery()){
                 if(rs.next()){
-                    PeriodoAcademico perido = new PeriodoAcademico();
-                    perido.setIdPeriodoAcademico(rs.getInt(1));
-                    perido.setAnioEscolar(rs.getInt(2));
-                    perido.setFechaInicio(rs.getDate(3));
-                    perido.setFechaFin(rs.getDate(4));
-                    perido.setActivo(rs.getBoolean(5));
-                    return perido;
+                    PeriodoAcademico periodo = new PeriodoAcademico();
+                    periodo.setIdPeriodoAcademico(rs.getInt("id_periodo_academico"));
+                    periodo.setAnioEscolar(rs.getInt("anio_escolar"));
+                    periodo.setFechaInicio(rs.getDate("fecha_inicio"));
+                    periodo.setFechaFin(rs.getDate("fecha_fin"));
+                    periodo.setActivo(rs.getBoolean("activo"));
+                    return periodo;
                 }
             }
-            return null;
+        }catch (SQLException e){
+            throw new RuntimeException(e);
         }
+        return null;
     }
 
     @Override

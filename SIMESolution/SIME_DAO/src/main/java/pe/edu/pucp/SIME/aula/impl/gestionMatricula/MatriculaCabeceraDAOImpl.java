@@ -1,6 +1,12 @@
 package pe.edu.pucp.SIME.aula.impl.gestionMatricula;
 
+import pe.edu.pucp.SIME.aula.DAO.gestionAcademica.AulaDAO;
+import pe.edu.pucp.SIME.aula.DAO.gestionAcademica.GradoSeccionDAO;
+import pe.edu.pucp.SIME.aula.DAO.gestionAcademica.PeriodoAcademicoDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionMatricula.MatriculaCabeceraDAO;
+import pe.edu.pucp.SIME.aula.impl.gestionAcademica.AulaDAOImpl;
+import pe.edu.pucp.SIME.aula.impl.gestionAcademica.GradoSeccionDAOImpl;
+import pe.edu.pucp.SIME.aula.impl.gestionAcademica.PeriodoAcademicoDAOImpl;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionAcademica.Aula;
 import pe.edu.pucp.SIME.model.gestionAcademica.GradoSeccion;
@@ -10,6 +16,25 @@ import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
 import java.sql.*;
 
 public class MatriculaCabeceraDAOImpl implements MatriculaCabeceraDAO {
+
+    public PeriodoAcademico buscarPeriodo (int id) throws SQLException{
+        PeriodoAcademicoDAO periodoAcademicoDAO = new PeriodoAcademicoDAOImpl();
+        PeriodoAcademico periodoAcademico = periodoAcademicoDAO.load(id);
+        return periodoAcademico;
+    }
+
+    public GradoSeccion buscarGrado (int id) throws SQLException{
+        GradoSeccionDAO gradoSeccionDAO = new GradoSeccionDAOImpl();
+        GradoSeccion gradoSeccion = gradoSeccionDAO.load(id);
+        return gradoSeccion;
+    }
+
+    public Aula buscarAula (int id) throws SQLException{
+        AulaDAO aulaDAO = new AulaDAOImpl();
+        Aula aula = aulaDAO.load(id);
+        return aula;
+    }
+
     @Override
     public MatriculaCabecera load(Integer id) throws SQLException {
         String sql = "select id_matricula_cabecera, id_periodo_academico, id_grado_seccion, id_aula, " +
@@ -21,12 +46,9 @@ public class MatriculaCabeceraDAOImpl implements MatriculaCabeceraDAO {
             try (ResultSet rs = stmt.executeQuery()){
                 if(rs.next()){
                     MatriculaCabecera matriculaCabecera = new MatriculaCabecera();
-                    PeriodoAcademico periodo = new PeriodoAcademico();
-                    periodo.setIdPeriodoAcademico(rs.getInt("id_periodo_academico"));
-                    GradoSeccion grado = new GradoSeccion();
-                    grado.setIdGradoSeccion(rs.getInt("id_grado_seccion"));
-                    Aula aula = new Aula();
-                    aula.setIdAula(rs.getInt("id_aula"));
+                    PeriodoAcademico periodo = buscarPeriodo(rs.getInt("id_periodo_academico"));
+                    GradoSeccion grado = buscarGrado(rs.getInt("id_grado_seccion"));
+                    Aula aula = buscarAula(rs.getInt("id_aula"));
                     matriculaCabecera.setPeriodoAcademico(periodo);
                     matriculaCabecera.setGradoSeccion(grado);
                     matriculaCabecera.setAula(aula);
@@ -39,6 +61,8 @@ public class MatriculaCabeceraDAOImpl implements MatriculaCabeceraDAO {
                     return matriculaCabecera;
                 }
             }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
         }
         return null;
     }

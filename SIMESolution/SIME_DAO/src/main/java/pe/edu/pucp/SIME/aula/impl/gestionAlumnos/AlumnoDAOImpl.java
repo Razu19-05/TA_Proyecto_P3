@@ -41,8 +41,8 @@ public class AlumnoDAOImpl implements AlumnoDAO {
     @Override
     public Alumno save(Alumno alumno) throws SQLException {
         String sql = """
-                INSERT INTO SIME_ALUMNO dni,nombres, apellido_paterno, apellido_materno, direccion, telefono, correo ,
-                fecha_nacimiento,alumno_nuevo,activo values (?,?,?,?,?,?,?,?,?,?)
+                INSERT INTO SIME_ALUMNO (dni,nombres, apellido_paterno, apellido_materno, direccion, telefono, correo,
+                fecha_nacimiento,alumno_nuevo,activo) values (?,?,?,?,?,?,?,?,?,?)
                 """;
         Connection connection = TransactionContext.getConnection();
         try(PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){

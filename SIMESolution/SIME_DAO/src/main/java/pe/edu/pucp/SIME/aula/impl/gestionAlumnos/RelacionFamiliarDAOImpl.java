@@ -38,10 +38,8 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
                     return relacion;
                 }
             }
-            return null;
-        }catch (SQLException e) {
-            throw new RuntimeException(e);
         }
+        return null;
     }
 
     @Override
@@ -73,8 +71,6 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
                     }
                 }
             }
-        }catch (SQLException e) {
-            throw new RuntimeException(e);
         }
         return relacion;
     }
@@ -97,8 +93,6 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
                 return null;
             }
             return relacionFamiliar;
-        }catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -121,8 +115,6 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
                 System.out.println("Relación eliminada exitosamente.");
             }
 
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al eliminar la relación familiar", e);
         }
     }
 }

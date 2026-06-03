@@ -107,10 +107,11 @@ public class PersonaDAOImpl implements PersonaDAO {
                     return persona;
                 }
             }
-            return null;
+
         } catch (SQLException e){
             throw new RuntimeException(e);
         }
+        return null;
     }
 
     @Override
@@ -168,7 +169,7 @@ public class PersonaDAOImpl implements PersonaDAO {
             pstm.setString(2,persona.getCorreo());
             pstm.setInt(3,persona.getIdPersona());
             int affectedRows = pstm.executeUpdate();
-            if (affectedRows > 0) {
+            if (affectedRows == 0) {
                 System.out.println("No se encontró la persona con ID: " + persona.getIdPersona());
             }
         }catch (SQLException e) {
@@ -186,7 +187,7 @@ public class PersonaDAOImpl implements PersonaDAO {
             pstm.setString(2,persona.getCorreo());
             pstm.setInt(3,persona.getIdPersona());
             int affectedRows = pstm.executeUpdate();
-            if (affectedRows > 0) {
+            if (affectedRows == 0) {
                 System.out.println("No se encontró la persona con ID: " + persona.getIdPersona());
             }
         }catch (SQLException e) {

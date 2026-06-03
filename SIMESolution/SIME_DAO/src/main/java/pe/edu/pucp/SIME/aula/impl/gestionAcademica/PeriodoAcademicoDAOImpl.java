@@ -100,7 +100,10 @@ public class PeriodoAcademicoDAOImpl implements PeriodoAcademicoDAO {
 
             pstm.setInt(4, periodoAcademico.getIdPeriodoAcademico());
 
-            pstm.executeUpdate();
+            int resultado = pstm.executeUpdate();
+            if (resultado == 0) {
+                System.out.println("No se encontró el perido con ID: " + periodoAcademico.getIdPeriodoAcademico());
+            }
         }
         return periodoAcademico;
     }
@@ -113,7 +116,10 @@ public class PeriodoAcademicoDAOImpl implements PeriodoAcademicoDAO {
 
         try (PreparedStatement pstm = conn.prepareStatement(sql)) {
             pstm.setInt(1, periodoAcademico.getIdPeriodoAcademico());
-            pstm.executeUpdate();
+            int resultado = pstm.executeUpdate();
+            if (resultado == 0) {
+                System.out.println("No se encontró el perido con ID: " + periodoAcademico.getIdPeriodoAcademico());
+            }
         }
     }
 }

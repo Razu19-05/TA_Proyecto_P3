@@ -35,11 +35,12 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
                     return usuario;
                 }
-                return null;
+
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return null;
     }
 
     public Usuario save(Usuario usuario) throws SQLException {
@@ -90,7 +91,10 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             pstm.setString(4, usuario.getTipo().name());
             pstm.setInt(5, usuario.getIdUsuario());
 
-            pstm.executeUpdate();
+            int resultado = pstm.executeUpdate();
+            if (resultado == 0) {
+                System.out.println("No se encontró el usuario con ID: " + usuario.getIdUsuario());
+            }
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }

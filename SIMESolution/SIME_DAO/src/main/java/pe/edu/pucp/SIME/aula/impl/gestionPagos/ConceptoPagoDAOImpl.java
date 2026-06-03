@@ -13,8 +13,8 @@ public class ConceptoPagoDAOImpl implements ConceptoPagoDAO {
         String sql = """
                 SELECT id_concepto,nombre,monto,activo FROM SIME_CONCEPTO_PAGO WHERE id_concepto = ?
                 """;
-
-        try (Connection conn = DBManager.getInstance().getConnection();
+        Connection conn = TransactionContext.getConnection();
+        try (
              PreparedStatement pstm = conn.prepareStatement(sql)) {
 
             pstm.setInt(1, idConcepto);
@@ -28,11 +28,12 @@ public class ConceptoPagoDAOImpl implements ConceptoPagoDAO {
                     concepto.setActivo(rs.getBoolean("activo"));
                     return concepto;
                 }
-                return null;
+
             }
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return null;
     }
 
     @Override
@@ -73,7 +74,10 @@ public class ConceptoPagoDAOImpl implements ConceptoPagoDAO {
             pstm.setBoolean(3, concepto.isActivo());
             pstm.setInt(4, concepto.getIdConceptoPago());
 
-            pstm.executeUpdate();
+            int resultado = pstm.executeUpdate();
+            if (resultado == 0) {
+                System.out.println("No se encontró el concepto de pago con ID: " + concepto.getIdConceptoPago());
+            }
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }

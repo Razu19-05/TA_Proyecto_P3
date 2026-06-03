@@ -13,6 +13,7 @@
         <module>SIME_DAO</module>
         <module>SIME_test</module>
         <module>SIME_DB_Manager</module>
+        <module>SIME_BL</module>
     </modules>
 
     <properties>

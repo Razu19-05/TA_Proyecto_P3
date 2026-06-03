@@ -27,8 +27,8 @@ public class PagoDAOImpl implements PagoDAO {
                 estado,
                 observacion,activo FROM SIME_PAGO WHERE id_pago = ?
                 """;
-
-        try (Connection connection = DBManager.getInstance().getConnection();
+        Connection connection = TransactionContext.getConnection();
+        try (
              PreparedStatement pstm = connection.prepareStatement(sql)) {
 
             pstm.setInt(1, pagoID);
@@ -54,21 +54,20 @@ public class PagoDAOImpl implements PagoDAO {
                     pago.setObservacion(rs.getString("observacion"));
                     pago.setActivo(rs.getBoolean("activo"));
 
-                    // Cascarón de MatriculaDetalle
                     MatriculaDetalle detalle = new MatriculaDetalle();
                     detalle.setIdMatriculaDetalle(rs.getInt("id_matricula_detalle"));
                     pago.setMatriculaDetalle(detalle);
 
-                    // Cascarón de ConceptoPago
                     ConceptoPago concepto = new ConceptoPago();
                     concepto.setIdConceptoPago(rs.getInt("id_concepto"));
                     pago.setConceptoPago(concepto);
 
                     return pago;
                 }
-                return null;
+
             }
         }
+        return null;
     }
 
     @Override
@@ -147,7 +146,10 @@ public class PagoDAOImpl implements PagoDAO {
             // Parámetro del WHERE
             pstm.setInt(11, pago.getIdPago());
 
-            pstm.executeUpdate();
+            int resultado = pstm.executeUpdate();
+            if (resultado == 0) {
+                System.out.println("No se encontró el pago con ID: " + pago.getIdPago());
+            }
         }
         return pago;
     }

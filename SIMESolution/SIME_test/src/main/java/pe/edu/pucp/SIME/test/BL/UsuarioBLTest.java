@@ -31,12 +31,12 @@ public class UsuarioBLTest {
 //        }
 
 
-        try{
-            Usuario usuario = usuarioBL.obtenerPorId(1);
-            usuarioBL.eliminar(usuario);
-        } catch (Exception e){
-            System.err.println("Error: "+e.getMessage());
-        }
+//        try{
+//            Usuario usuario = usuarioBL.obtenerPorId(1);
+//            usuarioBL.eliminar(usuario);
+//        } catch (Exception e){
+//            System.err.println("Error: "+e.getMessage());
+//        }
 
 
 

@@ -4,4 +4,5 @@ import pe.edu.pucp.SIME.aula.DAO.BaseDAO;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Usuario;
 
 public interface UsuarioDAO extends BaseDAO<Usuario, Integer> {
+    Usuario buscarPorNombre(String nombreUsuario);
 }

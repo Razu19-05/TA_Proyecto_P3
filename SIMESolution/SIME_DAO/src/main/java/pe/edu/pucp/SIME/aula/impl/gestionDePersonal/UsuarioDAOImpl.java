@@ -28,7 +28,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                     Usuario usuario = new Usuario();
                     usuario.setIdUsuario(rs.getInt(1));
                     usuario.setNombreUsuario(rs.getString(2));
-                    usuario.setCorreo(rs.getString(2));
+                    usuario.setCorreo(rs.getString(3));
                     usuario.setContrasena(rs.getString(4));
                     usuario.setTipo(TipoUsuario.valueOf(rs.getString(5)));
                     usuario.setActivo(rs.getBoolean(6));
@@ -114,5 +114,38 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Usuario buscarPorNombre(String nombreUsuario){
+        String sql = """
+                select
+                id_usuario,
+                nombre_usuario,
+                correo,
+                contrasena,                
+                rol,
+                activo from SIME_USUARIO where nombre_usuario = ?              
+                """;
+        try (Connection connection = DBManager.getInstance().getConnection();
+             PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setString(1, nombreUsuario);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    Usuario usuario = new Usuario();
+                    usuario.setIdUsuario(rs.getInt(1));
+                    usuario.setNombreUsuario(rs.getString(2));
+                    usuario.setCorreo(rs.getString(3));
+                    usuario.setContrasena(rs.getString(4));
+                    usuario.setTipo(TipoUsuario.valueOf(rs.getString(5)));
+                    usuario.setActivo(rs.getBoolean(6));
+
+                    return usuario;
+                }
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 }

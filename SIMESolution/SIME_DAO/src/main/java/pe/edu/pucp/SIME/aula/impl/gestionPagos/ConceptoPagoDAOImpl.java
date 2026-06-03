@@ -56,8 +56,6 @@ public class ConceptoPagoDAOImpl implements ConceptoPagoDAO {
                     }
                 }
             }
-        }catch (SQLException e) {
-            throw new RuntimeException(e);
         }
         return concepto;
     }

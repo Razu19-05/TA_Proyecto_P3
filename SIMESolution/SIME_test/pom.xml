@@ -25,7 +25,12 @@
         </dependency>
         <dependency>
             <groupId>pe.edu.pucp.SIME</groupId>
-            <artifactId>SIME_DAO</artifactId>
+            <artifactId>SIME_BL</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>pe.edu.pucp.SIME</groupId>
+            <artifactId>SIME_Model</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

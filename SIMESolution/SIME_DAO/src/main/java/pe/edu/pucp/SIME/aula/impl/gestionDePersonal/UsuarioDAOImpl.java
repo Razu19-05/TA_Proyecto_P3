@@ -70,6 +70,8 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                     }
                 }
             }
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         // La conexión NO se cierra aquí, sigue viva para el commit del Service
         return usuario;
@@ -89,6 +91,8 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             pstm.setInt(5, usuario.getIdUsuario());
 
             pstm.executeUpdate();
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return usuario;
     }
@@ -103,6 +107,8 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             if (resultado == 0) {
                 System.out.println("No se encontró el usuario con ID: " + usuario.getIdUsuario());
             }
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

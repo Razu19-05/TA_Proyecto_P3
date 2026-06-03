@@ -153,6 +153,8 @@ public class PersonaDAOImpl implements PersonaDAO {
                     }
                 }
             }
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return persona;
     }
@@ -169,6 +171,8 @@ public class PersonaDAOImpl implements PersonaDAO {
             if (affectedRows > 0) {
                 System.out.println("No se encontró la persona con ID: " + persona.getIdPersona());
             }
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return persona;
     }
@@ -185,6 +189,8 @@ public class PersonaDAOImpl implements PersonaDAO {
             if (affectedRows > 0) {
                 System.out.println("No se encontró la persona con ID: " + persona.getIdPersona());
             }
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

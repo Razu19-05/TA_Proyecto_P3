@@ -9,7 +9,7 @@ public class Pago {
     private int idPago;
     private MatriculaDetalle matriculaDetalle;
     private ConceptoPago conceptoPago;
-    private Descuento montoDescuento;
+    private double montoDescuento;
     private double montoFinal;
     private Date fechaEmision;
     private Date fechaVencimiento;
@@ -42,11 +42,11 @@ public class Pago {
         this.conceptoPago = conceptoPago;
     }
 
-    public Descuento getMontoDescuento() {
+    public double getMontoDescuento() {
         return montoDescuento;
     }
 
-    public void setMontoDescuento(Descuento montoDescuento) {
+    public void setMontoDescuento(double montoDescuento) {
         this.montoDescuento = montoDescuento;
     }
 

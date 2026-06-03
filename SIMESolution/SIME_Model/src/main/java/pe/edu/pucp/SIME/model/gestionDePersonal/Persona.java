@@ -10,6 +10,7 @@ public class Persona {
     private String correo;
     private String direccion;
     private TipoPersona tipo;
+    private String especialidad;
     private String cargo;
     private String area;
     private boolean activo;
@@ -84,6 +85,14 @@ public class Persona {
 
     public void setTipo(TipoPersona tipo) {
         this.tipo = tipo;
+    }
+
+    public String getEspecialidad() {
+        return especialidad;
+    }
+
+    public void setEspecialidad(String especialidad) {
+        this.especialidad = especialidad;
     }
 
     public String getCargo() {

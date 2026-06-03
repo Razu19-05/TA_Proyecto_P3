@@ -1,4 +1,7 @@
 package pe.edu.pucp.SIME.aula.DAO.gestionAcademica;
 
-public interface GradoSeccionDAO {
+import pe.edu.pucp.SIME.aula.DAO.BaseDAO;
+import pe.edu.pucp.SIME.model.gestionAcademica.GradoSeccion;
+
+public interface GradoSeccionDAO extends BaseDAO<GradoSeccion, Integer> {
 }

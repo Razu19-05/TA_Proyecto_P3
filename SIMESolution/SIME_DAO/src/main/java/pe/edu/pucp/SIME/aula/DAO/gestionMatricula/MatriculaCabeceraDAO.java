@@ -1,4 +1,7 @@
 package pe.edu.pucp.SIME.aula.DAO.gestionMatricula;
 
-public interface MatriculaCabeceraDAO {
+import pe.edu.pucp.SIME.aula.DAO.BaseDAO;
+import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
+
+public interface MatriculaCabeceraDAO extends BaseDAO<MatriculaCabecera,Integer> {
 }

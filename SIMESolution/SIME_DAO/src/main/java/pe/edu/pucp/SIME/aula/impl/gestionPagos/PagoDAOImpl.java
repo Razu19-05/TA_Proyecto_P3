@@ -102,10 +102,11 @@ public class PagoDAOImpl implements PagoDAO {
 
             int affectedRows = pstm.executeUpdate();
 
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = pstm.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        pago.setIdPago(generatedKeys.getInt(1));
+            if(affectedRows > 0){
+                try(ResultSet generatedKeys = pstm.getGeneratedKeys()){
+                    if(generatedKeys.next()){
+                        int newId = generatedKeys.getInt(1);
+                        pago.setIdPago(newId);
                     }
                 }
             }

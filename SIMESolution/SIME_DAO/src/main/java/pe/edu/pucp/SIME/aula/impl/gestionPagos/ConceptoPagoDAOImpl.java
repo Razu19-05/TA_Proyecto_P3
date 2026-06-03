@@ -47,10 +47,11 @@ public class ConceptoPagoDAOImpl implements ConceptoPagoDAO {
 
             int affectedRows = pstm.executeUpdate();
 
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = pstm.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        concepto.setIdConceptoPago(generatedKeys.getInt(1));
+            if(affectedRows > 0){
+                try(ResultSet generatedKeys = pstm.getGeneratedKeys()){
+                    if(generatedKeys.next()){
+                        int newId = generatedKeys.getInt(1);
+                        concepto.setIdConceptoPago(newId);
                     }
                 }
             }

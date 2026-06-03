@@ -1,6 +1,10 @@
 package pe.edu.pucp.SIME.aula.impl.gestionAcademica;
 
 import pe.edu.pucp.SIME.aula.DAO.gestionAcademica.AsignacionDocenteDAO;
+import pe.edu.pucp.SIME.aula.DAO.gestionDePersonal.PersonaDAO;
+import pe.edu.pucp.SIME.aula.DAO.gestionMatricula.MatriculaCabeceraDAO;
+import pe.edu.pucp.SIME.aula.impl.gestionDePersonal.PersonaDAOImpl;
+import pe.edu.pucp.SIME.aula.impl.gestionMatricula.MatriculaCabeceraDAOImpl;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionAcademica.AsignacionDocente;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
@@ -9,6 +13,18 @@ import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
 import java.sql.*;
 
 public class AsignacionDocenteDAOImpl implements AsignacionDocenteDAO {
+
+    public Persona buscarPersona(int id) throws SQLException{
+        PersonaDAO personaDAO = new PersonaDAOImpl();
+        Persona persona = personaDAO.load(id);
+        return persona;
+    }
+    public MatriculaCabecera buscarMatriculaCabecera (int id) throws SQLException{
+        MatriculaCabeceraDAO matriculaCabeceraDAO = new MatriculaCabeceraDAOImpl();
+        MatriculaCabecera matriculaCabecera = matriculaCabeceraDAO.load(id);
+        return matriculaCabecera;
+    }
+
     @Override
     public AsignacionDocente load(Integer integer) throws SQLException {
         String sql = """
@@ -33,13 +49,11 @@ public class AsignacionDocenteDAOImpl implements AsignacionDocenteDAO {
                     asignacion.setActivo(rs.getBoolean("activo"));
 
                     // Cascarón para la Persona (Docente)
-                    Persona persona = new Persona();
-                    persona.setIdPersona(rs.getInt("id_persona"));
+                    Persona persona = buscarPersona(rs.getInt("id_persona"));
                     asignacion.setPersona(persona);
 
                     // Cascarón para la Matrícula
-                    MatriculaCabecera matricula = new MatriculaCabecera();
-                    matricula.setIdMatriculaCabecera(rs.getInt("id_matricula"));
+                    MatriculaCabecera matricula = buscarMatriculaCabecera(rs.getInt("id_matricula"));
                     asignacion.setMatriculaCabecera(matricula);
                     return asignacion;
                 }

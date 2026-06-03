@@ -1,6 +1,9 @@
 package pe.edu.pucp.SIME.aula.impl.gestionMatricula;
 
+import pe.edu.pucp.SIME.aula.DAO.gestionAlumnos.AlumnoDAO;
+import pe.edu.pucp.SIME.aula.DAO.gestionMatricula.MatriculaCabeceraDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionMatricula.MatriculaDetalleDAO;
+import pe.edu.pucp.SIME.aula.impl.gestionAlumnos.AlumnoDAOImpl;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
@@ -13,24 +16,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
+    public MatriculaCabecera buscarMatriculaCabecera (int id) throws SQLException{
+        MatriculaCabeceraDAO matriculaCabeceraDAO = new MatriculaCabeceraDAOImpl();
+        MatriculaCabecera matriculaCabecera = matriculaCabeceraDAO.load(id);
+        return matriculaCabecera;
+    }
+
+    public Alumno buscarAlumno (int id) throws SQLException{
+        AlumnoDAO alumnoDAO = new AlumnoDAOImpl();
+        Alumno alumno = alumnoDAO.load(id);
+        return alumno;
+    }
+
     @Override
     public MatriculaDetalle load(Integer id) throws SQLException {
         String sql = "select id_matricula_detalle, id_matricula_cabecera, id_alumno, fecha_matricula, estado, activo " +
                 "from SIME_MATRICULA_DETALLE where id_matricula_detalle = ?";
         Connection connection = TransactionContext.getConnection();
-        try(PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
+        try(PreparedStatement stmt = connection.prepareStatement(sql)){
+            stmt.setInt(1,id);
+            try (ResultSet rs = stmt.executeQuery()){
+                if(rs.next()){
                     MatriculaDetalle matricula = new MatriculaDetalle();
                     matricula.setIdMatriculaDetalle(rs.getInt("id_matricula_detalle"));
-
-                    MatriculaCabecera matriculaCabecera = new MatriculaCabecera();
-                    matriculaCabecera.setIdMatriculaCabecera(rs.getInt("id_matricula_cabecera"));
-
-                    Alumno alumno = new Alumno();
-                    alumno.setIdAlumno(rs.getInt("id_alumno"));
-
+                    MatriculaCabecera matriculaCabecera = buscarMatriculaCabecera(rs.getInt("id_matricula_cabecera"));
+                    Alumno alumno = buscarAlumno(rs.getInt("id_alumno"));
                     matricula.setMatriculaCabecera(matriculaCabecera);
                     matricula.setAlumno(alumno);
                     matricula.setFechaMatricula(rs.getDate("fecha_matricula"));
@@ -40,9 +50,10 @@ public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
                     return matricula;
                 }
             }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
         }
         return null;
-
     }
 
     @Override

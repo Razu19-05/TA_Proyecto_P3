@@ -8,6 +8,8 @@ import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 import pe.edu.pucp.SIME.model.gestionDePersonal.TipoPersona;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PersonaDAOImpl implements PersonaDAO {
 
@@ -254,5 +256,46 @@ public class PersonaDAOImpl implements PersonaDAO {
             }
         }
         return resumen;
+    }
+
+    @Override
+    public List<Persona> listarEmpleados() throws SQLException {
+        String sql = """
+        SELECT id_persona, 
+        nombres, 
+        apellido_paterno, 
+        apellido_materno, 
+        dni, 
+        telefono, 
+        correo ,
+        direccion
+        ,tipo ,
+        especialidad, 
+        cargo, 
+        area,
+        activo
+        from SIME_PERSONA where activo = 1;
+        """;
+        Connection connection = TransactionContext.getConnection();
+        List<Persona> empleados = new ArrayList<>();
+        try(
+                PreparedStatement pstm = connection.prepareStatement(sql)){
+
+            try(ResultSet rs = pstm.executeQuery()){
+                while(rs.next()){
+                    Persona persona = null;
+                    persona = mapearPersona(rs);
+                    boolean isEmpleado = persona.getTipo() == TipoPersona.EXTERNO;
+                    if(!isEmpleado){
+                        empleados.add(persona);
+                    }
+
+                }
+            }
+
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return empleados;
     }
 }

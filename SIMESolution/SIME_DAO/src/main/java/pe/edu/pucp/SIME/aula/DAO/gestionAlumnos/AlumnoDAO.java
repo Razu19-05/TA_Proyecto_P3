@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface AlumnoDAO extends BaseDAO <Alumno,Integer> {
     List<Alumno> listarAlumnos() throws SQLException;
+    Alumno buscarPorDni(String dni) throws SQLException;
 }

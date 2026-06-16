@@ -60,13 +60,13 @@ public class MatriculaBLImpl implements IMatriculaBL {
 
             //seleccion de alumno
             Alumno alumno = solicitud.getEstudiante();
-            if (alumno.getIdAlumno() == 0) {
-                // Es un alumno nuevo (INSERT)
-                alumno = alumnoDAO.save(alumno);
-                System.out.println("procesado");
-            } else {
+            Alumno alumnoExistente = alumnoDAO.buscarPorDni(alumno.getDni());
+            if (alumnoExistente != null) {
                 // Es un alumno regular, actualizamos sus datos
                 alumno = alumnoDAO.update(alumno);
+            } else {
+                // Es un alumno nuevo (INSERT)
+                alumno = alumnoDAO.save(alumno);
             }
 
             //gestion de apoderados

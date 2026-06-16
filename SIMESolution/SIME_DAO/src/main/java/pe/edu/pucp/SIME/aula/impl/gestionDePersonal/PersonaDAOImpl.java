@@ -245,7 +245,7 @@ public class PersonaDAOImpl implements PersonaDAO {
                 String tipo = rs.getString("tipo");
                 int total = rs.getInt("total");
 
-                // Asigna los valores según cómo estén escritos en tu BD
+                // Asigna los valores según cómo estén escritos en la BD
                 if ("PROFESOR".equals(tipo)) {
                     resumen.setCantidadProfesores(total);
                 } else if ("ADMINISTRADOR".equals(tipo)) {

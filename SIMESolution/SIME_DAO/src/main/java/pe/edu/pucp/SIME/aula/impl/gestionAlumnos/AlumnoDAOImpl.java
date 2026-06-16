@@ -1,6 +1,7 @@
 package pe.edu.pucp.SIME.aula.impl.gestionAlumnos;
 
 import pe.edu.pucp.SIME.aula.DAO.gestionAlumnos.AlumnoDAO;
+import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 
@@ -130,4 +131,36 @@ public class AlumnoDAOImpl implements AlumnoDAO {
         }
         return alumnos;
     }
+
+    @Override
+    public Alumno buscarPorDni(String dni) throws SQLException {
+        String sql = "select id_alumno, dni, nombres, apellido_paterno, apellido_materno, direccion, telefono, correo, " +
+                "fecha_nacimiento, alumno_nuevo, activo from SIME_ALUMNO where dni = ? ";
+
+        try(Connection connection = DBManager.getInstance().getConnection();
+            PreparedStatement stmt = connection.prepareStatement(sql)){
+            stmt.setString(1,dni);
+            try (ResultSet rs = stmt.executeQuery()){
+                if(rs.next()){
+                    Alumno alumno = new Alumno();
+                    alumno.setIdAlumno(rs.getInt("id_alumno"));
+                    alumno.setDni(rs.getString("dni"));
+                    alumno.setNombres(rs.getString("nombres"));
+                    alumno.setApellidoPaterno(rs.getString("apellido_paterno"));
+                    alumno.setApellidoMaterno(rs.getString("apellido_materno"));
+                    alumno.setDireccion(rs.getString("direccion"));
+                    alumno.setTelefono(rs.getString("telefono"));
+                    alumno.setCorreo(rs.getString("correo"));
+                    alumno.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                    alumno.setAlumnoNuevo(rs.getBoolean("alumno_nuevo"));
+                    alumno.setActivo(rs.getBoolean("activo"));
+                    return alumno;
+                }
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
 }

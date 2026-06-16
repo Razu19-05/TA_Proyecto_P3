@@ -7,6 +7,8 @@ import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.DTO.ResumenPersonalDTO;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 
+import java.util.List;
+
 public class PersonalBLImpl implements IPersonalBL {
     private PersonaDAO personaDAO = new PersonaDAOImpl();
 
@@ -38,4 +40,47 @@ public class PersonalBLImpl implements IPersonalBL {
             TransactionContext.close();
         }
     }
+
+    @Override
+    public List<Persona> listarEmpleados()throws Exception{
+        try{
+            TransactionContext.getConnection();
+            List<Persona> personas = personaDAO.listarEmpleados();
+            TransactionContext.commit();
+            return personas;
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al listar empleados: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
+    @Override
+    public Persona actualizarEmpleado(Persona empleado) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            Persona personaAct = personaDAO.update(empleado);
+            return personaAct;
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al listar empleados: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
+    @Override
+    public void eliminarEmpleado(Persona empleado) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            personaDAO.remove(empleado);
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al listar empleados: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
 }

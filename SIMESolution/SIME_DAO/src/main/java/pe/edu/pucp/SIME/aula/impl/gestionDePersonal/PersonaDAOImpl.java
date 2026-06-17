@@ -186,9 +186,7 @@ public class PersonaDAOImpl implements PersonaDAO {
         String sql = "UPDATE SIME_PERSONA SET activo = 0 WHERE id_persona = ?";
         Connection connection = TransactionContext.getConnection();
         try (PreparedStatement pstm = connection.prepareStatement(sql)) {
-            pstm.setString(1,persona.getTelefono());
-            pstm.setString(2,persona.getCorreo());
-            pstm.setInt(3,persona.getIdPersona());
+            pstm.setInt(1,persona.getIdPersona());
             int affectedRows = pstm.executeUpdate();
             if (affectedRows == 0) {
                 System.out.println("No se encontró la persona con ID: " + persona.getIdPersona());

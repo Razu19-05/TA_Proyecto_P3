@@ -28,7 +28,7 @@ public class AlumnoDAOImpl implements AlumnoDAO {
                     alumno.setDireccion(rs.getString("direccion"));
                     alumno.setTelefono(rs.getString("telefono"));
                     alumno.setCorreo(rs.getString("correo"));
-                    alumno.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                    alumno.setFechaNacimiento(rs.getDate("fecha_nacimiento").toLocalDate());
                     alumno.setAlumnoNuevo(rs.getBoolean("alumno_nuevo"));
                     alumno.setActivo(rs.getBoolean("activo"));
                     return alumno;
@@ -54,7 +54,7 @@ public class AlumnoDAOImpl implements AlumnoDAO {
             pstm.setString(5,alumno.getDireccion());
             pstm.setString(6,alumno.getTelefono());
             pstm.setString(7,alumno.getCorreo());
-            pstm.setDate(8, new Date(alumno.getFechaNacimiento().getTime()));
+            pstm.setDate(8, java.sql.Date.valueOf(alumno.getFechaNacimiento()));
             pstm.setInt(9,1);
             pstm.setInt(10,1);
             int affectedRows = pstm.executeUpdate();
@@ -73,10 +73,13 @@ public class AlumnoDAOImpl implements AlumnoDAO {
     @Override
     public Alumno update(Alumno alumno) throws SQLException {
         alumno.setAlumnoNuevo(false);
-        String sql = "UPDATE SIME_ALUMNO SET alumno_nuevo = 0 WHERE id_alumno = ?";
+        String sql = "UPDATE SIME_ALUMNO SET direccion = ?, telefono = ?, correo = ? WHERE id_alumno = ?";
         Connection connection = TransactionContext.getConnection();
         try (PreparedStatement pstm = connection.prepareStatement(sql)){
-            pstm.setInt(1,alumno.getIdAlumno());
+            pstm.setString(1, alumno.getDireccion());
+            pstm.setString(2, alumno.getTelefono());
+            pstm.setString(3, alumno.getCorreo());
+            pstm.setInt(4,alumno.getIdAlumno());
             int resultado = pstm.executeUpdate();
             if (resultado == 0) {
                 System.out.println("No se encontró el alumno con ID: " + alumno.getIdAlumno());
@@ -122,7 +125,7 @@ public class AlumnoDAOImpl implements AlumnoDAO {
                 alumno.setDireccion(rs.getString(6));
                 alumno.setTelefono(rs.getString(7));
                 alumno.setCorreo(rs.getString(8));
-                alumno.setFechaNacimiento(rs.getDate(9));
+                alumno.setFechaNacimiento(rs.getDate(9).toLocalDate());
                 alumno.setAlumnoNuevo(rs.getBoolean(10));
                 alumnos.add(alumno);
             }
@@ -151,7 +154,7 @@ public class AlumnoDAOImpl implements AlumnoDAO {
                     alumno.setDireccion(rs.getString("direccion"));
                     alumno.setTelefono(rs.getString("telefono"));
                     alumno.setCorreo(rs.getString("correo"));
-                    alumno.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                    alumno.setFechaNacimiento(rs.getDate("fecha_nacimiento").toLocalDate());
                     alumno.setAlumnoNuevo(rs.getBoolean("alumno_nuevo"));
                     alumno.setActivo(rs.getBoolean("activo"));
                     return alumno;

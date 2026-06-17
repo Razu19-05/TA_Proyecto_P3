@@ -1,6 +1,7 @@
 package pe.edu.pucp.SIME.model.gestionAlumnos;
+import jakarta.json.bind.annotation.JsonbDateFormat;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Alumno {
     private int idAlumno;
@@ -11,7 +12,8 @@ public class Alumno {
     private String direccion;
     private String telefono;
     private String correo;
-    private Date fechaNacimiento;
+    @JsonbDateFormat("yyyy-MM-dd'Z'")
+    private LocalDate fechaNacimiento;
     private boolean alumnoNuevo;
     private boolean activo;
 
@@ -79,11 +81,11 @@ public class Alumno {
         this.correo = correo;
     }
 
-    public Date getFechaNacimiento() {
+    public LocalDate getFechaNacimiento() {
         return fechaNacimiento;
     }
 
-    public void setFechaNacimiento(Date fechaNacimiento) {
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
 

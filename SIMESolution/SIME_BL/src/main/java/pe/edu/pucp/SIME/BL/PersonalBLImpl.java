@@ -7,6 +7,7 @@ import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.DTO.ResumenPersonalDTO;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class PersonalBLImpl implements IPersonalBL {
@@ -21,18 +22,12 @@ public class PersonalBLImpl implements IPersonalBL {
         }
     }
     @Override
-    public void registrarNuevoEmpleado(Persona empleado) throws Exception {
+    public Persona registrarNuevoEmpleado(Persona empleado) throws Exception {
         try{
             TransactionContext.getConnection();
-            Persona existente = personaDAO.buscarPorDni(empleado.getDni());
-            if (existente != null) {
-                throw new Exception("No se puede registrar. El DNI " + empleado.getDni() + " ya pertenece a otro trabajador.");
-            }
-
-            empleado.setActivo(true);
-            personaDAO.save(empleado);
-
+            empleado = personaDAO.save(empleado);
             TransactionContext.commit();
+            return empleado;
         } catch (Exception e) {
             TransactionContext.rollback();
             throw new Exception(e.getMessage());
@@ -61,6 +56,7 @@ public class PersonalBLImpl implements IPersonalBL {
         try{
             TransactionContext.getConnection();
             Persona personaAct = personaDAO.update(empleado);
+            TransactionContext.commit();
             return personaAct;
         } catch (Exception e){
             TransactionContext.rollback();
@@ -71,10 +67,26 @@ public class PersonalBLImpl implements IPersonalBL {
     }
 
     @Override
+    public Persona buscarEmpleadoPorId(Integer id) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            Persona persona = personaDAO.load(id);
+            TransactionContext.commit();
+            return persona;
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al buscar empleado: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
+    @Override
     public void eliminarEmpleado(Persona empleado) throws Exception {
         try{
             TransactionContext.getConnection();
             personaDAO.remove(empleado);
+            TransactionContext.commit();
         } catch (Exception e){
             TransactionContext.rollback();
             throw new Exception("Error al listar empleados: " + e.getMessage());

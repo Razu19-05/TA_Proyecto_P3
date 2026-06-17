@@ -3,6 +3,7 @@ package pe.edu.pucp.SIME.BL;
 import pe.edu.pucp.SIME.BL.impl.IAlumnoBL;
 import pe.edu.pucp.SIME.aula.DAO.gestionAlumnos.AlumnoDAO;
 import pe.edu.pucp.SIME.aula.impl.gestionAlumnos.AlumnoDAOImpl;
+import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 
 public class AlumnoBLImpl implements IAlumnoBL {
@@ -13,6 +14,17 @@ public class AlumnoBLImpl implements IAlumnoBL {
     }
     @Override
     public Alumno actualizar(Alumno alumno) throws Exception{
-        return alumnoDAO.update(alumno);
+        try{
+            TransactionContext.getConnection();
+            Alumno alumnoact = alumnoDAO.update(alumno);
+            TransactionContext.commit();
+            return alumnoact;
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al actualizar alumno");
+        } finally{
+            TransactionContext.close();
+        }
+
     }
 }

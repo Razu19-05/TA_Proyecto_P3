@@ -27,4 +27,19 @@ public class AlumnoBLImpl implements IAlumnoBL {
         }
 
     }
+
+    @Override
+    public Alumno insertar(Alumno alumno) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            Alumno a = alumnoDAO.save(alumno);
+            TransactionContext.commit();
+            return a;
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al actualizar alumno");
+        } finally{
+            TransactionContext.close();
+        }
+    }
 }

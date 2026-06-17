@@ -68,6 +68,39 @@ public class MatriculaCabeceraDAOImpl implements MatriculaCabeceraDAO {
     }
 
     @Override
+    public MatriculaCabecera obtenerPorGradoSeccionActivo(int idGradoSeccion) throws SQLException {
+        String sql = "select id_matricula_cabecera, id_periodo_academico, id_grado_seccion, id_aula, " +
+                "fecha_inicio_matricula, fecha_fin_matricula, total_vacantes, vacantes_ocupadas, activo " +
+                "from SIME_MATRICULA_CABECERA where id_grado_seccion = ? AND activo = 1 ";
+
+        Connection connection = TransactionContext.getConnection();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idGradoSeccion);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    MatriculaCabecera matriculaCabecera = new MatriculaCabecera();
+                    PeriodoAcademico periodo = buscarPeriodo(rs.getInt("id_periodo_academico"));
+                    GradoSeccion grado = buscarGrado(rs.getInt("id_grado_seccion"));
+                    Aula aula = buscarAula(rs.getInt("id_aula"));
+                    matriculaCabecera.setPeriodoAcademico(periodo);
+                    matriculaCabecera.setGradoSeccion(grado);
+                    matriculaCabecera.setAula(aula);
+                    matriculaCabecera.setIdMatriculaCabecera(rs.getInt("id_matricula_cabecera"));
+                    matriculaCabecera.setFechaInicioMatricula(rs.getDate("fecha_inicio_matricula"));
+                    matriculaCabecera.setFechaFinMatricula(rs.getDate("fecha_fin_matricula"));
+                    matriculaCabecera.setTotalVacantes(rs.getInt("total_vacantes"));
+                    matriculaCabecera.setVacantesOcupadas(rs.getInt("vacantes_ocupadas"));
+                    matriculaCabecera.setActivo(rs.getBoolean("activo"));
+                    return matriculaCabecera;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    @Override
     public MatriculaCabecera save(MatriculaCabecera matricula) throws SQLException {
         String sql = """
                 INSERT INTO SIME_MATRICULA_CABECERA 

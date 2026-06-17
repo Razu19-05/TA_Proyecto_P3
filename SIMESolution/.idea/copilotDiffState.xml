@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/SIME_RS/src/main/java/pe/edu/pucp/sime/sime_rs/services/MatriculaRS.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/SIME_RS/src/main/java/pe/edu/pucp/sime/sime_rs/services/MatriculaRS.java" />
+              <option name="updatedContent" value="package pe.edu.pucp.sime.sime_rs.services;&#10;&#10;import jakarta.ws.rs.*;&#10;import jakarta.ws.rs.core.MediaType;&#10;import jakarta.ws.rs.core.Response;&#10;import pe.edu.pucp.SIME.BL.MatriculaBLImpl;&#10;import pe.edu.pucp.SIME.BL.impl.IMatriculaBL;&#10;&#10;@Path(&quot;MatriculaRS&quot;)&#10;@Produces(MediaType.APPLICATION_JSON)&#10;@Consumes(MediaType.APPLICATION_JSON)&#10;public class MatriculaRS {&#10;&#9;private IMatriculaBL matriculaBL = new MatriculaBLImpl();&#10;&#10;&#9;@GET&#10;&#9;@Path(&quot;vacantes/{idMatriculaCabecera}&quot;)&#10;&#9;public Response verificarVacantes(@PathParam(&quot;idMatriculaCabecera&quot;) int idMatriculaCabecera) {&#10;&#9;&#9;try {&#10;&#9;&#9;&#9;int disponibles = matriculaBL.verificarVacantesDisponibles(idMatriculaCabecera);&#10;&#9;&#9;&#9;return Response.ok(disponibles).build();&#10;&#9;&#9;} catch (Exception e) {&#10;&#9;&#9;&#9;e.printStackTrace();&#10;&#9;&#9;&#9;return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();&#10;&#9;&#9;}&#10;&#9;}&#10;&#10;&#9;@GET&#10;&#9;@Path(&quot;vacantes&quot;)&#10;&#9;public Response verificarVacantesPorNivelGrado(@QueryParam(&quot;nivel&quot;) String nivel, @QueryParam(&quot;grado&quot;) String grado) {&#10;&#9;&#9;try {&#10;&#9;&#9;&#9;if (nivel == null || grado == null) {&#10;&#9;&#9;&#9;&#9;return Response.status(Response.Status.BAD_REQUEST).entity(&quot;Se requieren los parámetros 'nivel' y 'grado'&quot;).build();&#10;&#9;&#9;&#9;}&#10;&#9;&#9;&#9;int disponibles = matriculaBL.verificarVacantesPorNivelGrado(nivel, grado);&#10;&#9;&#9;&#9;return Response.ok(disponibles).build();&#10;&#9;&#9;} catch (Exception e) {&#10;&#9;&#9;&#9;e.printStackTrace();&#10;&#9;&#9;&#9;return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();&#10;&#9;&#9;}&#10;&#9;}&#10;}&#10;&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

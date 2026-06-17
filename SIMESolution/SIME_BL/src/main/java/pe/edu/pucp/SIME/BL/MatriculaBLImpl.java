@@ -1,6 +1,7 @@
 package pe.edu.pucp.SIME.BL;
 
 import pe.edu.pucp.SIME.BL.impl.IMatriculaBL;
+import pe.edu.pucp.SIME.aula.DAO.gestionAcademica.GradoSeccionDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionAlumnos.AlumnoDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionAlumnos.RelacionFamiliarDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionDePersonal.PersonaDAO;
@@ -9,6 +10,7 @@ import pe.edu.pucp.SIME.aula.DAO.gestionMatricula.MatriculaCabeceraDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionMatricula.MatriculaDetalleDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionPagos.ConceptoPagoDAO;
 import pe.edu.pucp.SIME.aula.DAO.gestionPagos.PagoDAO;
+import pe.edu.pucp.SIME.aula.impl.gestionAcademica.GradoSeccionDAOImpl;
 import pe.edu.pucp.SIME.aula.impl.gestionAlumnos.AlumnoDAOImpl;
 import pe.edu.pucp.SIME.aula.impl.gestionAlumnos.RelacionFamiliarDAOImpl;
 import pe.edu.pucp.SIME.aula.impl.gestionDePersonal.PersonaDAOImpl;
@@ -20,6 +22,7 @@ import pe.edu.pucp.SIME.aula.impl.gestionPagos.PagoDAOImpl;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.DTO.ApoderadoDetalleDTO;
 import pe.edu.pucp.SIME.model.DTO.SolicitudMatriculaDTO;
+import pe.edu.pucp.SIME.model.gestionAcademica.GradoSeccion;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 import pe.edu.pucp.SIME.model.gestionAlumnos.RelacionFamiliar;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
@@ -43,6 +46,7 @@ public class MatriculaBLImpl implements IMatriculaBL {
     private DescuentoDAO descuentoDAO = new DescuentoDAOImpl();
     private PagoDAO pagoDAO = new PagoDAOImpl();
     private ConceptoPagoDAO conceptoDAO = new ConceptoPagoDAOImpl();
+    private GradoSeccionDAO gradoDAO = new GradoSeccionDAOImpl();
 
     public void procesarMatriculaCompleta(SolicitudMatriculaDTO solicitud) throws Exception{
         try{
@@ -196,6 +200,52 @@ public class MatriculaBLImpl implements IMatriculaBL {
             throw new Exception("Error al procesar la matrícula: " + e.getMessage());
         } finally {
             //cerrar connection
+            TransactionContext.close();
+        }
+    }
+
+    @Override
+    public int verificarVacantesDisponibles(int idMatriculaCabecera) throws Exception {
+        try {
+            TransactionContext.getConnection();
+            MatriculaCabecera cabecera = cabeceraDAO.load(idMatriculaCabecera);
+            if (cabecera == null || !cabecera.isActivo()) {
+                throw new Exception("La cabecera de matrícula no existe o no está activa");
+            }
+            TransactionContext.commit();
+            int disponibles = cabecera.getTotalVacantes() - cabecera.getVacantesOcupadas();
+
+            return Math.max(disponibles, 0);
+        } catch (Exception e) {
+            TransactionContext.rollback();
+            throw new Exception("Error al verificar vacantes: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
+    @Override
+    public int verificarVacantesPorNivelGrado(String nivel, String grado) throws Exception {
+        try {
+            // Buscar GradoSeccion por nivel y grado
+            TransactionContext.getConnection();
+            GradoSeccion gradoSec = gradoDAO.buscarPorNivelYGrado(nivel, grado);
+            if (gradoSec == null) {
+                throw new Exception("No se encontró el grado/sección para el nivel y grado proporcionados");
+            }
+
+            MatriculaCabecera cabecera = cabeceraDAO.obtenerPorGradoSeccionActivo(gradoSec.getIdGradoSeccion());
+            TransactionContext.commit();
+            if (cabecera == null) {
+                // No existe matrícula activa para ese grado; retornamos 0 (sin vacantes disponibles)
+                return 0;
+            }
+            int disponibles = cabecera.getTotalVacantes() - cabecera.getVacantesOcupadas();
+            return Math.max(disponibles, 0);
+        } catch (Exception e) {
+            TransactionContext.rollback();
+            throw new Exception("Error al verificar vacantes por nivel/grado: " + e.getMessage());
+        } finally {
             TransactionContext.close();
         }
     }

@@ -34,6 +34,32 @@ public class GradoSeccionDAOImpl implements GradoSeccionDAO {
     }
 
     @Override
+    public GradoSeccion buscarPorNivelYGrado(String nivel, String gradoStr) throws SQLException {
+        String sql = "select id_grado_seccion, nivel, grado, vacantes_maximas, activo " +
+                "from SIME_GRADO_SECCION where nivel = ? and grado = ? and activo = 1";
+        Connection connection = TransactionContext.getConnection();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nivel);
+            stmt.setString(2, gradoStr);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    GradoSeccion grado = new GradoSeccion();
+                    grado.setIdGradoSeccion(rs.getInt("id_grado_seccion"));
+                    String nivelDb = rs.getString("nivel");
+                    grado.setTipo(TipoSeccion.valueOf(nivelDb));
+                    grado.setGrado(rs.getString("grado"));
+                    grado.setVacantesMaximas(rs.getInt("vacantes_maximas"));
+                    grado.setActivo(rs.getBoolean("activo"));
+                    return grado;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    @Override
     public GradoSeccion save(GradoSeccion gradoSeccion) throws SQLException {
         String sql = """
                 INSERT INTO SIME_GRADO_SECCION 

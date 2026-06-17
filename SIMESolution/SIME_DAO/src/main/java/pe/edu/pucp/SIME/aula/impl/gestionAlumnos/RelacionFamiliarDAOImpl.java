@@ -12,6 +12,7 @@ import pe.edu.pucp.SIME.model.gestionAlumnos.TipoRelacionFamiliar;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 
 import java.sql.*;
+import java.util.List;
 
 public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
     public Alumno buscarAlumno (int id) throws SQLException{
@@ -145,5 +146,26 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
             }
         }
         return 0; // Si no hay registros, retorna 0
+    }
+
+    @Override
+    public List<RelacionFamiliar> listarApoderadosActivos(Integer idAlumno) throws SQLException {
+        String sql = "SELECT id_relacion_familiar FROM SIME_RELACION_FAMILIAR WHERE id_alumno = ? AND activo = 1";
+        Connection conn = TransactionContext.getConnection();
+        List<RelacionFamiliar> apoderados = new java.util.ArrayList<>();
+        try (PreparedStatement pstm = conn.prepareStatement(sql)) {
+            pstm.setInt(1, idAlumno);
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    int idPersona = rs.getInt("id_relacion_familiar");
+                    // Reutilizamos el DAO de Persona para mapear completamente la persona
+                    RelacionFamiliar rf = new RelacionFamiliar();
+                    rf.setIdRelacionFamiliar(idPersona);
+                    apoderados.add(rf);
+                }
+            }
+        }
+
+        return apoderados;
     }
 }

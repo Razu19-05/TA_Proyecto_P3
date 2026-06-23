@@ -233,14 +233,10 @@ public class MatriculaBLImpl implements IMatriculaBL {
             if (gradoSec == null) {
                 throw new Exception("No se encontró el grado/sección para el nivel y grado proporcionados");
             }
-
             MatriculaCabecera cabecera = cabeceraDAO.obtenerPorGradoSeccionActivo(gradoSec.getIdGradoSeccion());
-            TransactionContext.commit();
-            if (cabecera == null) {
-                // No existe matrícula activa para ese grado; retornamos 0 (sin vacantes disponibles)
-                return 0;
-            }
+
             int disponibles = cabecera.getTotalVacantes() - cabecera.getVacantesOcupadas();
+            TransactionContext.commit();
             return Math.max(disponibles, 0);
         } catch (Exception e) {
             TransactionContext.rollback();
@@ -248,5 +244,26 @@ public class MatriculaBLImpl implements IMatriculaBL {
         } finally {
             TransactionContext.close();
         }
+    }
+
+    @Override
+    public MatriculaDetalle insertarMatriculaDetalle(MatriculaDetalle matriculaDetalle) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            MatriculaDetalle detalle = detalleDAO.save(matriculaDetalle);
+            TransactionContext.commit();
+            return detalle;
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al insertar alumno");
+        } finally{
+            TransactionContext.close();
+        }
+
+    }
+
+    @Override
+    public MatriculaDetalle cargarMatriculaAlumno(int idAlumno) throws Exception {
+        return detalleDAO.obtenerPorAlumno(idAlumno);
     }
 }

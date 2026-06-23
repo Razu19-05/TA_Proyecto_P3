@@ -12,6 +12,8 @@ import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
 import pe.edu.pucp.SIME.model.gestionMatricula.TipoMatricula;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
     public MatriculaCabecera buscarMatriculaCabecera (int id) throws SQLException{
@@ -140,7 +142,7 @@ public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
     @Override
     public MatriculaDetalle obtenerPorAlumno(int idAlumno) throws SQLException {
         String sql = "select id_matricula_detalle, id_matricula_cabecera, id_alumno, fecha_matricula, estado, activo " +
-                "from SIME_MATRICULA_DETALLE where id_alumno = ?";
+                "from SIME_MATRICULA_DETALLE where id_alumno = ? and activo = 1";
 
         try(Connection connection = DBManager.getInstance().getConnection();
             PreparedStatement stmt = connection.prepareStatement(sql)){
@@ -164,5 +166,36 @@ public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    @Override
+    public List<MatriculaDetalle> listarMatriculasPorAlumno(int idAlumno) throws SQLException {
+        String sql = "select id_matricula_detalle, id_matricula_cabecera, id_alumno, fecha_matricula, estado, activo " +
+                "from SIME_MATRICULA_DETALLE where id_alumno = ?";
+
+        List<MatriculaDetalle> matriculas = new ArrayList<>();
+        try(Connection connection = DBManager.getInstance().getConnection();
+            PreparedStatement stmt = connection.prepareStatement(sql)){
+            stmt.setInt(1,idAlumno);
+            try (ResultSet rs = stmt.executeQuery()){
+                while(rs.next()){
+                    MatriculaDetalle matricula = new MatriculaDetalle();
+                    matricula.setIdMatriculaDetalle(rs.getInt("id_matricula_detalle"));
+                    MatriculaCabecera matriculaCabecera = buscarMatriculaCabecera(rs.getInt("id_matricula_cabecera"));
+                    Alumno alumno = buscarAlumno(rs.getInt("id_alumno"));
+                    matricula.setMatriculaCabecera(matriculaCabecera);
+                    matricula.setAlumno(alumno);
+                    matricula.setFechaMatricula(rs.getDate("fecha_matricula"));
+                    String estado = rs.getString("estado");
+                    matricula.setEstado(TipoMatricula.valueOf(estado));
+                    matricula.setActivo(rs.getBoolean("activo"));
+                    matriculas.add(matricula);
+
+                }
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return matriculas;
     }
 }

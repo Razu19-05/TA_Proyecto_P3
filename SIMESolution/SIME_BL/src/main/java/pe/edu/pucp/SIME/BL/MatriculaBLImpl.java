@@ -48,6 +48,58 @@ public class MatriculaBLImpl implements IMatriculaBL {
     private ConceptoPagoDAO conceptoDAO = new ConceptoPagoDAOImpl();
     private GradoSeccionDAO gradoDAO = new GradoSeccionDAOImpl();
 
+    private MatriculaDetalle guardarDetalle(Alumno alumno,MatriculaCabecera cabecera) throws Exception{
+        MatriculaDetalle detalle = new MatriculaDetalle();
+        detalle.setMatriculaCabecera(cabecera);
+        detalle.setAlumno(alumno);
+        detalle.setFechaMatricula(new Date(System.currentTimeMillis()));
+        detalle.setEstado(TipoMatricula.MATRICULADO);
+        detalle.setActivo(true);
+        return detalleDAO.save(detalle);
+    }
+    private String observacion(ConceptoPago conceptoPago){
+        String nombre = conceptoPago.getNombre();
+        switch (nombre) {
+            case "MATRICULA":
+                return "Costo de matrícula";
+            case "PENSION":
+                return "Pensión Mensual";
+            case "INSCRIPCION":
+                return "Costo de Inscripcion";
+            case "EXAMEN_PSICOLOGICO":
+                return "Examen Psicologico";
+            case "BUZO" :
+                return "Buzo Escolar";
+            case "UTILES":
+                return "Útiles Escolares";
+            default: return null;
+        }
+    }
+    private Pago guardarPagos(MatriculaDetalle detalle,int id_concepto) throws Exception{
+        ConceptoPago concepto = conceptoDAO.load(id_concepto);
+        Pago pagoInscripcion = new Pago();
+        pagoInscripcion.setMatriculaDetalle(detalle);
+        pagoInscripcion.setConceptoPago(concepto);
+        pagoInscripcion.setMontoDescuento(0.0);
+        pagoInscripcion.setMontoFinal(concepto.getMonto());
+        pagoInscripcion.setFechaEmision(new Date(System.currentTimeMillis()));
+        pagoInscripcion.setFechaVencimiento(new Date(System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000)));
+        pagoInscripcion.setEstado(TipoEstado.PENDIENTE);
+        pagoInscripcion.setObservacion(observacion(concepto));
+        pagoInscripcion.setActivo(true);
+        return pagoDAO.save(pagoInscripcion);
+    }
+
+    private Alumno registrarAlumno(Alumno alumno) throws Exception{
+        Alumno alumnoInscripcion = alumnoDAO.buscarPorDni(alumno.getDni());
+        if(alumnoInscripcion == null){
+            alumnoInscripcion = alumnoDAO.save(alumno);
+        } else {
+            alumnoInscripcion = alumnoDAO.update(alumno);
+        }
+        return alumnoInscripcion;
+    }
+
     public void procesarMatriculaCompleta(SolicitudMatriculaDTO solicitud) throws Exception{
         try{
             //abre conexion
@@ -63,15 +115,7 @@ public class MatriculaBLImpl implements IMatriculaBL {
             }
 
             //seleccion de alumno
-            Alumno alumno = solicitud.getEstudiante();
-            Alumno alumnoExistente = alumnoDAO.buscarPorDni(alumno.getDni());
-            if (alumnoExistente != null) {
-                // Es un alumno regular, actualizamos sus datos
-                alumno = alumnoDAO.update(alumno);
-            } else {
-                // Es un alumno nuevo (INSERT)
-                alumno = alumnoDAO.save(alumno);
-            }
+            Alumno alumno = registrarAlumno(solicitud.getEstudiante());
 
             //gestion de apoderados
             int apoderadosExistentes = 0;
@@ -110,16 +154,8 @@ public class MatriculaBLImpl implements IMatriculaBL {
             }
 
             //Crear Matrícula Detalle
+            MatriculaDetalle detalle = guardarDetalle(alumno, cabecera);
 
-            MatriculaDetalle detalle = new MatriculaDetalle();
-            detalle.setMatriculaCabecera(cabecera);
-            detalle.setAlumno(alumno);
-            detalle.setFechaMatricula(new Date());
-            detalle.setEstado(TipoMatricula.MATRICULADO);
-            detalle.setActivo(true);
-            System.out.println("procesado");
-            detalle = detalleDAO.save(detalle);
-            System.out.println("procesado");
             // REGISTRAR DESCUENTO Y CALCULAR
             // ==========================================================
             double porcentajeDescuento = 0.0;
@@ -141,58 +177,17 @@ public class MatriculaBLImpl implements IMatriculaBL {
             }
 
             //facturacion
-            ConceptoPago conceptoMatricula = conceptoDAO.load(1);//matricula
-            double costoBase = conceptoMatricula.getMonto();
-
-            double montoDescontado = costoBase * (porcentajeDescuento / 100.0);
-            double montoFinal = costoBase - montoDescontado;
-            Pago pagoMatricula = new Pago();
-            pagoMatricula.setMatriculaDetalle(detalle);
-            pagoMatricula.setConceptoPago(conceptoMatricula);
-            pagoMatricula.setMontoDescuento(montoDescontado);
-            pagoMatricula.setMontoFinal(montoFinal);
-            pagoMatricula.setFechaEmision(new Date());
-            // Generamos vencimiento a 7 días, ejemplo:
-            pagoMatricula.setFechaVencimiento(new Date(System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000)));
-            pagoMatricula.setEstado(TipoEstado.PENDIENTE);
-            pagoMatricula.setObservacion("Derecho de matrícula anual");
-            pagoMatricula.setActivo(true);
-
-            pagoDAO.save(pagoMatricula);
-
+            //Concepto ID 1 = Matricula
+            guardarPagos(detalle,1);
             if (alumno.isAlumnoNuevo()) {
-                // Concepto ID 2 = Cuota de Ingreso / Inscripción
-                ConceptoPago conceptoInscripcion = conceptoDAO.load(3);
-                Pago pagoInscripcion = new Pago();
-                pagoInscripcion.setMatriculaDetalle(detalle);
-                pagoInscripcion.setConceptoPago(conceptoInscripcion);
-                pagoInscripcion.setMontoDescuento(0.0);
-                pagoInscripcion.setMontoFinal(conceptoInscripcion.getMonto());
-                pagoInscripcion.setFechaEmision(new Date());
-                pagoInscripcion.setFechaVencimiento(new Date(System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000)));
-                pagoInscripcion.setEstado(TipoEstado.PENDIENTE);
-                pagoInscripcion.setObservacion("Cuota de nuevo ingreso");
-                pagoInscripcion.setActivo(true);
-                pagoDAO.save(pagoInscripcion);
+                // Concepto ID 3 = Cuota de Ingreso / Inscripción
+                guardarPagos(detalle,3);
                 //  Concepto ID 4 = Examen psicologico
-                ConceptoPago conceptoExamen = conceptoDAO.load(4);
-                Pago pagoExamen = new Pago();
-                pagoExamen.setMatriculaDetalle(detalle);
-                pagoExamen.setConceptoPago(conceptoInscripcion);
-                pagoExamen.setMontoDescuento(0.0);
-                pagoExamen.setMontoFinal(conceptoInscripcion.getMonto());
-                pagoExamen.setFechaEmision(new Date());
-                pagoExamen.setFechaVencimiento(new Date(System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000)));
-                pagoExamen.setEstado(TipoEstado.PENDIENTE);
-                pagoExamen.setObservacion("Costo de examen psicologico");
-                pagoInscripcion.setActivo(true);
-                pagoDAO.save(pagoExamen);
+                guardarPagos(detalle,4);
             }
-
             cabecera.setVacantesOcupadas(cabecera.getVacantesOcupadas() + 1);
             cabeceraDAO.update(cabecera);
 
-            //
             TransactionContext.commit();
 
         } catch (Exception e){

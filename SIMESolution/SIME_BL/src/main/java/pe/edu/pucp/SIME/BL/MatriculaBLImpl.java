@@ -75,13 +75,15 @@ public class MatriculaBLImpl implements IMatriculaBL {
             default: return null;
         }
     }
-    private Pago guardarPagos(MatriculaDetalle detalle,int id_concepto) throws Exception{
+    private Pago guardarPagos(MatriculaDetalle detalle,int id_concepto, double porcentajeDescuento) throws Exception{
         ConceptoPago concepto = conceptoDAO.load(id_concepto);
         Pago pagoInscripcion = new Pago();
         pagoInscripcion.setMatriculaDetalle(detalle);
         pagoInscripcion.setConceptoPago(concepto);
-        pagoInscripcion.setMontoDescuento(0.0);
-        pagoInscripcion.setMontoFinal(concepto.getMonto());
+
+        double montoDesc = concepto.getMonto()*porcentajeDescuento;
+        pagoInscripcion.setMontoDescuento(montoDesc);
+        pagoInscripcion.setMontoFinal(concepto.getMonto()-montoDesc);
         pagoInscripcion.setFechaEmision(new Date(System.currentTimeMillis()));
         pagoInscripcion.setFechaVencimiento(new Date(System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000)));
         pagoInscripcion.setEstado(TipoEstado.PENDIENTE);
@@ -100,11 +102,55 @@ public class MatriculaBLImpl implements IMatriculaBL {
         return alumnoInscripcion;
     }
 
+    private void validarApoderado(Alumno alumno,SolicitudMatriculaDTO solicitud) throws Exception{
+        int apoderadosExistentes = 0;
+        if(alumno.getIdAlumno()>0){
+            apoderadosExistentes = relacionDAO.contarApoderadosActivos(alumno.getIdAlumno());
+        }
+        int apoderadosNuevos = solicitud.getListaApoderados() != null ? solicitud.getListaApoderados().size() : 0;
+        if ((apoderadosExistentes + apoderadosNuevos) > 3) {
+            throw new Exception("Límite excedido: El estudiante solo puede tener un máximo de 3 apoderados. "
+                    + "Actualmente tiene " + apoderadosExistentes + " registrados.");
+        }
+    }
+
+    private RelacionFamiliar registrarRelacionFamiliar(ApoderadoDetalleDTO detalleFamiliar,Alumno alumno) throws Exception{
+        Persona apoderado = detalleFamiliar.getApoderado();
+
+        if (apoderado.getIdPersona() == 0) {
+            apoderado = personaDAO.save(apoderado);
+        } else {
+            apoderado = personaDAO.update(apoderado);
+        }
+        RelacionFamiliar relacion = new RelacionFamiliar();
+        relacion.setAlumno(alumno);
+        relacion.setPersona(apoderado);
+        relacion.setParentesco(detalleFamiliar.getParentesco());
+        relacion.setContactoEmergencia(detalleFamiliar.isContactoEmergencia());
+        relacion.setObservaciones(detalleFamiliar.getObservacionesFamiliares());
+        relacion.setActivo(true);
+
+        return relacionDAO.save(relacion);
+    }
+
+    private Descuento registrarDescuento(MatriculaDetalle detalle,SolicitudMatriculaDTO solicitud) throws Exception{
+        if (solicitud.getIdTipoDescuento() > 0) {
+            Descuento descuento = new Descuento();
+            descuento.setMatriculaDetalle(detalle);
+            TipoDeDescuento tipoDesc = new TipoDeDescuento();
+            tipoDesc.setIdTipoDeDescuento(solicitud.getIdTipoDescuento());
+            descuento.setTipoDeDescuento(tipoDesc);
+            descuento.setPorcentaje(solicitud.getPorcentajeDescuentoAplicar());
+            descuento.setMotivo(solicitud.getMotivoDescuento());
+            descuento.setActivo(true);
+            return descuentoDAO.save(descuento);
+        }
+        return null;
+    }
     public void procesarMatriculaCompleta(SolicitudMatriculaDTO solicitud) throws Exception{
         try{
             //abre conexion
             TransactionContext.getConnection();
-
             //validar vacantes
             MatriculaCabecera cabecera = cabeceraDAO.load(solicitud.getIdMatriculaCabecera());
             if(cabecera == null || !cabecera.isActivo()){
@@ -113,83 +159,36 @@ public class MatriculaBLImpl implements IMatriculaBL {
             if (cabecera.getVacantesOcupadas() >= cabecera.getTotalVacantes()) {
                 throw new Exception("No hay vacantes disponibles para este grado/sección.");
             }
-
             //seleccion de alumno
             Alumno alumno = registrarAlumno(solicitud.getEstudiante());
-
             //gestion de apoderados
-            int apoderadosExistentes = 0;
-
-            if(alumno.getIdAlumno()>0){
-                apoderadosExistentes = relacionDAO.contarApoderadosActivos(alumno.getIdAlumno());
-            }
-            int apoderadosNuevos = solicitud.getListaApoderados() != null ? solicitud.getListaApoderados().size() : 0;
-
-            if ((apoderadosExistentes + apoderadosNuevos) > 3) {
-                throw new Exception("Límite excedido: El estudiante solo puede tener un máximo de 3 apoderados. "
-                        + "Actualmente tiene " + apoderadosExistentes + " registrados.");
-            }
-
+            validarApoderado(alumno, solicitud);
             //guardar familiares
             if (solicitud.getListaApoderados() != null) {
                 for (ApoderadoDetalleDTO detalleFamiliar : solicitud.getListaApoderados()){
-                    Persona apoderado = detalleFamiliar.getApoderado();
-                    apoderado.setActivo(true);
-
-                    if (apoderado.getIdPersona() == 0) {
-                        apoderado = personaDAO.save(apoderado);
-                    } else {
-                        apoderado = personaDAO.update(apoderado);
-                    }
-                    RelacionFamiliar relacion = new RelacionFamiliar();
-                    relacion.setAlumno(alumno);
-                    relacion.setPersona(apoderado);
-                    relacion.setParentesco(detalleFamiliar.getParentesco());
-                    relacion.setContactoEmergencia(detalleFamiliar.isContactoEmergencia());
-                    relacion.setObservaciones(detalleFamiliar.getObservacionesFamiliares());
-                    relacion.setActivo(true);
-
-                    relacionDAO.save(relacion);
+                    RelacionFamiliar rf = registrarRelacionFamiliar(detalleFamiliar, alumno);
                 }
             }
-
             //Crear Matrícula Detalle
             MatriculaDetalle detalle = guardarDetalle(alumno, cabecera);
-
             // REGISTRAR DESCUENTO Y CALCULAR
-            // ==========================================================
             double porcentajeDescuento = 0.0;
-
-            if (solicitud.getIdTipoDescuento() > 0) {
-                Descuento descuento = new Descuento();
-                descuento.setMatriculaDetalle(detalle);
-
-                TipoDeDescuento tipoDesc = new TipoDeDescuento();
-                tipoDesc.setIdTipoDeDescuento(solicitud.getIdTipoDescuento());
-                descuento.setTipoDeDescuento(tipoDesc);
-
-                descuento.setPorcentaje(solicitud.getPorcentajeDescuentoAplicar());
-                descuento.setMotivo("Beneficio aplicado en proceso de matrícula");
-                descuento.setActivo(true);
-
-                descuentoDAO.save(descuento);
-                porcentajeDescuento = solicitud.getPorcentajeDescuentoAplicar();
-            }
-
+            Descuento descuento = registrarDescuento(detalle, solicitud);
+            porcentajeDescuento = descuento.getPorcentaje();
             //facturacion
             //Concepto ID 1 = Matricula
-            guardarPagos(detalle,1);
+            guardarPagos(detalle,1,porcentajeDescuento);       // ==========================================================
+            //Concepto ID 2 = Pension
+            guardarPagos(detalle,2,porcentajeDescuento);
             if (alumno.isAlumnoNuevo()) {
                 // Concepto ID 3 = Cuota de Ingreso / Inscripción
-                guardarPagos(detalle,3);
+                guardarPagos(detalle,3,porcentajeDescuento);
                 //  Concepto ID 4 = Examen psicologico
-                guardarPagos(detalle,4);
+                guardarPagos(detalle,4,porcentajeDescuento);
             }
             cabecera.setVacantesOcupadas(cabecera.getVacantesOcupadas() + 1);
             cabeceraDAO.update(cabecera);
-
             TransactionContext.commit();
-
         } catch (Exception e){
             TransactionContext.rollback();
             throw new Exception("Error al procesar la matrícula: " + e.getMessage());

@@ -1,0 +1,251 @@
+﻿@page "/matricula/aulas/consultar"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject AulaState AulaState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Consultar Aulas"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            <div class="breadcrumb-custom">
+                <span>Aulas</span> / <strong>Consultar</strong>
+            </div>
+
+            <h2>Consultar Aulas</h2>
+
+            <p class="page-description">
+                Consulta las aulas configuradas por periodo, nivel y grado.
+                Los laboratorios aparecen como aulas compartidas para todos los grados.
+            </p>
+
+            <div class="filter-card">
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-md-3">
+                        <label>Periodo académico</label>
+                        <select class="form-select" @bind="periodo">
+                            <option>2026</option>
+                            <option>2025</option>
+                            <option>Todos</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Nivel</label>
+                        <select class="form-select" @bind="nivel">
+                            <option>Todos</option>
+                            <option>Inicial</option>
+                            <option>Primaria</option>
+                            <option>Secundaria</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Grado</label>
+                        <select class="form-select" @bind="grado">
+                            <option>Todos</option>
+                            <option>1ro</option>
+                            <option>2do</option>
+                            <option>3ro</option>
+                            <option>4to</option>
+                            <option>5to</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Estado</label>
+                        <select class="form-select" @bind="estado">
+                            <option>Todos</option>
+                            <option>Activa</option>
+                            <option>Inactiva</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label>Código de aula</label>
+                        <input class="form-control"
+                               placeholder="Ej.: P-204, LAB-COM-01"
+                               @bind="codigoAula" />
+                    </div>
+
+                    <div class="col-md-7 d-flex justify-content-end gap-3">
+                        <button class="btn btn-primary fw-bold px-5" @onclick="Buscar">
+                            <i class="bi bi-search me-2"></i>
+                            Buscar
+                        </button>
+
+                        <button class="btn btn-outline-secondary fw-bold px-5" @onclick="Limpiar">
+                            <i class="bi bi-arrow-clockwise me-2"></i>
+                            Limpiar
+                        </button>
+
+                        <button class="btn btn-outline-primary fw-bold px-5" @onclick="VolverMenu">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Volver
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="table-responsive table-card mt-3">
+                <table class="table table-bordered align-middle text-center mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>Nivel</th>
+                            <th>Grado</th>
+                            <th>Aula</th>
+                            <th>Tipo de aula</th>
+                            <th>Capacidad</th>
+                            <th>Ocupadas</th>
+                            <th>Disponibles</th>
+                            <th>Tutor / encargado</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var aula in aulas)
+                        {
+                            <tr>
+                                <td>@aula.Periodo</td>
+
+                                <td>
+                                    @(aula.EsCompartida ? "Todos" : aula.Nivel)
+                                </td>
+
+                                <td>
+                                    @(aula.EsCompartida ? "Todos" : aula.Grado)
+                                </td>
+
+                                <td>@aula.Codigo</td>
+
+                                <td>@aula.TipoAula</td>
+
+                                <td>@aula.Capacidad</td>
+
+                                <td>@aula.VacantesOcupadas</td>
+
+                                <td class="fw-bold @(aula.VacantesDisponibles == 0 ? "text-danger" : "text-success")">
+                                    @aula.VacantesDisponibles
+                                </td>
+
+                                <td>@ObtenerTutorOEncargado(aula)</td>
+
+                                <td>
+                                    <span class="badge @(aula.Estado == "Activa" ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")">
+                                        @aula.Estado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button class="btn btn-link fw-bold text-decoration-none"
+                                            @onclick="() => VerDetalle(aula)">
+                                        Ver detalle
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+            @if (!aulas.Any())
+            {
+                <div class="alert alert-warning mt-3">
+                    No se encontraron aulas con los filtros seleccionados.
+                </div>
+            }
+
+            <div class="info-box mt-3">
+                <i class="bi bi-info-circle-fill"></i>
+
+                <div>
+                    En el listado solo se muestra el tutor o encargado del aula.
+                    Para ver todos los profesores, ingrese a <strong>Ver detalle</strong>.
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private string periodo = "2026";
+    private string nivel = "Todos";
+    private string grado = "Todos";
+    private string estado = "Todos";
+    private string codigoAula = "";
+
+    private List<AulaModel> aulas = new();
+
+    protected override void OnInitialized()
+    {
+        Buscar();
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void Buscar()
+    {
+        aulas = AulaState
+            .FiltrarAulas(periodo, nivel, grado, estado, codigoAula)
+            .ToList();
+    }
+
+    private void Limpiar()
+    {
+        periodo = "2026";
+        nivel = "Todos";
+        grado = "Todos";
+        estado = "Todos";
+        codigoAula = "";
+
+        Buscar();
+    }
+
+    private string ObtenerTutorOEncargado(AulaModel aula)
+    {
+        var profesor = AulaState
+            .ObtenerProfesoresPorAula(aula.Id)
+            .FirstOrDefault(p => p.EsTutor)
+            ?? AulaState
+                .ObtenerProfesoresPorAula(aula.Id)
+                .FirstOrDefault();
+
+        return profesor?.NombreCompleto ?? "Sin asignar";
+    }
+
+    private void VerDetalle(AulaModel aula)
+    {
+        AulaState.SeleccionarAula(aula);
+        Navigation.NavigateTo("/matricula/aulas/detalle-aula");
+    }
+
+    private void VolverMenu()
+    {
+        Navigation.NavigateTo("/matricula/aulas");
+    }
+}

@@ -1,0 +1,508 @@
+﻿@page "/matricula/alumnos/historial"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject AlumnoState AlumnoState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Historial de Matrículas"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            @if (alumno is null)
+            {
+                <div class="empty-card">
+                    <i class="bi bi-exclamation-circle"></i>
+
+                    <h3>No se seleccionó ningún alumno</h3>
+
+                    <p>Regrese a la ficha del alumno y seleccione un estudiante.</p>
+
+                    <button class="btn btn-outline-primary fw-bold px-4 mt-3"
+                            @onclick="VolverFicha">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Volver a ficha
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="student-mini-card">
+
+                    <div class="mini-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+
+                    <div>
+                        <h2>@alumno.NombreCompleto</h2>
+
+                        <div class="mini-info">
+                            <span>
+                                <i class="bi bi-person-vcard-fill me-1"></i>
+                                DNI: @alumno.Dni
+                            </span>
+
+                            <span>
+                                <i class="bi bi-circle-fill me-1"></i>
+                                Estado:
+                                <strong>@alumno.Estado</strong>
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="filter-card mt-4">
+
+                    <h3>
+                        <i class="bi bi-funnel me-2"></i>
+                        Filtros de matrícula
+                    </h3>
+
+                    <div class="row g-3 align-items-end mt-1">
+
+                        <div class="col-md-4">
+                            <label>Periodo académico</label>
+
+                            <select class="form-select" @bind="periodoFiltro">
+                                <option>Todos</option>
+                                <option>2026</option>
+                                <option>2025</option>
+                                <option>2024</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Estado de matrícula</label>
+
+                            <select class="form-select" @bind="estadoFiltro">
+                                <option>Todos</option>
+                                <option>MATRICULADO</option>
+                                <option>RETIRADO</option>
+                                <option>RESERVADO</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <button class="btn btn-primary fw-bold px-5"
+                                    @onclick="Buscar">
+                                <i class="bi bi-search me-2"></i>
+                                Buscar
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="table-card mt-4">
+
+                    <h3>
+                        <i class="bi bi-calendar3 me-2"></i>
+                        Matrículas registradas del alumno
+                    </h3>
+
+                    <div class="table-responsive mt-3">
+
+                        <table class="table table-bordered text-center align-middle mb-0">
+
+                            <thead>
+                                <tr>
+                                    <th>Periodo</th>
+                                    <th>Fecha inicio matrícula</th>
+                                    <th>Fecha fin matrícula</th>
+                                    <th>Fecha matrícula</th>
+                                    <th>Nivel</th>
+                                    <th>Grado</th>
+                                    <th>Estado matrícula</th>
+                                    <th>Activo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var matricula in matriculasFiltradas)
+                                {
+                                    <tr>
+                                        <td>@matricula.Periodo</td>
+
+                                        <td>@matricula.FechaInicio</td>
+
+                                        <td>@matricula.FechaFin</td>
+
+                                        <td>@matricula.FechaMatricula</td>
+
+                                        <td>@matricula.Nivel</td>
+
+                                        <td>@matricula.Grado</td>
+
+                                        <td>
+                                            <span class="badge @ClaseEstadoMatricula(matricula.Estado)">
+                                                @matricula.Estado
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            @if (matricula.Activo)
+                                            {
+                                                <span class="badge bg-success-subtle text-success">Activo</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            <button class="btn btn-outline-primary fw-bold"
+                                                    @onclick="() => VerDetalle(matricula)">
+                                                <i class="bi bi-eye-fill me-1"></i>
+                                                Ver detalle
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    @if (!matriculasFiltradas.Any())
+                    {
+                        <div class="alert alert-warning mt-3">
+                            No hay matrículas con los filtros seleccionados.
+                        </div>
+                    }
+
+                </div>
+
+                <div class="bottom-actions">
+
+                    <button class="btn btn-outline-primary btn-lg fw-bold px-5"
+                            @onclick="VolverFicha">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Volver a ficha
+                    </button>
+
+                    <button class="btn btn-outline-primary btn-lg fw-bold px-5"
+                            onclick="window.print()">
+                        <i class="bi bi-printer-fill me-2"></i>
+                        Imprimir
+                    </button>
+
+                </div>
+            }
+
+        </section>
+
+    </main>
+
+</div>
+
+@if (mostrarDetalle && matriculaSeleccionada is not null && alumno is not null)
+{
+    <div class="modal-backdrop-custom">
+
+        <div class="modal-historial">
+
+            <div class="d-flex justify-content-between align-items-start">
+
+                <div>
+                    <h3>Detalle de la matrícula</h3>
+
+                    <p>
+                        Información específica de la matrícula seleccionada.
+                    </p>
+                </div>
+
+                <button class="btn-close" @onclick="CerrarDetalle"></button>
+
+            </div>
+
+            <div class="detail-section mt-3">
+
+                <h5>
+                    <i class="bi bi-journal-text me-2"></i>
+                    Información de la matrícula
+                </h5>
+
+                <div class="detail-grid">
+
+                    <div>
+                        <span>Periodo académico</span>
+                        <strong>@matriculaSeleccionada.Periodo</strong>
+                    </div>
+
+                    <div>
+                        <span>Fecha inicio matrícula</span>
+                        <strong>@matriculaSeleccionada.FechaInicio</strong>
+                    </div>
+
+                    <div>
+                        <span>Fecha fin matrícula</span>
+                        <strong>@matriculaSeleccionada.FechaFin</strong>
+                    </div>
+
+                    <div>
+                        <span>Fecha matrícula</span>
+                        <strong>@matriculaSeleccionada.FechaMatricula</strong>
+                    </div>
+
+                    <div>
+                        <span>Nivel</span>
+                        <strong>@matriculaSeleccionada.Nivel</strong>
+                    </div>
+
+                    <div>
+                        <span>Grado</span>
+                        <strong>@matriculaSeleccionada.Grado</strong>
+                    </div>
+
+                    <div>
+                        <span>Estado matrícula</span>
+                        <strong>
+                            <span class="badge @ClaseEstadoMatricula(matriculaSeleccionada.Estado)">
+                                @matriculaSeleccionada.Estado
+                            </span>
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Activo</span>
+                        <strong>
+                            @if (matriculaSeleccionada.Activo)
+                            {
+                                <span class="badge bg-success-subtle text-success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                            }
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Observación</span>
+                        <strong>@matriculaSeleccionada.Observacion</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="detail-section mt-3">
+
+                <h5>
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    Información adicional
+                </h5>
+
+                <div class="detail-grid">
+
+                    <div>
+                        <span>Apoderado principal</span>
+                        <strong>@ApoderadoPrincipal</strong>
+                    </div>
+
+                    <div>
+                        <span>Parentesco</span>
+                        <strong>@ParentescoPrincipal</strong>
+                    </div>
+
+                    <div>
+                        <span>Descuento aplicado</span>
+                        <strong>@DescuentoAplicado</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="detail-section mt-3">
+
+                <h5>
+                    <i class="bi bi-credit-card-fill me-2"></i>
+                    Pagos generados para esta matrícula
+                </h5>
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered text-center align-middle mb-0">
+
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Fecha emisión</th>
+                                <th>Fecha vencimiento</th>
+                                <th>Monto descuento</th>
+                                <th>Monto final</th>
+                                <th>Estado pago</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var pago in PagosDelDetalle)
+                            {
+                                <tr>
+                                    <td>@pago.Concepto</td>
+
+                                    <td>@pago.FechaEmision</td>
+
+                                    <td>@pago.FechaVencimiento</td>
+
+                                    <td>S/ @pago.MontoDescuento.ToString("N2")</td>
+
+                                    <td class="fw-bold">
+                                        S/ @pago.MontoFinal.ToString("N2")
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @ClaseEstadoPago(pago.Estado)">
+                                            @pago.Estado
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                @if (!PagosDelDetalle.Any())
+                {
+                    <div class="alert alert-info mt-3">
+                        Esta matrícula no tiene pagos registrados.
+                    </div>
+                }
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button class="btn btn-outline-secondary fw-bold px-4"
+                        @onclick="CerrarDetalle">
+                    Cerrar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code {
+    private AlumnoModel? alumno;
+
+    private List<MatriculaAlumnoModel> matriculas = new();
+    private List<MatriculaAlumnoModel> matriculasFiltradas = new();
+    private List<PagoAlumnoModel> pagos = new();
+
+    private string periodoFiltro = "Todos";
+    private string estadoFiltro = "Todos";
+
+    private bool mostrarDetalle = false;
+    private MatriculaAlumnoModel? matriculaSeleccionada;
+
+    private string ApoderadoPrincipal { get; set; } = "Sin apoderado";
+    private string ParentescoPrincipal { get; set; } = "-";
+    private string DescuentoAplicado { get; set; } = "Sin descuento";
+
+    private IEnumerable<PagoAlumnoModel> PagosDelDetalle =>
+        matriculaSeleccionada is null
+            ? Enumerable.Empty<PagoAlumnoModel>()
+            : pagos.Where(p => p.MatriculaId == matriculaSeleccionada.Id);
+
+    protected override void OnInitialized()
+    {
+        alumno = AlumnoState.AlumnoSeleccionado;
+
+        if (alumno is null)
+            return;
+
+        matriculas = AlumnoState.ObtenerMatriculas(alumno.Id);
+        pagos = AlumnoState.ObtenerPagos(alumno.Id);
+
+        var apoderado = AlumnoState.ObtenerApoderados(alumno.Id)
+            .FirstOrDefault();
+
+        if (apoderado is not null)
+        {
+            ApoderadoPrincipal = apoderado.NombreCompleto;
+            ParentescoPrincipal = apoderado.Parentesco;
+        }
+
+        if (alumno.TieneDescuento)
+        {
+            DescuentoAplicado = $"{alumno.DescuentoActual} {alumno.PorcentajeDescuento}%";
+        }
+
+        Buscar();
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void Buscar()
+    {
+        matriculasFiltradas = matriculas
+            .Where(m =>
+                (periodoFiltro == "Todos" || m.Periodo == periodoFiltro) &&
+                (estadoFiltro == "Todos" || m.Estado == estadoFiltro))
+            .OrderByDescending(m => m.Periodo)
+            .ToList();
+    }
+
+    private void VerDetalle(MatriculaAlumnoModel matricula)
+    {
+        matriculaSeleccionada = matricula;
+        mostrarDetalle = true;
+    }
+
+    private void CerrarDetalle()
+    {
+        mostrarDetalle = false;
+        matriculaSeleccionada = null;
+    }
+
+    private string ClaseEstadoMatricula(string estado)
+    {
+        return estado switch
+        {
+            "MATRICULADO" => "bg-success-subtle text-success",
+            "RETIRADO" => "bg-danger-subtle text-danger",
+            "RESERVADO" => "bg-warning-subtle text-warning",
+            _ => "bg-secondary-subtle text-secondary"
+        };
+    }
+
+    private string ClaseEstadoPago(string estado)
+    {
+        return estado switch
+        {
+            "PAGADO" => "bg-success-subtle text-success",
+            "PENDIENTE" => "bg-warning-subtle text-warning",
+            "ANULADO" => "bg-danger-subtle text-danger",
+            _ => "bg-secondary-subtle text-secondary"
+        };
+    }
+
+    private void VolverFicha()
+    {
+        Navigation.NavigateTo("/matricula/alumnos");
+    }
+}

@@ -1,0 +1,315 @@
+﻿@page "/"
+@page "/login"
+@rendermode InteractiveServer
+
+@inject NavigationManager Navigation
+
+<div class="container-fluid min-vh-100 p-0">
+    <div class="row g-0 min-vh-100">
+
+        <!-- LADO IZQUIERDO -->
+        <div class="col-lg-6 d-none d-lg-flex login-left position-relative">
+
+            <div class="overlay position-absolute top-0 start-0 w-100 h-100"></div>
+
+            <div class="position-relative text-white d-flex flex-column justify-content-center px-5 mx-5">
+
+                <h1 class="fw-bold display-5 mb-4">
+                    Sistema de Gestión Escolar <br />
+                    SIME
+                </h1>
+
+                <p class="fs-5 lh-lg">
+                    Plataforma administrativa integral para el control de matrículas,
+                    registros académicos y gestión institucional.
+                </p>
+
+                <div class="d-flex align-items-center gap-3 mt-5">
+                    <div class="linea"></div>
+                    <span class="fw-bold tracking">GESTIÓN 2026</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- LADO DERECHO -->
+        <div class="col-lg-6 bg-light d-flex flex-column justify-content-center align-items-center">
+
+            <div class="card shadow-sm border-0 login-card p-4 p-md-5">
+
+                <div class="text-center mb-4">
+                    <div class="logo-box mx-auto mb-3">
+                        <img src="/img/logo.png" class="img-fluid" />
+                    </div>
+
+                    <h2 class="fw-bold text-dark">SIME ADMIN</h2>
+
+                    <p class="text-muted">
+                        Bienvenido de nuevo. Por favor, ingrese sus credenciales.
+                    </p>
+                </div>
+
+                <label class="form-label fw-semibold">
+                    Rol de Usuario
+                </label>
+
+                <div class="role-box mb-4">
+                    <button type="button"
+                            class="role-btn @(rol == "ADMIN" ? "active" : "")"
+                            @onclick="SeleccionarAdmin">
+                        Ejecutivo
+                    </button>
+
+                    <button type="button"
+                            class="role-btn @(rol == "MATRICULA" ? "active" : "")"
+                            @onclick="SeleccionarMatricula">
+                        Personal de Matrícula
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        ID de Usuario
+                    </label>
+
+                    <input class="form-control form-control-lg"
+                           placeholder="@placeholderUsuario"
+                           @bind="usuario" />
+
+                    @if (!string.IsNullOrEmpty(errorUsuario))
+                    {
+                        <small class="text-danger">@errorUsuario</small>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        Contraseña
+                    </label>
+
+                    <div class="input-group input-group-lg">
+                        <input type="@tipoPassword"
+                               class="form-control"
+                               placeholder="Ingrese su contraseña"
+                               @bind="password" />
+
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                @onclick="MostrarPassword">
+                        </button>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorPassword))
+                    {
+                        <small class="text-danger">@errorPassword</small>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorGeneral))
+                {
+                    <div class="alert alert-danger py-2 text-center">
+                        @errorGeneral
+                    </div>
+                }
+
+                <button class="btn btn-primary btn-lg w-100 mt-3 fw-bold"
+                        @onclick="IniciarSesion">
+                    Iniciar Sesión
+                </button>
+
+            </div>
+
+            <footer class="text-center text-muted mt-4">
+                © 2026 SIME. Todos los derechos reservados. <br />
+
+            </footer>
+
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .login-left {
+        background-image: url('/img/aula-login.png');
+        background-size: cover;
+        background-position: center;
+    }
+
+    .overlay {
+        background: rgba(6, 42, 133, 0.90);
+    }
+
+    .login-card {
+        width: 470px;
+        border-radius: 18px;
+    }
+
+    .logo-box {
+        width: 78px;
+        height: 78px;
+        background: #eaf0ff;
+        border-radius: 14px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .linea {
+        width: 60px;
+        height: 4px;
+        background: #c7d2fe;
+        border-radius: 20px;
+    }
+
+    .tracking {
+        letter-spacing: 4px;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background-color: #062a85;
+        border-color: #062a85;
+    }
+
+        .btn-primary:hover {
+            background-color: #041f63;
+            border-color: #041f63;
+        }
+
+    .btn-transparent {
+        background: transparent;
+        border: none;
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        .login-card {
+            width: 90%;
+        }
+    }
+
+    .role-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: #cfe0ff;
+        padding: 4px;
+        border-radius: 9px;
+        gap: 4px;
+    }
+
+    .role-btn {
+        border: none;
+        background: transparent;
+        padding: 12px;
+        border-radius: 7px;
+        font-weight: 700;
+        cursor: pointer;
+        color: #0f172a;
+    }
+
+        .role-btn.active {
+            background: white;
+            color: #062a85;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+
+</style>
+
+@code {
+    private string rol = "ADMIN";
+    private string usuario = "";
+    private string password = "";
+
+    private string placeholderUsuario =>
+    rol == "ADMIN"
+        ? "Ingrese su usuario ejecutivo"
+        : "Ingrese su usuario de matrícula";
+
+    private string errorUsuario = "";
+    private string errorPassword = "";
+    private string errorGeneral = "";
+
+    private string tipoPassword = "password";
+
+    private void SeleccionarAdmin()
+    {
+        rol = "ADMIN";
+        LimpiarErrores();
+    }
+
+    private void SeleccionarMatricula()
+    {
+        rol = "MATRICULA";
+        LimpiarErrores();
+    }
+
+    private void MostrarPassword()
+    {
+        tipoPassword = tipoPassword == "password" ? "text" : "password";
+    }
+
+    private void IniciarSesion()
+    {
+        LimpiarErrores();
+
+        if (string.IsNullOrWhiteSpace(usuario))
+        {
+            errorUsuario = "Debe ingresar su ID de usuario.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            errorPassword = "Debe ingresar su contraseña.";
+            return;
+        }
+
+        if (rol == "ADMIN")
+        {
+            if (usuario != "admin")
+            {
+                errorUsuario = "El usuario administrador no existe.";
+                return;
+            }
+
+            if (password != "123")
+            {
+                errorPassword = "La contraseña del administrador es incorrecta.";
+                return;
+            }
+
+            Navigation.NavigateTo("/admin");
+            return;
+        }
+
+        if (rol == "MATRICULA")
+        {
+            if (usuario != "matricula")
+            {
+                errorUsuario = "El usuario de matrícula no existe.";
+                return;
+            }
+
+            if (password != "123")
+            {
+                errorPassword = "La contraseña del personal de matrícula es incorrecta.";
+                return;
+            }
+
+            Navigation.NavigateTo("/matricula/inicio");
+            return;
+        }
+
+        errorGeneral = "Rol de usuario no válido.";
+    }
+
+    private void LimpiarErrores()
+    {
+        errorUsuario = "";
+        errorPassword = "";
+        errorGeneral = "";
+    }
+}

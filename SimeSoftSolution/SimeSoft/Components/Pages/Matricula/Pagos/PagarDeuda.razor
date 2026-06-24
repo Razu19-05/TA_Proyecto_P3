@@ -1,0 +1,261 @@
+﻿@page "/matricula/pagos/pagar"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject MatriculaState MatriculaState
+@inject NavigationManager Navigation
+
+<div class="sime-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="sime-main">
+
+        <Topbar Titulo="Pagar Deuda"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="pagar-page">
+
+            <h1>Pagar Deuda</h1>
+
+            <div class="breadcrumb-custom">
+                <a href="/matricula/pagos">Pagos</a>
+                <span>/</span>
+                <strong>Pagar deuda</strong>
+            </div>
+
+            <p class="subtitle">
+                Confirme el pago de una deuda pendiente del alumno.
+            </p>
+
+            @if (deuda is null || alumno is null)
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    No se seleccionó ninguna deuda. Vuelva a la pantalla de pagos.
+                </div>
+
+                <button class="btn btn-outline-secondary btn-lg" @onclick="Volver">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver
+                </button>
+            }
+            else
+            {
+                <div class="student-card">
+                    <div class="student-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+
+                    <div class="student-info">
+                        <h2>@alumno.NombreCompleto</h2>
+
+                        <p>
+                            DNI: <strong>@alumno.Dni</strong>
+                        </p>
+                    </div>
+
+                    <span class="badge bg-primary px-3 py-2 ms-auto">Activo</span>
+                </div>
+
+                <div class="row g-4">
+
+                    <div class="col-lg-6">
+                        <div class="card-box">
+                            <h3>Detalle de la deuda</h3>
+
+                            <div class="detail-row">
+                                <span>Concepto</span>
+                                <strong>@deuda.Concepto</strong>
+                            </div>
+
+                            <div class="detail-row">
+                                <span>Fecha de emisión</span>
+                                <strong>@deuda.FechaEmision.ToString("dd/MM/yyyy")</strong>
+                            </div>
+
+                            <div class="detail-row">
+                                <span>Fecha de vencimiento</span>
+                                <strong>@deuda.FechaVencimiento.ToString("dd/MM/yyyy")</strong>
+                            </div>
+
+                            <div class="detail-row">
+                                <span>Monto original</span>
+                                <strong>S/ @deuda.MontoOriginal.ToString("N2")</strong>
+                            </div>
+
+                            <div class="detail-row">
+                                <span>Monto descuento</span>
+                                <strong>S/ @deuda.MontoDescuento.ToString("N2")</strong>
+                            </div>
+
+                            <div class="detail-row">
+                                <span>Monto final</span>
+                                <strong class="text-success fs-4">S/ @deuda.MontoFinal.ToString("N2")</strong>
+                            </div>
+
+                            <div class="detail-row">
+                                <span>Estado actual</span>
+                                <strong>
+                                    <span class="badge @ClaseEstado(deuda.Estado)">
+                                        @deuda.Estado
+                                    </span>
+                                </strong>
+                            </div>
+
+                            <div class="detail-row">
+                                <span>Observación</span>
+                                <strong>@deuda.Observacion</strong>
+                            </div>
+
+                            <div class="amount-box">
+                                <div>
+                                    <span>Total a pagar</span>
+                                    <strong class="text-success">S/ @deuda.MontoFinal.ToString("N2")</strong>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card-box">
+                            <h3>Confirmación del pago</h3>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Observación</label>
+
+                                <textarea class="form-control"
+                                          rows="5"
+                                          @bind="observacion"></textarea>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(mensajeError))
+                            {
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                    @mensajeError
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(mensajeExito))
+                            {
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    @mensajeExito
+                                </div>
+                            }
+
+                            <div class="alert alert-primary">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                El estado se actualizará a <strong>PAGADO</strong>.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="bottom-actions">
+                    <button class="btn btn-outline-secondary btn-lg" @onclick="Volver">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </button>
+
+                    <button class="btn btn-success btn-lg"
+                            disabled="@(deuda.Estado != "PENDIENTE")"
+                            @onclick="ConfirmarPago">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Confirmar pago
+                    </button>
+                </div>
+            }
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private PagoGeneradoMatriculaModel? deuda;
+    private AlumnoMatriculaModel? alumno;
+
+    private string observacion = "Pago registrado correctamente";
+    private string mensajeError = "";
+    private string mensajeExito = "";
+
+    protected override void OnInitialized()
+    {
+        deuda = MatriculaState.DeudaSeleccionada;
+
+        if (MatriculaState.AlumnoPagoSeleccionadoId.HasValue)
+        {
+            alumno = MatriculaState.ObtenerAlumnoPorId(MatriculaState.AlumnoPagoSeleccionadoId.Value);
+        }
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void Volver()
+    {
+        if (MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+        {
+            Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
+        }
+        else
+        {
+            Navigation.NavigateTo("/matricula/pagos?retorno=pagos");
+        }
+    }
+
+    private void ConfirmarPago()
+    {
+        mensajeError = "";
+        mensajeExito = "";
+
+        if (deuda is null)
+        {
+            mensajeError = "No se seleccionó ninguna deuda.";
+            return;
+        }
+
+        if (deuda.Estado != "PENDIENTE")
+        {
+            mensajeError = "Solo se puede pagar una deuda en estado PENDIENTE.";
+            return;
+        }
+
+        deuda.Estado = "PAGADO";
+        deuda.FechaPago = DateTime.Today;
+        deuda.Observacion = string.IsNullOrWhiteSpace(observacion)
+            ? "Pago registrado correctamente"
+            : observacion;
+
+        if (MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+        {
+            MatriculaState.VieneDePagoAlumnoRegular = true;
+            Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
+        }
+        else
+        {
+            Navigation.NavigateTo("/matricula/pagos?retorno=pagos");
+        }
+    }
+
+    private string ClaseEstado(string estado)
+    {
+        return estado switch
+        {
+            "PAGADO" => "bg-success",
+            "PENDIENTE" => "bg-warning text-dark",
+            "ANULADO" => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
+}

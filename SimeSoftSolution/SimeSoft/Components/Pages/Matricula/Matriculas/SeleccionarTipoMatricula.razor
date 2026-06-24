@@ -1,0 +1,191 @@
+﻿@page "/matricula/matriculas/tipo"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Matrículas"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            <div class="breadcrumb-custom">
+                <span>Matrículas</span> / <strong>Tipo de matrícula</strong>
+            </div>
+
+            <h2>Seleccione el Tipo de Matrícula</h2>
+
+            <p class="page-description">
+                Seleccione si el proceso corresponde a un alumno nuevo o a un alumno regular.
+                Luego se verificará la disponibilidad de vacantes según periodo, nivel y grado.
+            </p>
+
+            <div class="progress-card">
+
+                <div class="progress-step active">
+                    <div class="step-circle">1</div>
+                    <div>
+                        <strong>Tipo</strong>
+                        <span>Nuevo o regular</span>
+                    </div>
+                </div>
+
+                <div class="progress-line"></div>
+
+                <div class="progress-step">
+                    <div class="step-circle">2</div>
+                    <div>
+                        <strong>Vacantes</strong>
+                        <span>Periodo, nivel y grado</span>
+                    </div>
+                </div>
+
+                <div class="progress-line"></div>
+
+                <div class="progress-step">
+                    <div class="step-circle">3</div>
+                    <div>
+                        <strong>Matrícula</strong>
+                        <span>Datos, pagos y confirmación</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row g-4 mt-4">
+
+                <div class="col-md-6">
+                    <div class="card-option">
+
+                        <div class="icon-circle blue">
+                            <i class="bi bi-person-fill-add"></i>
+                        </div>
+
+                        <h3>Alumno Nuevo</h3>
+
+                        <p>
+                            Registro integral para estudiantes que ingresan por primera vez a la institución.
+                            Se registran datos del alumno, apoderados, matrícula, pagos iniciales y confirmación.
+                        </p>
+
+                        <ul class="option-list">
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                Registro completo del alumno
+                            </li>
+
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                Máximo 3 apoderados
+                            </li>
+
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                Generación de matrícula, inscripción y examen psicológico
+                            </li>
+                        </ul>
+
+                        <button class="btn btn-primary btn-lg w-100 fw-bold"
+                                @onclick="IrAlumnoNuevo">
+                            <i class="bi bi-arrow-right-circle-fill me-2"></i>
+                            Iniciar matrícula
+                        </button>
+
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card-option">
+
+                        <div class="icon-circle green">
+                            <i class="bi bi-person-check-fill"></i>
+                        </div>
+
+                        <h3 class="text-success">Alumno Regular</h3>
+
+                        <p>
+                            Proceso para alumnos ya registrados en el sistema.
+                            Se busca al alumno, se cargan sus datos, se verifican deudas y se genera la nueva matrícula.
+                        </p>
+
+                        <ul class="option-list">
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                Búsqueda por DNI, nombres o apellidos
+                            </li>
+
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                Verificación de deudas antes de continuar
+                            </li>
+
+                            <li>
+                                <i class="bi bi-check-circle-fill"></i>
+                                Generación de pagos y descuentos
+                            </li>
+                        </ul>
+
+                        <button class="btn btn-success btn-lg w-100 fw-bold"
+                                @onclick="IrAlumnoRegular">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            Iniciar matrícula
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="info-box mt-4">
+                <i class="bi bi-info-circle-fill"></i>
+
+                <div>
+                    Primero se selecciona el tipo de matrícula y luego se consulta la disponibilidad de vacantes.
+                    La vacante seleccionada se cargará automáticamente en el formulario de matrícula.
+                </div>
+            </div>
+
+            <div class="bottom-actions">
+                <button class="btn btn-outline-secondary btn-lg fw-bold px-5"
+                        @onclick="Anterior">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Anterior
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void Anterior()
+    {
+        Navigation.NavigateTo("/matricula/matriculas");
+    }
+
+    private void IrAlumnoNuevo()
+    {
+        Navigation.NavigateTo("/matricula/matriculas/vacantes?tipo=nuevo");
+    }
+
+    private void IrAlumnoRegular()
+    {
+        Navigation.NavigateTo("/matricula/matriculas/vacantes?tipo=regular");
+    }
+}

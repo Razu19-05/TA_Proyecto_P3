@@ -1,0 +1,380 @@
+/* CSS for Alumnos component */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8f9fc;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.content-area {
+    padding: 24px 36px;
+}
+
+.search-row {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.search-box {
+    width: 520px;
+    height: 48px;
+    border: 1px solid #d8dee9;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+    .search-box i {
+        color: #64748b;
+        font-size: 19px;
+    }
+
+    .search-box input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 15px;
+        color: #0f172a;
+    }
+
+.empty-card {
+    margin-top: 40px;
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 54px 30px;
+    text-align: center;
+    color: #07347a;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+    .empty-card i {
+        font-size: 78px;
+        color: #0d6efd;
+        margin-bottom: 14px;
+    }
+
+    .empty-card h3 {
+        font-weight: 900;
+        margin-bottom: 8px;
+    }
+
+    .empty-card p {
+        color: #64748b;
+        margin: 0;
+    }
+
+.student-card,
+.section-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.student-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.avatar-circle {
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #0d6efd;
+    display: grid;
+    place-items: center;
+    font-size: 58px;
+    flex-shrink: 0;
+}
+
+.student-header h2 {
+    color: #0f172a;
+    font-size: 30px;
+    font-weight: 900;
+    margin: 0 0 8px 0;
+}
+
+.student-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px 28px;
+    padding-left: 132px;
+}
+
+    .student-info-grid div {
+        min-height: 54px;
+    }
+
+    .student-info-grid span {
+        display: block;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .student-info-grid strong {
+        color: #0f172a;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+.section-card h3 {
+    color: #0f172a;
+    font-size: 19px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.guardian-card {
+    border: 1px solid #d8dee9;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 16px;
+    background: #ffffff;
+}
+
+.guardian-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #334155;
+    display: grid;
+    place-items: center;
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.guardian-content {
+    flex: 1;
+    min-width: 0;
+}
+
+    .guardian-content h5 {
+        color: #0f172a;
+        font-size: 17px;
+        font-weight: 900;
+        margin: 0;
+    }
+
+.guardian-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 18px;
+    margin-top: 14px;
+}
+
+    .guardian-grid span {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 3px;
+    }
+
+    .guardian-grid strong {
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+.guardian-actions {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 16px;
+}
+
+.money-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+    .money-grid div {
+        border-right: 1px solid #d8dee9;
+        padding-right: 16px;
+    }
+
+        .money-grid div:last-child {
+            border-right: none;
+        }
+
+    .money-grid span {
+        display: block;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .money-grid strong {
+        display: block;
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+.discount-box {
+    margin-top: 16px;
+    min-height: 110px;
+    border: 1px solid #c4b5fd;
+    border-radius: 10px;
+    background: #faf5ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #6d28d9;
+    text-align: center;
+}
+
+    .discount-box strong {
+        font-size: 16px;
+        font-weight: 900;
+    }
+
+    .discount-box span {
+        font-size: 32px;
+        font-weight: 900;
+        margin: 4px 0;
+    }
+
+    .discount-box small {
+        color: #15803d;
+        font-weight: 700;
+    }
+
+.text-purple {
+    color: #7c3aed;
+}
+
+table th {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+table td {
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+
+.modal-alumno {
+    width: 780px;
+    max-height: 94vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 14px;
+    padding: 26px;
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.modal-pagos {
+    width: 860px;
+}
+
+.modal-alumno h3 {
+    color: #07347a;
+    font-size: 27px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.modal-alumno p {
+    color: #64748b;
+    margin: 4px 0 0 0;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+label {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 5px;
+}
+
+.info-box {
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #0b2f72;
+    padding: 12px 16px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    font-size: 14px;
+}
+
+    .info-box i {
+        font-size: 24px;
+        color: #0d6efd;
+    }
+
+.modal-discount {
+    width: 260px;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    background: #074996;
+    border-color: #074996;
+}
+
+@media (max-width: 1200px) {
+    .student-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding-left: 0;
+    }
+
+    .student-header {
+        align-items: flex-start;
+    }
+
+    .money-grid {
+        grid-template-columns: 1fr;
+    }
+
+        .money-grid div {
+            border-right: none;
+            border-bottom: 1px solid #d8dee9;
+            padding-bottom: 12px;
+        }
+
+            .money-grid div:last-child {
+                border-bottom: none;
+            }
+}

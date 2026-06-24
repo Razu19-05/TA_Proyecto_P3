@@ -1,0 +1,799 @@
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f3f6fb;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.alumno-nuevo-page {
+    padding: 24px 32px 34px 32px;
+}
+
+ 
+
+    .alumno-nuevo-page .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 18px;
+    }
+
+        .alumno-nuevo-page .page-header h1 {
+            color: #06276b;
+            font-size: 34px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .alumno-nuevo-page .page-header p {
+            margin: 6px 0 0 0;
+            color: #475569;
+            font-weight: 600;
+        }
+
+    .alumno-nuevo-page .breadcrumb-custom {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 15px;
+        margin-bottom: 12px;
+        color: #111827;
+    }
+
+        .alumno-nuevo-page .breadcrumb-custom span:first-child {
+            color: #0d6efd;
+            font-weight: 900;
+        }
+
+    .alumno-nuevo-page h1,
+    .alumno-nuevo-page h2,
+    .alumno-nuevo-page h3,
+    .alumno-nuevo-page h4,
+    .alumno-nuevo-page h5 {
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .alumno-nuevo-page h2 {
+        color: #06276b;
+        font-size: 34px;
+        font-weight: 900;
+        margin-bottom: 6px;
+    }
+
+    .alumno-nuevo-page .page-description {
+        color: #4b5563;
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+    /* =========================
+   BARRA DE PROGRESO
+========================= */
+
+    .alumno-nuevo-page .progress-card {
+        background: white;
+        border: 1px solid #d8dee9;
+        border-radius: 14px;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
+        margin-bottom: 22px;
+    }
+
+    .alumno-nuevo-page .progress-step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 160px;
+        color: #64748b;
+    }
+
+        .alumno-nuevo-page .progress-step strong {
+            display: block;
+            color: #334155;
+            font-size: 15px;
+            font-weight: 900;
+        }
+
+        .alumno-nuevo-page .progress-step span {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .alumno-nuevo-page .progress-step.active strong {
+            color: #06276b;
+        }
+
+    .alumno-nuevo-page .progress-circle {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #334155;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+    }
+
+    .alumno-nuevo-page .progress-step.active .progress-circle {
+        background: #0d6efd;
+        color: white;
+    }
+
+    .alumno-nuevo-page .progress-line {
+        height: 3px;
+        flex: 1;
+        background: #d8dee9;
+        border-radius: 20px;
+    }
+
+        .alumno-nuevo-page .progress-line.active {
+            background: #0d6efd;
+        }
+
+    /* =========================
+   TARJETAS GENERALES
+========================= */
+
+    .alumno-nuevo-page .form-card {
+        background: white;
+        border: 1px solid #111827;
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 22px;
+    }
+
+    .alumno-nuevo-page .table-card {
+        background: white;
+        border: 1px solid #d8dee9;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+        margin-top: 20px;
+    }
+
+    .alumno-nuevo-page .confirm-card {
+        background: white;
+        border: 1px solid #d8dee9;
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 24px;
+    }
+
+    .alumno-nuevo-page .card-title-line {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+        .alumno-nuevo-page .card-title-line i {
+            color: #074996;
+            font-size: 32px;
+        }
+
+        .alumno-nuevo-page .card-title-line h2 {
+            color: #07347a;
+            font-size: 30px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+    .alumno-nuevo-page hr {
+        border-color: #d8dee9;
+        opacity: 1;
+        margin: 22px 0;
+    }
+
+    .alumno-nuevo-page label {
+        color: #111827;
+        font-size: 15px;
+        font-weight: 900;
+        margin-bottom: 8px;
+    }
+
+    .alumno-nuevo-page .form-control,
+    .alumno-nuevo-page .form-select {
+        border-radius: 8px;
+        border: 1px solid #94a3b8;
+        background: #f8fafc;
+    }
+
+        .alumno-nuevo-page .form-control:focus,
+        .alumno-nuevo-page .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+        }
+
+    /* =========================
+   DATOS DE MATRÍCULA
+========================= */
+
+    .alumno-nuevo-page .nivel-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+    }
+
+    .alumno-nuevo-page .nivel-card {
+        height: 170px;
+        border: 1px solid #94a3b8;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        background: white;
+    }
+
+        .alumno-nuevo-page .nivel-card i {
+            font-size: 52px;
+            color: #111827;
+        }
+
+        .alumno-nuevo-page .nivel-card strong {
+            display: block;
+            color: #111827;
+            font-size: 30px;
+            font-weight: 900;
+        }
+
+        .alumno-nuevo-page .nivel-card.selected {
+            background: #dbeafe;
+            border: 3px solid #1d4fa3;
+        }
+
+            .alumno-nuevo-page .nivel-card.selected i,
+            .alumno-nuevo-page .nivel-card.selected strong {
+                color: #07347a;
+            }
+
+    .alumno-nuevo-page .vacantes-grid {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+        .alumno-nuevo-page .vacantes-grid div {
+            background: #f8fafc;
+            border: 1px solid #d8dee9;
+            border-radius: 12px;
+            padding: 18px 20px;
+        }
+
+        .alumno-nuevo-page .vacantes-grid span {
+            display: block;
+            color: #64748b;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .alumno-nuevo-page .vacantes-grid strong {
+            color: #06276b;
+            font-size: 30px;
+            font-weight: 900;
+        }
+
+    /* =========================
+   APODERADOS
+========================= */
+
+    .alumno-nuevo-page .apoderados-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .alumno-nuevo-page .empty-apoderados,
+    .alumno-nuevo-page .empty-warning {
+        border: 2px dashed #bfdbfe;
+        background: #eff6ff;
+        color: #06276b;
+        border-radius: 16px;
+        padding: 34px;
+        text-align: center;
+        margin-top: 22px;
+    }
+
+        .alumno-nuevo-page .empty-apoderados i,
+        .alumno-nuevo-page .empty-warning i {
+            font-size: 52px;
+            color: #0d6efd;
+            margin-bottom: 12px;
+        }
+
+        .alumno-nuevo-page .empty-apoderados h4,
+        .alumno-nuevo-page .empty-warning h3 {
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+    .alumno-nuevo-page .cards-apoderados {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 22px;
+    }
+
+    .alumno-nuevo-page .apoderado-card {
+        border: 1px solid #d8dee9;
+        border-radius: 16px;
+        padding: 20px;
+        background: #f8fafc;
+    }
+
+    .alumno-nuevo-page .card-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .alumno-nuevo-page .btn-icon {
+        width: 34px;
+        height: 34px;
+        border: none;
+        border-radius: 9px;
+        color: white;
+        margin-left: 6px;
+    }
+
+        .alumno-nuevo-page .btn-icon.edit {
+            background: #0d6efd;
+        }
+
+        .alumno-nuevo-page .btn-icon.delete {
+            background: #dc3545;
+        }
+
+    .alumno-nuevo-page .apoderado-card h4 {
+        color: #06276b;
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+    .alumno-nuevo-page .apoderado-card p {
+        color: #334155;
+        margin-bottom: 7px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .alumno-nuevo-page .worker-info {
+        background: white;
+        border: 1px solid #d8dee9;
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 12px;
+    }
+
+        .alumno-nuevo-page .worker-info span {
+            display: block;
+            color: #0d6efd;
+            font-weight: 900;
+        }
+
+        .alumno-nuevo-page .worker-info small {
+            color: #475569;
+            font-weight: 700;
+        }
+
+    .alumno-nuevo-page .emergency {
+        margin-top: 12px;
+        padding: 10px;
+        border-radius: 10px;
+        background: #e5e7eb;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .alumno-nuevo-page .emergency.active {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+    /* =========================
+   PAGOS Y DESCUENTOS
+========================= */
+
+    .alumno-nuevo-page .info-discount {
+        margin-top: 24px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        color: #07347a;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+        .alumno-nuevo-page .info-discount i {
+            font-size: 42px;
+            color: #0d6efd;
+        }
+
+        .alumno-nuevo-page .info-discount p {
+            margin: 4px 0 0 0;
+        }
+
+    .alumno-nuevo-page .table {
+        background: white;
+    }
+
+        .alumno-nuevo-page .table thead th {
+            background: #f1f5f9;
+            color: #111827;
+            font-weight: 900;
+        }
+
+        .alumno-nuevo-page .table tbody td {
+            color: #111827;
+            vertical-align: middle;
+        }
+
+    /* =========================
+   RESUMEN ECONÓMICO AZUL
+========================= */
+
+    .alumno-nuevo-page .economic-summary {
+        margin-top: 24px;
+        background: #1557a5;
+        color: white;
+    }
+
+    .alumno-nuevo-page .economic-header {
+        background: #2468c9;
+        padding: 24px 32px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+        .alumno-nuevo-page .economic-header i {
+            font-size: 40px;
+        }
+
+        .alumno-nuevo-page .economic-header h3 {
+            font-size: 32px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .alumno-nuevo-page .economic-header p {
+            margin: 0;
+            font-weight: 600;
+        }
+
+    .alumno-nuevo-page .economic-body {
+        padding: 28px 38px;
+    }
+
+    .alumno-nuevo-page .economic-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 23px;
+        font-weight: 900;
+        margin-bottom: 20px;
+    }
+
+    .alumno-nuevo-page .economic-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 34px;
+        font-weight: 900;
+        margin-top: 28px;
+    }
+
+    .alumno-nuevo-page .economic-discount {
+        display: flex;
+        justify-content: space-between;
+        font-size: 21px;
+        font-weight: 900;
+        color: #a7f3d0;
+        margin-top: 24px;
+    }
+
+    /* =========================
+   CONFIRMACIÓN
+========================= */
+
+    .alumno-nuevo-page .confirm-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 24px;
+    }
+
+    .alumno-nuevo-page .confirm-left {
+        background: white;
+        border: 1px solid #d8dee9;
+        border-radius: 16px;
+        padding: 28px;
+        text-align: center;
+    }
+
+    .alumno-nuevo-page .perfil-icon {
+        color: #1d4fa3;
+        font-size: 96px;
+        margin-bottom: 20px;
+    }
+
+    .alumno-nuevo-page .confirm-left h3 {
+        color: #111827;
+        font-size: 28px;
+        font-weight: 900;
+    }
+
+    .alumno-nuevo-page .confirm-left p {
+        color: #111827;
+        font-size: 17px;
+    }
+
+    .alumno-nuevo-page .confirm-card h3 {
+        color: #111827;
+        font-size: 30px;
+        font-weight: 900;
+        margin-bottom: 18px;
+    }
+
+    .alumno-nuevo-page .apoderado-line {
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+        .alumno-nuevo-page .apoderado-line strong {
+            display: block;
+            color: #111827;
+            font-size: 18px;
+        }
+
+        .alumno-nuevo-page .apoderado-line small {
+            color: #475569;
+        }
+
+    .alumno-nuevo-page .finance-line {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        border-bottom: 1px solid #d8dee9;
+        font-size: 21px;
+    }
+
+        .alumno-nuevo-page .finance-line strong {
+            font-weight: 900;
+        }
+
+        .alumno-nuevo-page .finance-line.discount {
+            color: #047857;
+        }
+
+    .alumno-nuevo-page .finance-total {
+        background: #dbeafe;
+        padding: 20px;
+        margin-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 25px;
+        font-weight: 900;
+    }
+
+    .alumno-nuevo-page .confirm-check {
+        margin-top: 24px;
+        background: white;
+        border: 1px solid #d8dee9;
+        border-radius: 12px;
+        padding: 18px 22px;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        font-size: 17px;
+        font-weight: 900;
+    }
+
+        .alumno-nuevo-page .confirm-check input {
+            width: 22px;
+            height: 22px;
+        }
+
+    /* =========================
+   BOTONES INFERIORES
+========================= */
+
+    .alumno-nuevo-page .page-actions,
+    .alumno-nuevo-page .bottom-actions {
+        margin-top: 28px;
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    /* =========================
+   PANTALLA FINAL
+========================= */
+
+    .alumno-nuevo-page .success-screen {
+        background: white;
+        border: 1px solid #bbf7d0;
+        border-radius: 18px;
+        padding: 56px;
+        text-align: center;
+    }
+
+        .alumno-nuevo-page .success-screen > i {
+            font-size: 84px;
+            color: #16a34a;
+        }
+
+        .alumno-nuevo-page .success-screen h2 {
+            color: #166534;
+            font-size: 36px;
+            font-weight: 900;
+        }
+
+    .alumno-nuevo-page .success-actions {
+        margin-top: 28px;
+        display: flex;
+        justify-content: center;
+        gap: 18px;
+    }
+
+/* =========================
+   MODAL APODERADO
+========================= */
+
+.alumno-nuevo-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .55);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+    .alumno-nuevo-modal .modal-apoderado {
+        width: min(860px, 96vw);
+        max-height: 92vh;
+        overflow-y: auto;
+        background: white;
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 22px 70px rgba(0, 0, 0, .28);
+    }
+
+    .alumno-nuevo-modal .modal-header-custom {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 18px;
+    }
+
+        .alumno-nuevo-modal .modal-header-custom h3 {
+            color: #06276b;
+            font-size: 28px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .alumno-nuevo-modal .modal-header-custom p {
+            color: #64748b;
+            margin: 4px 0 0 0;
+        }
+
+    .alumno-nuevo-modal .btn-close-modal {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        background: #e5e7eb;
+    }
+
+    .alumno-nuevo-modal label {
+        color: #111827;
+        font-size: 15px;
+        font-weight: 900;
+        margin-bottom: 8px;
+    }
+
+    .alumno-nuevo-modal .form-control,
+    .alumno-nuevo-modal .form-select {
+        border-radius: 8px;
+        border: 1px solid #94a3b8;
+        background: #f8fafc;
+    }
+
+    .alumno-nuevo-modal .emergency-check {
+        border: 1px solid #fecaca;
+        background: #fff1f2;
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        cursor: pointer;
+    }
+
+        .alumno-nuevo-modal .emergency-check input {
+            width: 20px;
+            height: 20px;
+        }
+
+        .alumno-nuevo-modal .emergency-check strong {
+            display: block;
+            color: #991b1b;
+        }
+
+        .alumno-nuevo-modal .emergency-check p {
+            margin: 0;
+            color: #7f1d1d;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .alumno-nuevo-modal .emergency-check i {
+            margin-left: auto;
+            font-size: 28px;
+            color: #dc3545;
+        }
+
+    .alumno-nuevo-modal .modal-buttons {
+        margin-top: 24px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 14px;
+    }
+
+
+    .alumno-nuevo-page .btn-primary,
+    .alumno-nuevo-modal .btn-primary {
+        background: #074996;
+        border-color: #074996;
+    }
+
+    .alumno-nuevo-page .btn-success,
+    .alumno-nuevo-modal .btn-success {
+        background: #198754;
+        border-color: #198754;
+    }
+
+
+
+@media (max-width: 1200px) {
+    .alumno-nuevo-page .progress-card,
+    .alumno-nuevo-page .apoderados-header,
+    .alumno-nuevo-page .page-actions,
+    .alumno-nuevo-page .bottom-actions,
+    .alumno-nuevo-page .success-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .alumno-nuevo-page .progress-line {
+        display: none;
+    }
+
+    .alumno-nuevo-page .nivel-grid,
+    .alumno-nuevo-page .vacantes-grid,
+    .alumno-nuevo-page .cards-apoderados,
+    .alumno-nuevo-page .confirm-layout {
+        grid-template-columns: 1fr;
+    }
+}

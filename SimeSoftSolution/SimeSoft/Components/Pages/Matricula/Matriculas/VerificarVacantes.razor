@@ -1,0 +1,354 @@
+﻿@page "/matricula/matriculas/vacantes"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject MatriculaState MatriculaState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Matrículas"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            <div class="breadcrumb-custom">
+                <span>Matrículas</span> / <span>Tipo</span> / <strong>Vacantes</strong>
+            </div>
+
+            <div class="stepper-vacantes">
+
+                <div class="step done">
+                    <div class="circle">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <span>Tipo de matrícula</span>
+                </div>
+
+                <div class="line active"></div>
+
+                <div class="step active">
+                    <div class="circle">2</div>
+                    <span>Verificar vacantes</span>
+                </div>
+
+                <div class="line"></div>
+
+                <div class="step">
+                    <div class="circle">3</div>
+                    <span>Formulario de matrícula</span>
+                </div>
+
+            </div>
+
+            <div class="page-header">
+
+                <div>
+                    <h2>Verificación de Vacantes</h2>
+
+                    <p class="page-description">
+                        Seleccione el periodo, nivel y grado para verificar si existe una vacante disponible.
+                        La vacante seleccionada se cargará automáticamente en el formulario de matrícula.
+                    </p>
+                </div>
+
+                <span class="type-badge @(TipoFlujo == "REGULAR" ? "regular" : "nuevo")">
+                    @(TipoFlujo == "REGULAR" ? "Alumno Regular" : "Alumno Nuevo")
+                </span>
+
+            </div>
+
+            <div class="card-box">
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Periodo académico</label>
+
+                        <select class="form-select form-select-lg" @bind="periodo">
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Nivel</label>
+
+                        <select class="form-select form-select-lg"
+                                value="@nivel"
+                                @onchange="OnNivelChanged">
+                            <option value="Inicial">Inicial</option>
+                            <option value="Primaria">Primaria</option>
+                            <option value="Secundaria">Secundaria</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Grado</label>
+
+                        <select class="form-select form-select-lg" @bind="grado">
+                            @foreach (var item in gradosDisponibles)
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        </select>
+                    </div>
+
+                </div>
+
+                <button class="btn btn-primary btn-lg fw-bold mt-4 px-4"
+                        @onclick="BuscarVacantes">
+                    <i class="bi bi-search me-2"></i>
+                    Buscar vacantes
+                </button>
+
+            </div>
+
+            @if (vacantesBuscadas)
+            {
+                <div class="results-header">
+
+                    <div>
+                        <h3>Resultado de vacantes</h3>
+                        <p>
+                            Periodo @periodo - @nivel - @grado
+                        </p>
+                    </div>
+
+                    <span class="summary-pill">
+                        @TotalDisponibles vacantes disponibles
+                    </span>
+
+                </div>
+
+                @if (!vacantesFiltradas.Any())
+                {
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        No se encontraron aulas configuradas para el nivel y grado seleccionado.
+                    </div>
+                }
+                else
+                {
+                    <div class="vacantes-grid">
+
+                        @foreach (var vacante in vacantesFiltradas)
+                        {
+                            <div class="vacante-option @(vacanteSeleccionada == vacante ? "selected" : "") @(vacante.VacantesDisponibles <= 0 ? "disabled" : "")"
+                                 @onclick="() => SeleccionarVacante(vacante)">
+
+                                <div class="vacante-top">
+
+                                    <div class="aula-icon">
+                                        <i class="bi bi-door-open-fill"></i>
+                                    </div>
+
+                                    <div>
+                                        <h4>Aula @vacante.Aula</h4>
+                                        <p>@vacante.Nivel - @vacante.Grado</p>
+                                    </div>
+
+                                </div>
+
+                                <div class="vacante-numbers">
+
+                                    <div>
+                                        <span>Total</span>
+                                        <strong>@vacante.TotalVacantes</strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Ocupadas</span>
+                                        <strong>@vacante.VacantesOcupadas</strong>
+                                    </div>
+
+                                    <div>
+                                        <span>Disponibles</span>
+                                        <strong class="@(vacante.VacantesDisponibles > 0 ? "text-success" : "text-danger")">
+                                            @vacante.VacantesDisponibles
+                                        </strong>
+                                    </div>
+
+                                </div>
+
+                                <div class="vacante-footer">
+
+                                    @if (vacante.VacantesDisponibles > 0)
+                                    {
+                                        <span class="badge bg-success-subtle text-success">
+                                            Disponible
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger">
+                                            Sin vacantes
+                                        </span>
+                                    }
+
+                                    @if (vacanteSeleccionada == vacante)
+                                    {
+                                        <span class="selected-label">
+                                            <i class="bi bi-check-circle-fill me-1"></i>
+                                            Seleccionada
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+                }
+
+                @if (vacanteSeleccionada is not null)
+                {
+                    <div class="selected-summary mt-4">
+
+                        <i class="bi bi-info-circle-fill"></i>
+
+                        <div>
+                            <strong>Vacante seleccionada:</strong>
+                            Periodo @vacanteSeleccionada.Periodo,
+                            @vacanteSeleccionada.Nivel - @vacanteSeleccionada.Grado,
+                            aula @vacanteSeleccionada.Aula.
+                            Esta información se cargará automáticamente en el formulario de matrícula.
+                        </div>
+
+                    </div>
+                }
+            }
+
+            <div class="bottom-actions">
+
+                <button class="btn btn-outline-secondary btn-lg fw-bold px-5"
+                        @onclick="Cancelar">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Anterior
+                </button>
+
+                <button class="btn btn-success btn-lg fw-bold px-5"
+                        disabled="@(vacanteSeleccionada is null || vacanteSeleccionada.VacantesDisponibles <= 0)"
+                        @onclick="Continuar">
+                    Continuar
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? tipo { get; set; }
+
+    private string periodo = "2026";
+    private string nivel = "Primaria";
+    private string grado = "5°";
+
+    private bool vacantesBuscadas = false;
+
+    private List<string> gradosDisponibles = new();
+
+    private List<VacanteMatriculaModel> vacantesFiltradas = new();
+
+    private VacanteMatriculaModel? vacanteSeleccionada;
+
+    private string TipoFlujo =>
+        tipo?.ToLower() == "regular" ? "REGULAR" : "NUEVO";
+
+    private int TotalDisponibles =>
+        vacantesFiltradas.Sum(v => v.VacantesDisponibles);
+
+    protected override void OnInitialized()
+    {
+        CargarGrados();
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void CambiarNivel()
+    {
+        CargarGrados();
+        vacantesBuscadas = false;
+        vacantesFiltradas.Clear();
+        vacanteSeleccionada = null;
+    }
+
+    private void CargarGrados()
+    {
+        gradosDisponibles = nivel switch
+        {
+            "Inicial" => new List<string> { "3 AÑOS", "4 AÑOS", "5 AÑOS" },
+            "Primaria" => new List<string> { "1°", "2°", "3°", "4°", "5°", "6°" },
+            "Secundaria" => new List<string> { "1°", "2°", "3°", "4°", "5°" },
+            _ => new List<string>()
+        };
+
+        grado = gradosDisponibles.FirstOrDefault() ?? "";
+    }
+
+    private void BuscarVacantes()
+    {
+        vacantesBuscadas = true;
+
+        vacantesFiltradas = MatriculaState.FiltrarVacantes(periodo, nivel, grado);
+
+        vacanteSeleccionada = vacantesFiltradas
+            .FirstOrDefault(v => v.VacantesDisponibles > 0);
+    }
+
+    private void SeleccionarVacante(VacanteMatriculaModel vacante)
+    {
+        if (vacante.VacantesDisponibles <= 0)
+        {
+            return;
+        }
+
+        vacanteSeleccionada = vacante;
+    }
+
+    private void Cancelar()
+    {
+        Navigation.NavigateTo("/matricula/matriculas/tipo");
+    }
+
+    private void Continuar()
+    {
+        if (vacanteSeleccionada is null)
+        {
+            return;
+        }
+
+        MatriculaState.SeleccionarVacante(vacanteSeleccionada, TipoFlujo);
+
+        if (TipoFlujo == "REGULAR")
+        {
+            Navigation.NavigateTo("/matricula/matriculas/alumno-regular");
+        }
+        else
+        {
+            Navigation.NavigateTo("/matricula/matriculas/alumno-nuevo");
+        }
+    }
+
+    private void OnNivelChanged(ChangeEventArgs e)
+    {
+        nivel = e.Value?.ToString() ?? "Primaria";
+        CambiarNivel();
+    }
+}

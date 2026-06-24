@@ -1,0 +1,195 @@
+﻿@using SimeSoft.Components.State
+@inject PagoState PagoState
+<aside class="sidebar @(MenuAbierto ? "" : "cerrado")">
+
+    <div class="brand">
+        <div class="brand-logo">
+            <img src="/img/logo.png" />
+        </div>
+
+        <h2>SIME</h2>
+    </div>
+
+    <div class="line"></div>
+
+    <nav class="menu">
+        
+
+        <NavLink href="/matricula/inicio" class="menu-item" @onclick="LimpiarPagos">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Inicio</span>
+        </NavLink>
+
+        <NavLink href="/matricula/matriculas"
+                 class="menu-item"
+                 Match="NavLinkMatch.All">
+            <i class="bi bi-person-fill-add"></i>
+            <span>Matrículas</span>
+        </NavLink>
+
+        <NavLink href="/matricula/matriculas/historial"
+                 class="menu-item"
+                 Match="NavLinkMatch.Prefix">
+            <i class="bi bi-clock-history"></i>
+            <span>Historial</span>
+        </NavLink>
+
+        <NavLink href="/matricula/pagos" class="menu-item">
+            <i class="bi bi-cash-stack"></i>
+            <span>Pagos</span>
+        </NavLink>
+
+        <NavLink href="/matricula/personal" class="menu-item" @onclick="LimpiarPagos">
+            <i class="bi bi-people-fill"></i>
+            <span>Personal</span>
+        </NavLink>
+
+        <NavLink href="/matricula/aulas" class="menu-item">
+            <i class="bi bi-display"></i>
+            <span>Aulas</span>
+        </NavLink>
+
+        <NavLink href="/matricula/alumnos" class="menu-item" @onclick="LimpiarPagos">
+            <i class="bi bi-mortarboard-fill"></i>
+            <span>Alumnos</span>
+        </NavLink>
+
+    </nav>
+
+    <div class="logout-section">
+        <div class="line"></div>
+
+        <NavLink href="/login" class="menu-item logout">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Cerrar sesión</span>
+        </NavLink>
+    </div>
+
+</aside>
+
+<style>
+    .sidebar {
+        width: 285px;
+        min-width: 285px;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #06164a, #294878);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        padding: 18px 14px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+        .sidebar.cerrado {
+            width: 0;
+            min-width: 0;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+            .sidebar.cerrado * {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 4px 6px;
+        white-space: nowrap;
+    }
+
+    .brand-logo {
+        width: 68px;
+        height: 68px;
+        background: transparent;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+    }
+
+        .brand-logo img {
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+        }
+
+    .brand h2 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+        
+
+    .line {
+        height: 2px;
+        background: rgba(255,255,255,0.8);
+        border-radius: 20px;
+        margin: 18px 0 22px 0;
+    }
+
+    .menu {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 15px 16px;
+        color: white;
+        text-decoration: none;
+        border-radius: 14px;
+        font-size: 21px;
+        font-weight: 800;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+    }
+
+        .menu-item i {
+            font-size: 30px;
+            width: 34px;
+            text-align: center;
+        }
+
+        .menu-item:hover {
+            background: rgba(93, 159, 211, 0.75);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: #315fa8;
+            color: white;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+        }
+
+            .menu-item.active i {
+                color: #ffd21f;
+            }
+
+    .logout-section {
+        margin-top: auto;
+    }
+
+    .logout:hover {
+        background: #d9534f;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public bool MenuAbierto { get; set; } = true;
+    private void LimpiarPagos()
+    {
+        PagoState.LimpiarBusqueda();
+    }
+}

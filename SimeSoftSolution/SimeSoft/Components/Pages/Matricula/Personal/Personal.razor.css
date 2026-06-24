@@ -1,0 +1,191 @@
+/* CSS for Personal component */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f6fb;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.content-area {
+    padding: 18px 28px;
+}
+
+h2 {
+    color: #223d6b;
+    font-size: 36px;
+    font-weight: 900;
+    margin: 0;
+}
+
+p {
+    color: #555;
+    margin: 0;
+}
+
+.btn-primary {
+    background: #074996;
+    border-color: #074996;
+}
+
+.summary-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 22px;
+    height: 120px;
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+    .summary-card h3 {
+        font-size: 34px;
+        font-weight: 900;
+        margin: 0;
+    }
+
+    .summary-card span {
+        color: #555;
+        font-size: 15px;
+    }
+
+    .summary-card i {
+        font-size: 42px;
+        color: black;
+    }
+
+.table-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 22px;
+    padding: 24px;
+    min-height: 350px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+    .table-card h5 {
+        font-weight: 900;
+        color: #222;
+        margin: 0;
+    }
+
+    .table-card small {
+        color: #999;
+    }
+
+.search-box {
+    height: 42px;
+    border: 2px solid #d8dee9;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+}
+
+    .search-box i {
+        font-size: 22px;
+        color: #555;
+    }
+
+    .search-box input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-size: 15px;
+    }
+
+table th {
+    color: #333;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+table td {
+    font-size: 13px;
+    font-weight: 700;
+    color: #444;
+}
+
+.btn-action {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    cursor: pointer;
+    margin: 0 4px;
+}
+
+.edit {
+    color: blue;
+}
+
+.delete {
+    color: red;
+}
+
+.loading-box {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+
+.modal-personal {
+    width: 470px;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: white;
+    border: 2px solid #9abaff;
+    border-radius: 14px;
+    padding: 22px;
+}
+
+.modal-title h4 {
+    color: #223d6b;
+    font-weight: 900;
+    margin: 0;
+}
+
+.modal-title small {
+    color: #777;
+}
+
+label {
+    font-size: 12px;
+    font-weight: 900;
+    color: #222;
+}
+
+.form-control {
+    border: 2px solid #d8dee9;
+    border-radius: 7px;
+    height: 35px;
+    font-size: 13px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+    .modal-buttons .btn {
+        width: 165px;
+    }

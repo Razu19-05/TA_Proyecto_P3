@@ -1,0 +1,986 @@
+﻿@page "/matricula/alumnos"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject AlumnoState AlumnoState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Ficha del Alumno"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            <div class="search-row">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+
+                    <input placeholder="Buscar por DNI, nombres o apellidos"
+                           @bind="criterioBusqueda"
+                           @bind:event="oninput" />
+                </div>
+
+                <button class="btn btn-primary fw-bold px-4"
+                        @onclick="BuscarAlumno">
+                    Buscar
+                    <i class="bi bi-search ms-2"></i>
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <div class="alert alert-success mt-3">
+                    <i class="bi bi-check-circle me-2"></i>
+                    @mensaje
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    @error
+                </div>
+            }
+
+            @if (alumno is null)
+            {
+                <div class="empty-card">
+                    <i class="bi bi-person-vcard"></i>
+
+                    <h3>Busque un alumno para visualizar su ficha</h3>
+
+                    <p>
+                        Puede buscar por DNI, nombres o apellidos.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="student-card mt-3">
+
+                    <div class="student-header">
+                        <div class="avatar-circle">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+
+                        <div>
+                            <h2>@alumno.NombreCompleto</h2>
+
+                            <span class="badge bg-success">
+                                @alumno.Estado
+                            </span>
+                        </div>
+
+                        <button class="btn btn-outline-primary fw-bold ms-auto"
+                                @onclick="AbrirEditarAlumno">
+                            <i class="bi bi-pencil-fill me-2"></i>
+                            Editar ficha
+                        </button>
+                    </div>
+
+                    <div class="student-info-grid mt-4">
+
+                        <div>
+                            <span>DNI</span>
+                            <strong>@alumno.Dni</strong>
+                        </div>
+
+                        <div>
+                            <span>Nombres</span>
+                            <strong>@alumno.Nombres</strong>
+                        </div>
+
+                        <div>
+                            <span>Apellido paterno</span>
+                            <strong>@alumno.ApellidoPaterno</strong>
+                        </div>
+
+                        <div>
+                            <span>Apellido materno</span>
+                            <strong>@alumno.ApellidoMaterno</strong>
+                        </div>
+
+                        <div>
+                            <span>Dirección</span>
+                            <strong>@alumno.Direccion</strong>
+                        </div>
+
+                        <div>
+                            <span>Teléfono</span>
+                            <strong>@alumno.Telefono</strong>
+                        </div>
+
+                        <div>
+                            <span>Correo</span>
+                            <strong>@alumno.Correo</strong>
+                        </div>
+
+                        <div>
+                            <span>Fecha nacimiento</span>
+                            <strong>@alumno.FechaNacimiento</strong>
+                        </div>
+
+                        <div>
+                            <span>Alumno nuevo</span>
+                            <strong>@(alumno.AlumnoNuevo ? "Sí" : "No")</strong>
+                        </div>
+
+                        <div>
+                            <span>Estado</span>
+                            <strong>@alumno.Estado</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="row g-4 mt-2">
+
+                    <div class="col-lg-5">
+                        <div class="section-card h-100">
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3>Apoderados</h3>
+
+                                <button class="btn btn-primary fw-bold"
+                                        @onclick="AbrirNuevoApoderado">
+                                    <i class="bi bi-plus-lg me-2"></i>
+                                    Agregar apoderado
+                                </button>
+                            </div>
+
+                            @foreach (var apoderado in apoderados)
+                            {
+                                <div class="guardian-card mb-3">
+
+                                    <div class="guardian-avatar">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+
+                                    <div class="guardian-content">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h5>@apoderado.NombreCompleto</h5>
+
+                                            <span class="badge bg-primary-subtle text-primary">
+                                                @apoderado.Parentesco
+                                            </span>
+                                        </div>
+
+                                        <div class="guardian-grid">
+
+                                            <div>
+                                                <span>DNI</span>
+                                                <strong>@apoderado.Dni</strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Teléfono</span>
+                                                <strong>@apoderado.Telefono</strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Correo</span>
+                                                <strong>@apoderado.Correo</strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Contacto emergencia</span>
+                                                <strong>@(apoderado.ContactoEmergencia ? "Sí" : "No")</strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Tipo de persona</span>
+                                                <strong>@apoderado.TipoPersona</strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Estado</span>
+                                                <strong>@(apoderado.Activo ? "Activo" : "Inactivo")</strong>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="guardian-actions">
+                                            <button class="btn btn-outline-primary fw-bold"
+                                                    @onclick="() => AbrirEditarApoderado(apoderado)">
+                                                <i class="bi bi-pencil-fill me-2"></i>
+                                                Editar
+                                            </button>
+
+                                            <button class="btn btn-outline-danger fw-bold"
+                                                    @onclick="() => EliminarApoderado(apoderado.Id)">
+                                                <i class="bi bi-trash-fill me-2"></i>
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            }
+
+                            @if (!apoderados.Any())
+                            {
+                                <div class="alert alert-info">
+                                    El alumno no tiene apoderados registrados.
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div class="row g-4">
+
+                            <div class="col-md-8">
+                                <div class="section-card h-100">
+
+                                    <h3>
+                                        <i class="bi bi-cash-coin me-2 text-success"></i>
+                                        Situación económica
+                                    </h3>
+
+                                    <div class="money-grid mt-3">
+
+                                        <div>
+                                            <span>Total generado</span>
+                                            <strong class="text-primary">
+                                                S/ @TotalGenerado.ToString("N2")
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Total pagado</span>
+                                            <strong class="text-success">
+                                                S/ @TotalPagado.ToString("N2")
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Total pendiente</span>
+                                            <strong class="text-danger">
+                                                S/ @TotalPendiente.ToString("N2")
+                                            </strong>
+                                        </div>
+
+                                    </div>
+
+                                    <button class="btn btn-outline-primary fw-bold mt-3"
+                                            @onclick="AbrirSituacionEconomica">
+                                        <i class="bi bi-eye-fill me-2"></i>
+                                        Ver situación económica
+                                    </button>
+
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="section-card h-100">
+
+                                    <h3>
+                                        <i class="bi bi-tag-fill me-2 text-purple"></i>
+                                        Descuento actual
+                                    </h3>
+
+                                    @if (alumno.TieneDescuento)
+                                    {
+                                        <div class="discount-box">
+                                            <strong>@alumno.DescuentoActual</strong>
+                                            <span>@alumno.PorcentajeDescuento%</span>
+                                            <small>Activo</small>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-info mt-3">
+                                            Sin descuento vigente.
+                                        </div>
+                                    }
+
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="section-card">
+
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h3>
+                                            <i class="bi bi-calendar3 me-2"></i>
+                                            Historial de matrículas
+                                        </h3>
+
+                                        <button class="btn btn-link fw-bold text-decoration-none"
+                                                @onclick="IrHistorial">
+                                            Ver todo el historial
+                                            <i class="bi bi-chevron-right ms-1"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered text-center align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Periodo</th>
+                                                    <th>Nivel</th>
+                                                    <th>Grado</th>
+                                                    <th>Fecha matrícula</th>
+                                                    <th>Estado matrícula</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                @foreach (var matricula in matriculas.Take(3))
+                                                {
+                                                    <tr>
+                                                        <td>@matricula.Periodo</td>
+                                                        <td>@matricula.Nivel</td>
+                                                        <td>@matricula.Grado</td>
+                                                        <td>@matricula.FechaMatricula</td>
+                                                        <td>
+                                                            <span class="badge @ClaseEstadoMatricula(matricula.Estado)">
+                                                                @matricula.Estado
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    @if (!matriculas.Any())
+                                    {
+                                        <div class="alert alert-info mt-3">
+                                            El alumno no tiene matrículas registradas.
+                                        </div>
+                                    }
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            }
+
+        </section>
+
+    </main>
+
+</div>
+
+@if (mostrarModalAlumno && alumno is not null)
+{
+    <div class="modal-backdrop-custom">
+        <div class="modal-alumno">
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3>Editar ficha del alumno</h3>
+                    <p>Actualice los datos principales del alumno.</p>
+                </div>
+
+                <button class="btn-close" @onclick="CerrarModales"></button>
+            </div>
+
+            <div class="row g-3 mt-2">
+
+                <div class="col-md-4">
+                    <label>Nombres</label>
+                    <input class="form-control" @bind="editNombres" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Apellido paterno</label>
+                    <input class="form-control" @bind="editApellidoPaterno" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Apellido materno</label>
+                    <input class="form-control" @bind="editApellidoMaterno" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Teléfono</label>
+                    <input class="form-control" @bind="editTelefono" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Correo</label>
+                    <input class="form-control" @bind="editCorreo" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Fecha nacimiento</label>
+                    <input class="form-control" @bind="editFechaNacimiento" />
+                </div>
+
+                <div class="col-md-12">
+                    <label>Dirección</label>
+                    <input class="form-control" @bind="editDireccion" />
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-outline-danger fw-bold px-4"
+                        @onclick="CerrarModales">
+                    Cancelar
+                </button>
+
+                <button class="btn btn-primary fw-bold px-4"
+                        @onclick="GuardarAlumno">
+                    Guardar cambios
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@if (mostrarModalApoderado && alumno is not null)
+{
+    <div class="modal-backdrop-custom">
+        <div class="modal-alumno">
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3>Agregar / Editar Apoderado</h3>
+
+                    <div class="info-box mt-2">
+                        <i class="bi bi-info-circle-fill"></i>
+
+                        <div>
+                            El apoderado puede ser también un trabajador de la institución.
+                            En ese caso, complete tipo de persona, especialidad, cargo y área.
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-close" @onclick="CerrarModales"></button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorModalApoderado))
+            {
+                <div class="alert alert-warning mt-3">
+                    @errorModalApoderado
+                </div>
+            }
+
+            <div class="row g-3 mt-2">
+
+                <div class="col-md-4">
+                    <label>Nombres *</label>
+                    <input class="form-control" placeholder="Ej. Juan Carlos" @bind="apoNombres" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Apellido paterno *</label>
+                    <input class="form-control" placeholder="Ej. Pérez" @bind="apoApellidoPaterno" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Apellido materno</label>
+                    <input class="form-control" placeholder="Ej. López" @bind="apoApellidoMaterno" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>DNI *</label>
+                    <input class="form-control" placeholder="Ej. 70000001" @bind="apoDni" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Teléfono *</label>
+                    <input class="form-control" placeholder="Ej. 999 123 456" @bind="apoTelefono" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Correo *</label>
+                    <input class="form-control" placeholder="Ej. juan@gmail.com" @bind="apoCorreo" />
+                </div>
+
+                <div class="col-md-12">
+                    <label>Dirección *</label>
+                    <input class="form-control" placeholder="Ej. Av. Los Próceres 123, Lima" @bind="apoDireccion" />
+                </div>
+
+                <div class="col-md-5">
+                    <label>Parentesco *</label>
+                    <select class="form-select" @bind="apoParentesco">
+                        <option value="">Seleccione parentesco</option>
+                        <option>PADRE</option>
+                        <option>MADRE</option>
+                        <option>ABUELO</option>
+                        <option>ABUELA</option>
+                        <option>TÍO</option>
+                        <option>TÍA</option>
+                        <option>OTRO</option>
+                    </select>
+                </div>
+
+                <div class="col-md-7 d-flex align-items-end">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               @bind="apoContactoEmergencia" />
+
+                        <label class="form-check-label">
+                            Sí, es contacto de emergencia
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <label>Observaciones</label>
+                    <textarea class="form-control"
+                              rows="2"
+                              placeholder="Información adicional opcional"
+                              @bind="apoObservacion"></textarea>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Tipo de persona</label>
+                    <select class="form-select" @bind="apoTipoPersona">
+                        <option value="">Seleccione tipo de persona</option>
+                        <option>PROFESOR</option>
+                        <option>ADMINISTRADOR</option>
+                        <option>PERSONAL_SERVICIO</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label>Especialidad</label>
+                    <input class="form-control" placeholder="Ej. Matemática" @bind="apoEspecialidad" />
+                </div>
+
+                <div class="col-md-6">
+                    <label>Cargo</label>
+                    <input class="form-control" placeholder="Ej. Docente de Matemática" @bind="apoCargo" />
+                </div>
+
+                <div class="col-md-6">
+                    <label>Área</label>
+                    <input class="form-control" placeholder="Ej. Académica" @bind="apoArea" />
+                </div>
+
+                <div class="col-md-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               @bind="apoActivo" />
+
+                        <label class="form-check-label">
+                            Activo
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-outline-danger fw-bold px-4"
+                        @onclick="CerrarModales">
+                    <i class="bi bi-x-lg me-2"></i>
+                    Cancelar
+                </button>
+
+                <button class="btn btn-primary fw-bold px-4"
+                        @onclick="GuardarApoderado">
+                    <i class="bi bi-floppy-fill me-2"></i>
+                    Guardar apoderado
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@if (mostrarModalPagos && alumno is not null)
+{
+    <div class="modal-backdrop-custom">
+        <div class="modal-alumno modal-pagos">
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3>Situación económica</h3>
+                    <p>Detalle de pagos y descuento vigente del alumno.</p>
+                </div>
+
+                <button class="btn-close" @onclick="CerrarModales"></button>
+            </div>
+
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered text-center align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Fecha emisión</th>
+                            <th>Fecha vencimiento</th>
+                            <th>Monto descuento</th>
+                            <th>Monto final</th>
+                            <th>Estado</th>
+                            <th>Fecha pago</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var pago in pagos)
+                        {
+                            <tr>
+                                <td>@pago.Concepto</td>
+
+                                <td>@pago.FechaEmision</td>
+
+                                <td>@pago.FechaVencimiento</td>
+
+                                <td>
+                                    S/ @pago.MontoDescuento.ToString("N2")
+                                </td>
+
+                                <td class="fw-bold">
+                                    S/ @pago.MontoFinal.ToString("N2")
+                                </td>
+
+                                <td>
+                                    <span class="badge @ClaseEstadoPago(pago.Estado)">
+                                        @pago.Estado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(pago.FechaPago) ? "-" : pago.FechaPago)
+                                </td>
+
+                                <td>@pago.Observacion</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!pagos.Any())
+            {
+                <div class="alert alert-info mt-3">
+                    El alumno no tiene pagos registrados.
+                </div>
+            }
+
+            <hr />
+
+            <h5 class="fw-bold text-primary">Descuento vigente</h5>
+
+            @if (alumno.TieneDescuento)
+            {
+                <div class="discount-box modal-discount">
+                    <strong>@alumno.DescuentoActual</strong>
+                    <span>@alumno.PorcentajeDescuento%</span>
+                    <small>Activo</small>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    El alumno no tiene descuento vigente.
+                </div>
+            }
+
+            <div class="modal-actions">
+                <button class="btn btn-outline-secondary fw-bold px-4"
+                        @onclick="CerrarModales">
+                    Cerrar
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    private string criterioBusqueda = "";
+
+    private AlumnoModel? alumno;
+
+    private List<ApoderadoModel> apoderados = new();
+    private List<PagoAlumnoModel> pagos = new();
+    private List<MatriculaAlumnoModel> matriculas = new();
+
+    private string mensaje = "";
+    private string error = "";
+
+    private bool mostrarModalAlumno = false;
+    private bool mostrarModalApoderado = false;
+    private bool mostrarModalPagos = false;
+
+    private string editNombres = "";
+    private string editApellidoPaterno = "";
+    private string editApellidoMaterno = "";
+    private string editTelefono = "";
+    private string editCorreo = "";
+    private string editDireccion = "";
+    private string editFechaNacimiento = "";
+
+    private int apoId = 0;
+    private string apoNombres = "";
+    private string apoApellidoPaterno = "";
+    private string apoApellidoMaterno = "";
+    private string apoDni = "";
+    private string apoTelefono = "";
+    private string apoCorreo = "";
+    private string apoDireccion = "";
+    private string apoParentesco = "";
+    private bool apoContactoEmergencia = false;
+    private string apoObservacion = "";
+    private string apoTipoPersona = "";
+    private string apoEspecialidad = "";
+    private string apoCargo = "";
+    private string apoArea = "";
+    private bool apoActivo = true;
+    private string errorModalApoderado = "";
+
+    private decimal TotalGenerado => pagos.Sum(p => p.MontoFinal);
+
+    private decimal TotalPagado =>
+        pagos.Where(p => p.Estado == "PAGADO").Sum(p => p.MontoFinal);
+
+    private decimal TotalPendiente =>
+        pagos.Where(p => p.Estado == "PENDIENTE").Sum(p => p.MontoFinal);
+
+    protected override void OnInitialized()
+    {
+        alumno = AlumnoState.AlumnoSeleccionado;
+
+        if (alumno is not null)
+        {
+            CargarDatosAlumno();
+        }
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void BuscarAlumno()
+    {
+        mensaje = "";
+        error = "";
+
+        alumno = AlumnoState.BuscarAlumno(criterioBusqueda);
+
+        if (alumno is null)
+        {
+            error = "No se encontró ningún alumno con el criterio ingresado.";
+            apoderados.Clear();
+            pagos.Clear();
+            matriculas.Clear();
+            return;
+        }
+
+        AlumnoState.AlumnoSeleccionado = alumno;
+
+        CargarDatosAlumno();
+
+        mensaje = "Alumno encontrado correctamente.";
+    }
+
+    private void CargarDatosAlumno()
+    {
+        if (alumno is null)
+            return;
+
+        apoderados = AlumnoState.ObtenerApoderados(alumno.Id);
+        pagos = AlumnoState.ObtenerPagos(alumno.Id);
+        matriculas = AlumnoState.ObtenerMatriculas(alumno.Id);
+    }
+
+    private void AbrirEditarAlumno()
+    {
+        if (alumno is null)
+            return;
+
+        editNombres = alumno.Nombres;
+        editApellidoPaterno = alumno.ApellidoPaterno;
+        editApellidoMaterno = alumno.ApellidoMaterno;
+        editTelefono = alumno.Telefono;
+        editCorreo = alumno.Correo;
+        editDireccion = alumno.Direccion;
+        editFechaNacimiento = alumno.FechaNacimiento;
+
+        mostrarModalAlumno = true;
+    }
+
+    private void GuardarAlumno()
+    {
+        if (alumno is null)
+            return;
+
+        alumno.Nombres = editNombres;
+        alumno.ApellidoPaterno = editApellidoPaterno;
+        alumno.ApellidoMaterno = editApellidoMaterno;
+        alumno.Telefono = editTelefono;
+        alumno.Correo = editCorreo;
+        alumno.Direccion = editDireccion;
+        alumno.FechaNacimiento = editFechaNacimiento;
+
+        mensaje = "Ficha del alumno actualizada correctamente.";
+
+        mostrarModalAlumno = false;
+    }
+
+    private void AbrirNuevoApoderado()
+    {
+        if (alumno is null)
+            return;
+
+        apoId = 0;
+        apoNombres = "";
+        apoApellidoPaterno = "";
+        apoApellidoMaterno = "";
+        apoDni = "";
+        apoTelefono = "";
+        apoCorreo = "";
+        apoDireccion = "";
+        apoParentesco = "";
+        apoContactoEmergencia = false;
+        apoObservacion = "";
+        apoTipoPersona = "";
+        apoEspecialidad = "";
+        apoCargo = "";
+        apoArea = "";
+        apoActivo = true;
+        errorModalApoderado = "";
+
+        mostrarModalApoderado = true;
+    }
+
+    private void AbrirEditarApoderado(ApoderadoModel apoderado)
+    {
+        apoId = apoderado.Id;
+        apoNombres = apoderado.Nombres;
+        apoApellidoPaterno = apoderado.ApellidoPaterno;
+        apoApellidoMaterno = apoderado.ApellidoMaterno;
+        apoDni = apoderado.Dni;
+        apoTelefono = apoderado.Telefono;
+        apoCorreo = apoderado.Correo;
+        apoDireccion = apoderado.Direccion;
+        apoParentesco = apoderado.Parentesco;
+        apoContactoEmergencia = apoderado.ContactoEmergencia;
+        apoObservacion = apoderado.Observacion;
+        apoTipoPersona = apoderado.TipoPersona;
+        apoEspecialidad = apoderado.Especialidad;
+        apoCargo = apoderado.Cargo;
+        apoArea = apoderado.Area;
+        apoActivo = apoderado.Activo;
+        errorModalApoderado = "";
+
+        mostrarModalApoderado = true;
+    }
+
+    private void GuardarApoderado()
+    {
+        errorModalApoderado = "";
+
+        if (alumno is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(apoNombres) ||
+            string.IsNullOrWhiteSpace(apoApellidoPaterno) ||
+            string.IsNullOrWhiteSpace(apoDni) ||
+            string.IsNullOrWhiteSpace(apoTelefono) ||
+            string.IsNullOrWhiteSpace(apoCorreo) ||
+            string.IsNullOrWhiteSpace(apoDireccion) ||
+            string.IsNullOrWhiteSpace(apoParentesco))
+        {
+            errorModalApoderado = "Complete los campos obligatorios del apoderado.";
+            return;
+        }
+
+        AlumnoState.GuardarApoderado(new ApoderadoModel
+        {
+            Id = apoId,
+            AlumnoId = alumno.Id,
+            Nombres = apoNombres,
+            ApellidoPaterno = apoApellidoPaterno,
+            ApellidoMaterno = apoApellidoMaterno,
+            Dni = apoDni,
+            Telefono = apoTelefono,
+            Correo = apoCorreo,
+            Direccion = apoDireccion,
+            Parentesco = apoParentesco,
+            ContactoEmergencia = apoContactoEmergencia,
+            Observacion = apoObservacion,
+            TipoPersona = apoTipoPersona,
+            Especialidad = apoEspecialidad,
+            Cargo = apoCargo,
+            Area = apoArea,
+            Activo = apoActivo
+        });
+
+        CargarDatosAlumno();
+
+        mensaje = apoId == 0
+            ? "Apoderado agregado correctamente."
+            : "Apoderado actualizado correctamente.";
+
+        mostrarModalApoderado = false;
+    }
+
+    private void EliminarApoderado(int id)
+    {
+        AlumnoState.EliminarApoderado(id);
+        CargarDatosAlumno();
+        mensaje = "Apoderado eliminado correctamente.";
+    }
+
+    private void AbrirSituacionEconomica()
+    {
+        mostrarModalPagos = true;
+    }
+
+    private void IrHistorial()
+    {
+        if (alumno is null)
+            return;
+
+        AlumnoState.AlumnoSeleccionado = alumno;
+
+        Navigation.NavigateTo("/matricula/alumnos/historial");
+    }
+
+    private void CerrarModales()
+    {
+        mostrarModalAlumno = false;
+        mostrarModalApoderado = false;
+        mostrarModalPagos = false;
+    }
+
+    private string ClaseEstadoPago(string estado)
+    {
+        return estado switch
+        {
+            "PAGADO" => "bg-success-subtle text-success",
+            "PENDIENTE" => "bg-warning-subtle text-warning",
+            "ANULADO" => "bg-danger-subtle text-danger",
+            _ => "bg-secondary-subtle text-secondary"
+        };
+    }
+    private string ClaseEstadoMatricula(string estado)
+    {
+        return estado switch
+        {
+            "MATRICULADO" => "bg-success-subtle text-success",
+            "RETIRADO" => "bg-danger-subtle text-danger",
+            "RESERVADO" => "bg-warning-subtle text-warning",
+            _ => "bg-secondary-subtle text-secondary"
+        };
+    }
+}

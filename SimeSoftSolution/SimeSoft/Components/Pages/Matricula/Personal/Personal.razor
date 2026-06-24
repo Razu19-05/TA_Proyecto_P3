@@ -1,0 +1,586 @@
+﻿@page "/matricula/personal"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@using SimeSoft.Models.Personal
+@using SimeSoft.Services.Api
+
+@inject MenuState MenuState
+@inject PersonalApiService PersonalApi
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Gestionar Personal"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h2>Gestionar Personal</h2>
+                    <p>Administrar el personal de la institución educativa</p>
+                </div>
+
+                <button class="btn btn-primary fw-bold"
+                        @onclick="AbrirModalRegistrar">
+                    <i class="bi bi-plus-lg"></i>
+                    Registrar personal
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="alert alert-danger mt-3">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    @mensajeError
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(mensajeExito))
+            {
+                <div class="alert alert-success mt-3">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @mensajeExito
+                </div>
+            }
+
+            <div class="row g-3 mb-4 mt-2">
+
+                <div class="col-md-4">
+                    <div class="summary-card">
+                        <div>
+                            <h3 class="text-success">@TotalProfesores</h3>
+                            <span>Profesores</span>
+                        </div>
+
+                        <i class="bi bi-person-workspace"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="summary-card">
+                        <div>
+                            <h3 class="text-danger">@TotalAdministrativos</h3>
+                            <span>Administrativos</span>
+                        </div>
+
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="summary-card">
+                        <div>
+                            <h3 class="text-primary">@TotalServicio</h3>
+                            <span>Personal de servicio</span>
+                        </div>
+
+                        <i class="bi bi-person-gear"></i>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="table-card">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5>Lista personal</h5>
+                        <small>Personal activo en la institución educativa</small>
+                    </div>
+
+                    <button class="btn btn-outline-primary fw-bold"
+                            @onclick="CargarPersonal">
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Recargar
+                    </button>
+                </div>
+
+                <div class="search-box mt-3 mb-3">
+                    <i class="bi bi-search"></i>
+
+                    <input placeholder="Buscar nombre, apellido o DNI..."
+                           @bind="busqueda"
+                           @bind:event="oninput" />
+                </div>
+
+                @if (cargando)
+                {
+                    <div class="loading-box">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <strong>Cargando personal desde el servicio REST...</strong>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle text-center">
+                            <thead>
+                                <tr>
+                                    <th>DNI</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Categoría</th>
+                                    <th>Especialidad/Cargo/Área</th>
+                                    <th>Teléfono</th>
+                                    <th>Correo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var item in PersonalFiltrado)
+                                {
+                                    <tr>
+                                        <td>@item.Dni</td>
+                                        <td>@item.NombreCompleto</td>
+                                        <td>@item.Categoria</td>
+                                        <td>@item.DatoAdicional</td>
+                                        <td>@item.Telefono</td>
+                                        <td>@item.Correo</td>
+                                        <td>
+                                            <button class="btn-action edit"
+                                                    title="Editar"
+                                                    @onclick="() => AbrirModalEditar(item)">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </button>
+
+                                            <button class="btn-action delete"
+                                                    title="Eliminar"
+                                                    @onclick="() => EliminarPersonal(item.IdPersona)">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!PersonalFiltrado.Any())
+                    {
+                        <div class="alert alert-warning text-center">
+                            No se encontraron registros.
+                        </div>
+                    }
+                }
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+@if (mostrarModal)
+{
+    <div class="modal-backdrop-custom">
+
+        <div class="modal-personal">
+
+            <div class="modal-title">
+                <h4>@tituloModal</h4>
+                <small>Complete los datos del personal a registrar</small>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorModal))
+            {
+                <div class="alert alert-danger py-2 mt-3">
+                    @errorModal
+                </div>
+            }
+
+            <div class="row g-3 mt-2">
+
+                <div class="col-md-12">
+                    <label>DNI *</label>
+                    <input class="form-control" @bind="modalDni" />
+                </div>
+
+                <div class="col-md-6">
+                    <label>Nombres *</label>
+                    <input class="form-control" @bind="modalNombres" />
+                </div>
+
+                <div class="col-md-6">
+                    <label>Apellido paterno *</label>
+                    <input class="form-control" @bind="modalApellidoPaterno" />
+                </div>
+
+                <div class="col-md-12">
+                    <label>Apellido materno *</label>
+                    <input class="form-control" @bind="modalApellidoMaterno" />
+                </div>
+
+                <div class="col-md-12">
+                    <label>Categoría *</label>
+
+                    <select class="form-control"
+                            @bind="modalCategoria"
+                            @bind:after="LimpiarDatoAdicional">
+                        <option value="">Seleccione categoría</option>
+                        <option value="Profesor">Profesor</option>
+                        <option value="Administrador">Administrador</option>
+                        <option value="Personal Servicio">Personal de Servicio</option>
+                    </select>
+                </div>
+
+                @if (modalCategoria == "Profesor")
+                {
+                    <div class="col-md-12">
+                        <label>Especialidad *</label>
+
+                        <input class="form-control"
+                               placeholder="Ej. Matemáticas"
+                               @bind="modalDatoAdicional" />
+                    </div>
+                }
+
+                @if (modalCategoria == "Administrador")
+                {
+                    <div class="col-md-12">
+                        <label>Cargo *</label>
+
+                        <input class="form-control"
+                               placeholder="Ej. Director"
+                               @bind="modalDatoAdicional" />
+                    </div>
+                }
+
+                @if (modalCategoria == "Personal Servicio")
+                {
+                    <div class="col-md-12">
+                        <label>Área *</label>
+
+                        <input class="form-control"
+                               placeholder="Ej. Mantenimiento"
+                               @bind="modalDatoAdicional" />
+                    </div>
+                }
+
+                <div class="col-md-6">
+                    <label>Teléfono *</label>
+                    <input class="form-control" @bind="modalTelefono" />
+                </div>
+
+                <div class="col-md-6">
+                    <label>Correo electrónico *</label>
+                    <input class="form-control" @bind="modalCorreo" />
+                </div>
+
+                <div class="col-md-12">
+                    <label>Dirección</label>
+                    <input class="form-control" @bind="modalDireccion" />
+                </div>
+
+            </div>
+
+            <div class="modal-buttons mt-4">
+                <button class="btn btn-danger fw-bold"
+                        @onclick="CerrarModal">
+                    Cancelar
+                </button>
+
+                <button class="btn btn-primary fw-bold"
+                        disabled="@guardando"
+                        @onclick="GuardarPersonal">
+                    @if (guardando)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+
+                    @(modoEdicion ? "Guardar Cambios" : "Guardar Personal")
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code {
+    private string busqueda = "";
+
+    private bool cargando = false;
+    private bool guardando = false;
+
+    private string mensajeError = "";
+    private string mensajeExito = "";
+
+    private bool mostrarModal = false;
+    private bool modoEdicion = false;
+    private int idEditando = 0;
+
+    private string errorModal = "";
+
+    private string modalDni = "";
+    private string modalNombres = "";
+    private string modalApellidoPaterno = "";
+    private string modalApellidoMaterno = "";
+    private string modalCategoria = "";
+    private string modalDatoAdicional = "";
+    private string modalTelefono = "";
+    private string modalCorreo = "";
+    private string modalDireccion = "";
+
+    private List<PersonalDto> personal = new();
+
+    private IEnumerable<PersonalDto> PersonalFiltrado =>
+        personal.Where(p =>
+            string.IsNullOrWhiteSpace(busqueda) ||
+            p.Dni.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+            p.NombreCompleto.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+            p.Categoria.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ||
+            p.DatoAdicional.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
+
+    private int TotalProfesores =>
+        personal.Count(p => p.Tipo == "PROFESOR");
+
+    private int TotalAdministrativos =>
+        personal.Count(p => p.Tipo == "ADMINISTRADOR");
+
+    private int TotalServicio =>
+        personal.Count(p => p.Tipo == "PERSONAL_SERVICIO");
+
+    private string tituloModal =>
+        modoEdicion ? "Editar personal" : "Registrar nuevo personal";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPersonal();
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private async Task CargarPersonal()
+    {
+        try
+        {
+            cargando = true;
+            mensajeError = "";
+            mensajeExito = "";
+
+            personal = await PersonalApi.ListarAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = "No se pudo conectar con el servicio REST de Personal. Revise que GlassFish esté activo y que la URL del Program.cs sea correcta. Detalle: " + ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void AbrirModalRegistrar()
+    {
+        modoEdicion = false;
+        idEditando = 0;
+        LimpiarModal();
+        mostrarModal = true;
+    }
+
+    private void AbrirModalEditar(PersonalDto item)
+    {
+        modoEdicion = true;
+        idEditando = item.IdPersona;
+
+        modalDni = item.Dni;
+        modalNombres = item.Nombres;
+        modalApellidoPaterno = item.ApellidoPaterno;
+        modalApellidoMaterno = item.ApellidoMaterno;
+        modalCategoria = item.Categoria;
+        modalDatoAdicional = item.DatoAdicional;
+        modalTelefono = item.Telefono;
+        modalCorreo = item.Correo;
+        modalDireccion = item.Direccion;
+
+        errorModal = "";
+        mostrarModal = true;
+    }
+
+    private async Task GuardarPersonal()
+    {
+        if (!ValidarModal())
+            return;
+
+        try
+        {
+            guardando = true;
+            mensajeError = "";
+            mensajeExito = "";
+
+            PersonalDto dto = ConstruirDtoDesdeModal();
+
+            if (modoEdicion)
+            {
+                dto.IdPersona = idEditando;
+
+                PersonalDto? actualizado = await PersonalApi.ActualizarAsync(dto);
+
+                if (actualizado is null)
+                {
+                    errorModal = "No se pudo actualizar el personal en el servicio REST.";
+                    return;
+                }
+
+                mensajeExito = "Personal actualizado correctamente.";
+            }
+            else
+            {
+                PersonalDto? creado = await PersonalApi.CrearAsync(dto);
+
+                if (creado is null)
+                {
+                    errorModal = "No se pudo registrar el personal en el servicio REST.";
+                    return;
+                }
+
+                mensajeExito = "Personal registrado correctamente.";
+            }
+
+            mostrarModal = false;
+            LimpiarModal();
+
+            await CargarPersonal();
+        }
+        catch (Exception ex)
+        {
+            errorModal = "Error al guardar el personal: " + ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private async Task EliminarPersonal(int idPersona)
+    {
+        try
+        {
+            mensajeError = "";
+            mensajeExito = "";
+
+            bool eliminado = await PersonalApi.EliminarAsync(idPersona);
+
+            if (!eliminado)
+            {
+                mensajeError = "No se pudo eliminar el personal seleccionado.";
+                return;
+            }
+
+            mensajeExito = "Personal eliminado correctamente.";
+
+            await CargarPersonal();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = "Error al eliminar el personal: " + ex.Message;
+        }
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+        LimpiarModal();
+    }
+
+    private void LimpiarDatoAdicional()
+    {
+        modalDatoAdicional = "";
+    }
+
+    private bool ValidarModal()
+    {
+        errorModal = "";
+
+        if (string.IsNullOrWhiteSpace(modalDni) ||
+            string.IsNullOrWhiteSpace(modalNombres) ||
+            string.IsNullOrWhiteSpace(modalApellidoPaterno) ||
+            string.IsNullOrWhiteSpace(modalApellidoMaterno) ||
+            string.IsNullOrWhiteSpace(modalCategoria) ||
+            string.IsNullOrWhiteSpace(modalDatoAdicional) ||
+            string.IsNullOrWhiteSpace(modalTelefono) ||
+            string.IsNullOrWhiteSpace(modalCorreo))
+        {
+            errorModal = "Complete todos los campos obligatorios.";
+            return false;
+        }
+
+        if (modalDni.Length != 8)
+        {
+            errorModal = "El DNI debe tener 8 dígitos.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private PersonalDto ConstruirDtoDesdeModal()
+    {
+        PersonalDto dto = new()
+        {
+            Dni = modalDni,
+            Nombres = modalNombres,
+            ApellidoPaterno = modalApellidoPaterno,
+            ApellidoMaterno = modalApellidoMaterno,
+            Telefono = modalTelefono,
+            Correo = modalCorreo,
+            Direccion = string.IsNullOrWhiteSpace(modalDireccion) ? "Sin dirección registrada" : modalDireccion,
+            Activo = true,
+            Tipo = ConvertirCategoriaATipo(modalCategoria),
+            Especialidad = null,
+            Cargo = null,
+            Area = null
+        };
+
+        if (dto.Tipo == "PROFESOR")
+        {
+            dto.Especialidad = modalDatoAdicional;
+        }
+        else if (dto.Tipo == "ADMINISTRADOR")
+        {
+            dto.Cargo = modalDatoAdicional;
+        }
+        else if (dto.Tipo == "PERSONAL_SERVICIO")
+        {
+            dto.Area = modalDatoAdicional;
+        }
+
+        return dto;
+    }
+
+    private string ConvertirCategoriaATipo(string categoria)
+    {
+        return categoria switch
+        {
+            "Profesor" => "PROFESOR",
+            "Administrador" => "ADMINISTRADOR",
+            "Personal Servicio" => "PERSONAL_SERVICIO",
+            _ => ""
+        };
+    }
+
+    private void LimpiarModal()
+    {
+        errorModal = "";
+        modalDni = "";
+        modalNombres = "";
+        modalApellidoPaterno = "";
+        modalApellidoMaterno = "";
+        modalCategoria = "";
+        modalDatoAdicional = "";
+        modalTelefono = "";
+        modalCorreo = "";
+        modalDireccion = "";
+    }
+}

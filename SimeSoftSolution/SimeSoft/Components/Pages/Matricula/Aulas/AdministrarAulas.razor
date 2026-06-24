@@ -1,0 +1,749 @@
+﻿@page "/matricula/aulas/administrar"
+@rendermode InteractiveServer
+
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject AulaState AulaState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Administrar Aulas"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Administrador"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            <div class="breadcrumb-custom">
+                <span>Aulas</span> / <strong>Administrar</strong>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h2>Administrar Aulas</h2>
+
+                    <p class="page-description">
+                        Administra las aulas por periodo, nivel y grado. Desde cada aula puedes editar, aumentar vacantes,
+                        eliminar o ver sus profesores asignados.
+                    </p>
+                </div>
+
+                <button class="btn btn-outline-secondary fw-bold px-4"
+                        @onclick="VolverMenu">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Volver al menú
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @mensaje
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    @error
+                </div>
+            }
+
+            <div class="filter-card">
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-md-3">
+                        <label>Periodo académico</label>
+                        <select class="form-select" @bind="periodo">
+                            <option>2026</option>
+                            <option>2025</option>
+                            <option>Todos</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Nivel</label>
+                        <select class="form-select" @bind="nivel">
+                            <option>Todos</option>
+                            <option>Inicial</option>
+                            <option>Primaria</option>
+                            <option>Secundaria</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Grado</label>
+                        <select class="form-select" @bind="grado">
+                            <option>Todos</option>
+                            <option>1ro</option>
+                            <option>2do</option>
+                            <option>3ro</option>
+                            <option>4to</option>
+                            <option>5to</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Estado</label>
+                        <select class="form-select" @bind="estado">
+                            <option>Todos</option>
+                            <option>Activa</option>
+                            <option>Inactiva</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label>Código de aula</label>
+                        <input class="form-control"
+                               placeholder="Ej.: P-204, LAB-COM-01"
+                               @bind="codigoAula" />
+                    </div>
+
+                    <div class="col-md-7 d-flex justify-content-end gap-3">
+                        <button class="btn btn-primary fw-bold px-5" @onclick="Buscar">
+                            <i class="bi bi-search me-2"></i>
+                            Buscar
+                        </button>
+
+                        <button class="btn btn-outline-primary fw-bold px-5" @onclick="Limpiar">
+                            <i class="bi bi-arrow-clockwise me-2"></i>
+                            Limpiar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 my-3">
+                <button class="btn btn-success fw-bold px-4"
+                        @onclick="AbrirNuevo">
+                    <i class="bi bi-plus-circle-fill me-2"></i>
+                    Nueva aula
+                </button>
+            </div>
+
+            <div class="table-responsive table-card">
+                <table class="table table-bordered text-center align-middle mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>Nivel</th>
+                            <th>Grado</th>
+                            <th>Aula</th>
+                            <th>Tipo</th>
+                            <th>Capacidad</th>
+                            <th>Ocupadas</th>
+                            <th>Disponibles</th>
+                            <th>Tutor / encargado</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var aula in aulas)
+                        {
+                            <tr>
+                                <td>@aula.Periodo</td>
+
+                                <td>
+                                    @(aula.EsCompartida ? "Todos" : aula.Nivel)
+                                </td>
+
+                                <td>
+                                    @(aula.EsCompartida ? "Todos" : aula.Grado)
+                                </td>
+
+                                <td>@aula.Codigo</td>
+
+                                <td>@aula.TipoAula</td>
+
+                                <td>@aula.Capacidad</td>
+
+                                <td>@aula.VacantesOcupadas</td>
+
+                                <td class="fw-bold @(aula.VacantesDisponibles == 0 ? "text-danger" : "text-success")">
+                                    @aula.VacantesDisponibles
+                                </td>
+
+                                <td>@ObtenerTutorOEncargado(aula)</td>
+
+                                <td>
+                                    <span class="badge @(aula.Estado == "Activa" ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")">
+                                        @aula.Estado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-primary btn-sm fw-bold dropdown-toggle"
+                                                data-bs-toggle="dropdown">
+                                            Acciones
+                                        </button>
+
+                                        <ul class="dropdown-menu dropdown-menu-end">
+
+                                            <li>
+                                                <button class="dropdown-item text-primary"
+                                                        @onclick="() => AbrirEditar(aula)">
+                                                    <i class="bi bi-pencil-fill me-2"></i>
+                                                    Editar aula
+                                                </button>
+                                            </li>
+
+                                            <li>
+                                                <button class="dropdown-item text-success"
+                                                        @onclick="() => AbrirCambiarCapacidad(aula)">
+                                                    <i class="bi bi-plus-circle-fill me-2"></i>
+                                                    Cambiar capacidad
+                                                </button>
+                                            </li>
+
+                                            <li>
+                                                <button class="dropdown-item text-primary"
+                                                        @onclick="() => VerProfesores(aula)">
+                                                    <i class="bi bi-people-fill me-2"></i>
+                                                    Ver profesores
+                                                </button>
+                                            </li>
+
+                                            <li>
+                                                <button class="dropdown-item text-danger"
+                                                        @onclick="() => Eliminar(aula.Id)">
+                                                    <i class="bi bi-trash-fill me-2"></i>
+                                                    Eliminar aula
+                                                </button>
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+            @if (!aulas.Any())
+            {
+                <div class="alert alert-warning mt-3">
+                    No se encontraron aulas con los filtros seleccionados.
+                </div>
+            }
+
+            <div class="info-box mt-3">
+                <i class="bi bi-info-circle-fill"></i>
+
+                <div>
+                    La capacidad inicial recomendada es 15 estudiantes. Puede aumentarse como máximo hasta 20 vacantes por aula.
+                    Los laboratorios de cómputo y ciencias son compartidos para todos los niveles y grados.
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+@if (mostrarModal)
+{
+    <div class="modal-backdrop-custom">
+
+        <div class="modal-aula">
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3>@(modoEdicion ? "Editar aula" : "Registrar aula")</h3>
+                    <p>Complete la información del aula y defina su alcance académico.</p>
+                </div>
+
+                <button class="btn-close" @onclick="CerrarModal"></button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorModal))
+            {
+                <div class="alert alert-warning mt-3">
+                    @errorModal
+                </div>
+            }
+
+            <div class="row g-4 mt-2">
+
+                <div class="col-md-3">
+                    <label>Código del aula *</label>
+                    <input class="form-control"
+                           placeholder="Ej.: P-204"
+                           @bind="modalCodigo" />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Tipo de aula *</label>
+
+                    <select class="form-select"
+                            @bind="modalTipo"
+                            @bind:after="ValidarLaboratorio">
+                        <option>Aula regular</option>
+                        <option>Laboratorio de Cómputo</option>
+                        <option>Laboratorio de Ciencias</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Capacidad *</label>
+                    <input type="number"
+                           min="1"
+                           max="20"
+                           class="form-control"
+                           @bind="modalCapacidad" />
+
+                    <small class="text-muted">Máximo 20 estudiantes</small>
+                </div>
+
+                <div class="col-md-2">
+                    <label>Estado *</label>
+
+                    <select class="form-select" @bind="modalEstado">
+                        <option>Activa</option>
+                        <option>Inactiva</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <hr />
+
+            <h3>Alcance del aula</h3>
+
+            <div class="form-check">
+                <input class="form-check-input"
+                       type="radio"
+                       name="alcanceAula"
+                       checked="@(!modalCompartida)"
+                       disabled="@TipoEsLaboratorio"
+                       @onchange="() => modalCompartida = false" />
+
+                <label class="form-check-label fw-bold">
+                    Asignar a un nivel y grado específico
+                </label>
+            </div>
+
+            @if (!modalCompartida)
+            {
+                <div class="row g-3 mt-2 ms-4">
+
+                    <div class="col-md-5">
+                        <label>Nivel *</label>
+
+                        <select class="form-select" @bind="modalNivel">
+                            <option>Inicial</option>
+                            <option>Primaria</option>
+                            <option>Secundaria</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Grado *</label>
+
+                        <select class="form-select" @bind="modalGrado">
+                            <option>1ro</option>
+                            <option>2do</option>
+                            <option>3ro</option>
+                            <option>4to</option>
+                            <option>5to</option>
+                        </select>
+                    </div>
+
+                </div>
+            }
+
+            <div class="form-check mt-3">
+                <input class="form-check-input"
+                       type="radio"
+                       name="alcanceAula"
+                       checked="@modalCompartida"
+                       @onchange="() => modalCompartida = true" />
+
+                <label class="form-check-label fw-bold">
+                    Uso compartido para todos los niveles y grados
+                </label>
+            </div>
+
+            @if (TipoEsLaboratorio)
+            {
+                <div class="info-box mt-3">
+                    <i class="bi bi-info-circle-fill"></i>
+
+                    <div>
+                        Los laboratorios se asignan automáticamente como uso compartido para todos los niveles y grados.
+                    </div>
+                </div>
+            }
+
+            <div class="validation-box mt-3">
+                <strong>Validaciones:</strong>
+
+                <ul class="mb-0">
+                    <li>El código es obligatorio.</li>
+                    <li>La capacidad debe ser mayor a 0 y máximo 20.</li>
+                    <li>No se debe repetir el código del aula.</li>
+                    <li>Las aulas regulares pertenecen a un nivel y grado específico.</li>
+                    <li>Los laboratorios son compartidos por todos los niveles y grados.</li>
+                </ul>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-primary fw-bold px-5" @onclick="Guardar">
+                    Guardar
+                </button>
+
+                <button class="btn btn-outline-primary fw-bold px-5" @onclick="CerrarModal">
+                    Cancelar
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+}
+@if (mostrarModalCapacidad && aulaCapacidad is not null)
+{
+    <div class="modal-backdrop-custom">
+
+        <div class="modal-aula modal-capacidad">
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3>Cambiar capacidad del aula</h3>
+
+                    <p>
+                        Aula seleccionada:
+                        <strong>@aulaCapacidad.Codigo</strong>
+                    </p>
+                </div>
+
+                <button class="btn-close" @onclick="CerrarModalCapacidad"></button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorCapacidad))
+            {
+                <div class="alert alert-warning mt-3">
+                    @errorCapacidad
+                </div>
+            }
+
+            <div class="row g-3 mt-2">
+
+                <div class="col-md-4">
+                    <label>Capacidad actual</label>
+                    <input class="form-control"
+                           value="@aulaCapacidad.Capacidad"
+                           disabled />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Vacantes ocupadas</label>
+                    <input class="form-control"
+                           value="@aulaCapacidad.VacantesOcupadas"
+                           disabled />
+                </div>
+
+                <div class="col-md-4">
+                    <label>Nueva capacidad *</label>
+                    <input type="number"
+                           min="@aulaCapacidad.VacantesOcupadas"
+                           max="20"
+                           class="form-control"
+                           @bind="nuevaCapacidad" />
+                </div>
+
+            </div>
+
+            <div class="validation-box mt-3">
+                <strong>Reglas:</strong>
+
+                <ul class="mb-0">
+                    <li>La capacidad máxima del aula es 20 estudiantes.</li>
+                    <li>No puedes poner una capacidad menor a las vacantes ya ocupadas.</li>
+                    <li>La capacidad inicial recomendada es 15 estudiantes.</li>
+                </ul>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-primary fw-bold px-5"
+                        @onclick="GuardarNuevaCapacidad">
+                    Guardar
+                </button>
+
+                <button class="btn btn-outline-primary fw-bold px-5"
+                        @onclick="CerrarModalCapacidad">
+                    Cancelar
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code {
+    private string periodo = "2026";
+    private string nivel = "Primaria";
+    private string grado = "5to";
+    private string estado = "Todos";
+    private string codigoAula = "";
+
+    private string mensaje = "";
+    private string error = "";
+
+    private List<AulaModel> aulas = new();
+
+    private bool mostrarModal = false;
+    private bool modoEdicion = false;
+    private bool modalCompartida = false;
+
+    private int modalId = 0;
+    private int modalCapacidad = 15;
+    private int modalVacantesOcupadas = 0;
+
+    private string modalCodigo = "";
+    private string modalTipo = "Aula regular";
+    private string modalEstado = "Activa";
+    private string modalNivel = "Primaria";
+    private string modalGrado = "5to";
+    private string errorModal = "";
+
+    private bool TipoEsLaboratorio =>
+    modalTipo == "Laboratorio de Cómputo" ||
+    modalTipo == "Laboratorio de Ciencias";
+
+    private bool mostrarModalCapacidad = false;
+    private AulaModel? aulaCapacidad;
+    private int nuevaCapacidad = 15;
+    private string errorCapacidad = "";
+
+    protected override void OnInitialized()
+    {
+        Buscar();
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void Buscar()
+    {
+        aulas = AulaState
+            .FiltrarAulas(periodo, nivel, grado, estado, codigoAula)
+            .ToList();
+    }
+
+    private void Limpiar()
+    {
+        periodo = "2026";
+        nivel = "Todos";
+        grado = "Todos";
+        estado = "Todos";
+        codigoAula = "";
+
+        Buscar();
+    }
+
+    private string ObtenerTutorOEncargado(AulaModel aula)
+    {
+        var profesor = AulaState
+            .ObtenerProfesoresPorAula(aula.Id)
+            .FirstOrDefault(p => p.EsTutor)
+            ?? AulaState
+                .ObtenerProfesoresPorAula(aula.Id)
+                .FirstOrDefault();
+
+        return profesor?.NombreCompleto ?? "Sin asignar";
+    }
+
+    private void AbrirNuevo()
+    {
+        modoEdicion = false;
+
+        modalId = 0;
+        modalCodigo = "";
+        modalTipo = "Aula regular";
+        modalCapacidad = 15;
+        modalVacantesOcupadas = 0;
+        modalEstado = "Activa";
+        modalCompartida = false;
+        modalNivel = "Primaria";
+        modalGrado = "5to";
+        errorModal = "";
+
+        mostrarModal = true;
+    }
+
+    private void AbrirEditar(AulaModel aula)
+    {
+        modoEdicion = true;
+
+        modalId = aula.Id;
+        modalCodigo = aula.Codigo;
+        modalTipo = aula.TipoAula;
+        modalCapacidad = aula.Capacidad;
+        modalVacantesOcupadas = aula.VacantesOcupadas;
+        modalEstado = aula.Estado;
+        modalCompartida = aula.EsCompartida;
+        modalNivel = aula.EsCompartida ? "Primaria" : aula.Nivel;
+        modalGrado = aula.EsCompartida ? "1ro" : aula.Grado;
+        errorModal = "";
+
+        mostrarModal = true;
+    }
+
+    private void ValidarLaboratorio()
+    {
+        if (TipoEsLaboratorio)
+        {
+            modalCompartida = true;
+        }
+    }
+
+    private void Guardar()
+    {
+        errorModal = "";
+
+        if (string.IsNullOrWhiteSpace(modalCodigo))
+        {
+            errorModal = "El código del aula es obligatorio.";
+            return;
+        }
+
+        if (modalCapacidad <= 0 || modalCapacidad > 20)
+        {
+            errorModal = "La capacidad debe ser mayor a 0 y máximo 20.";
+            return;
+        }
+
+        if (AulaState.ExisteCodigo(modalCodigo, modalId))
+        {
+            errorModal = "Ya existe un aula con ese código.";
+            return;
+        }
+
+        if (TipoEsLaboratorio)
+        {
+            modalCompartida = true;
+        }
+
+        AulaState.GuardarAula(new AulaModel
+        {
+            Id = modalId,
+            Periodo = periodo,
+            Nivel = modalCompartida ? "Todos" : modalNivel,
+            Grado = modalCompartida ? "Todos" : modalGrado,
+            Codigo = modalCodigo,
+            TipoAula = modalTipo,
+            Capacidad = modalCapacidad,
+            VacantesOcupadas = modalVacantesOcupadas,
+            Estado = modalEstado,
+            EsCompartida = modalCompartida,
+            ProfesorEncargado = "Sin asignar"
+        });
+
+        mensaje = modoEdicion
+            ? "Aula editada correctamente."
+            : "Aula registrada correctamente.";
+
+        mostrarModal = false;
+
+        Buscar();
+    }
+
+    private void AbrirCambiarCapacidad(AulaModel aula)
+    {
+        aulaCapacidad = aula;
+        nuevaCapacidad = aula.Capacidad;
+        errorCapacidad = "";
+        mostrarModalCapacidad = true;
+    }
+
+    private void GuardarNuevaCapacidad()
+    {
+        errorCapacidad = "";
+
+        if (aulaCapacidad is null)
+        {
+            errorCapacidad = "No se seleccionó ningún aula.";
+            return;
+        }
+
+        if (nuevaCapacidad <= 0 || nuevaCapacidad > 20)
+        {
+            errorCapacidad = "La capacidad debe ser mayor a 0 y máximo 20.";
+            return;
+        }
+
+        if (nuevaCapacidad < aulaCapacidad.VacantesOcupadas)
+        {
+            errorCapacidad = "La capacidad no puede ser menor a las vacantes ocupadas.";
+            return;
+        }
+
+        bool actualizado = AulaState.CambiarCapacidad(aulaCapacidad.Id, nuevaCapacidad);
+
+        if (!actualizado)
+        {
+            errorCapacidad = "No se pudo actualizar la capacidad del aula.";
+            return;
+        }
+
+        mensaje = "Capacidad actualizada correctamente.";
+        error = "";
+
+        mostrarModalCapacidad = false;
+        aulaCapacidad = null;
+
+        Buscar();
+    }
+
+    private void CerrarModalCapacidad()
+    {
+        mostrarModalCapacidad = false;
+        aulaCapacidad = null;
+        errorCapacidad = "";
+    }
+
+    private void Eliminar(int id)
+    {
+        AulaState.EliminarAula(id);
+
+        mensaje = "Aula eliminada correctamente.";
+        error = "";
+
+        Buscar();
+    }
+
+    private void VerProfesores(AulaModel aula)
+    {
+        AulaState.SeleccionarAula(aula);
+        Navigation.NavigateTo("/matricula/aulas/ver-profesores");
+    }
+
+    private void VolverMenu()
+    {
+        Navigation.NavigateTo("/matricula/aulas");
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+}

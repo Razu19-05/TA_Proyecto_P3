@@ -27,9 +27,7 @@ public class AsignacionDocenteRS {
             List<ProfesorDTO> lista = asignacionBL.obtenerProfesoresPorAula(nivel, grado, anio);
             return Response.ok(lista).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                    .build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
     @DELETE

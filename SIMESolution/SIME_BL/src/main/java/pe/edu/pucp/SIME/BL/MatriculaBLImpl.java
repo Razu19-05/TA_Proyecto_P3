@@ -26,6 +26,7 @@ import pe.edu.pucp.SIME.model.gestionAcademica.GradoSeccion;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 import pe.edu.pucp.SIME.model.gestionAlumnos.RelacionFamiliar;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
+import pe.edu.pucp.SIME.model.gestionDePersonal.TipoPersona;
 import pe.edu.pucp.SIME.model.gestionDescuento.Descuento;
 import pe.edu.pucp.SIME.model.gestionDescuento.TipoDeDescuento;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
@@ -81,7 +82,7 @@ public class MatriculaBLImpl implements IMatriculaBL {
         pagoInscripcion.setMatriculaDetalle(detalle);
         pagoInscripcion.setConceptoPago(concepto);
 
-        double montoDesc = concepto.getMonto()*porcentajeDescuento;
+        double montoDesc = concepto.getMonto()*porcentajeDescuento/100;
         pagoInscripcion.setMontoDescuento(montoDesc);
         pagoInscripcion.setMontoFinal(concepto.getMonto()-montoDesc);
         pagoInscripcion.setFechaEmision(new Date(System.currentTimeMillis()));
@@ -116,8 +117,9 @@ public class MatriculaBLImpl implements IMatriculaBL {
 
     private RelacionFamiliar registrarRelacionFamiliar(ApoderadoDetalleDTO detalleFamiliar,Alumno alumno) throws Exception{
         Persona apoderado = detalleFamiliar.getApoderado();
-
-        if (apoderado.getIdPersona() == 0) {
+        Persona apoderadoBuscar = personaDAO.buscarPorDni(apoderado.getDni());
+        if (apoderadoBuscar == null) {
+            apoderado.setTipo(TipoPersona.EXTERNO);
             apoderado = personaDAO.save(apoderado);
         } else {
             apoderado = personaDAO.update(apoderado);

@@ -37,7 +37,7 @@ public class AlumnoBLImpl implements IAlumnoBL {
             return a;
         } catch (Exception e){
             TransactionContext.rollback();
-            throw new Exception("Error al actualizar alumno");
+            throw new Exception("Error al insertar alumno");
         } finally{
             TransactionContext.close();
         }

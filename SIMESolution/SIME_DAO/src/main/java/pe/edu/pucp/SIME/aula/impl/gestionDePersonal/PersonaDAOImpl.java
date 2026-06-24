@@ -55,28 +55,37 @@ public class PersonaDAOImpl implements PersonaDAO {
     }
 
     private void setearDatosEspecificos(PreparedStatement pstmt, Persona persona) throws SQLException {
+        TipoPersona tipo = persona.getTipo();
+        if (tipo == null) {
+            pstmt.setNull(8, Types.VARCHAR);
+            pstmt.setNull(9, Types.VARCHAR);
+            pstmt.setNull(10, Types.VARCHAR);
+            pstmt.setNull(11, Types.VARCHAR);
+            return;
+        }
 
-        if (persona.getTipo().equals("PROFESOR")) {
-            pstmt.setString(8, persona.getTipo().name());
-            pstmt.setString(9, persona.getEspecialidad());
-            pstmt.setNull(10, Types.VARCHAR);
-            pstmt.setNull(11, Types.VARCHAR);
-
-        } else if (persona.getTipo().equals("ADMINISTRADOR")) {
-            pstmt.setString(8, persona.getTipo().name());
-            pstmt.setNull(9, Types.VARCHAR);
-            pstmt.setString(10, persona.getCargo());
-            pstmt.setNull(11, Types.VARCHAR);
-        } else if (persona.getTipo().equals("PERSONAL_SERVICIO")) {
-            pstmt.setString(8, persona.getTipo().name());
-            pstmt.setNull(9, Types.VARCHAR);
-            pstmt.setNull(10, Types.VARCHAR);
-            pstmt.setString(11,persona.getArea());
-        } else {
-            pstmt.setString(8, persona.getTipo().name());
-            pstmt.setNull(9, Types.VARCHAR);
-            pstmt.setNull(10, Types.VARCHAR);
-            pstmt.setNull(11, Types.VARCHAR);
+        pstmt.setString(8, tipo.name());
+        switch (tipo) {
+            case PROFESOR:
+                pstmt.setString(9, persona.getEspecialidad());
+                pstmt.setNull(10, Types.VARCHAR);
+                pstmt.setNull(11, Types.VARCHAR);
+                break;
+            case ADMINISTRADOR:
+                pstmt.setNull(9, Types.VARCHAR);
+                pstmt.setString(10, persona.getCargo());
+                pstmt.setNull(11, Types.VARCHAR);
+                break;
+            case PERSONAL_SERVICIO:
+                pstmt.setNull(9, Types.VARCHAR);
+                pstmt.setNull(10, Types.VARCHAR);
+                pstmt.setString(11, persona.getArea());
+                break;
+            default:
+                pstmt.setNull(9, Types.VARCHAR);
+                pstmt.setNull(10, Types.VARCHAR);
+                pstmt.setNull(11, Types.VARCHAR);
+                break;
         }
     }
 

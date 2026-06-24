@@ -11,19 +11,12 @@ public class SolicitudMatriculaDTO {
 
     private Alumno estudiante;
 
-    // ==========================================
-    // PASO 3: DATOS DE LOS FAMILIARES (Máximo 3)
-    // ==========================================
-    // Lo inicializamos para evitar errores de NullPointerException
     private List<ApoderadoDetalleDTO> listaApoderados = new ArrayList<>();
 
-    // ==========================================
-    // PASO 4: DETALLES DE MATRÍCULA Y FACTURACIÓN
-    // ==========================================
     private int idMatriculaCabecera; // Para saber a qué grado, sección y año va
 
     private int idTipoDescuento; // ID de SIME_TIPO_DESCUENTO (0 si no aplica ninguno)
-    private double porcentajeDescuentoAplicar; // Ej: 20.0, 50.0 o 100.0
+    private double porcentajeDescuentoAplicar;// Ej: 20.0, 50.0 o 100.0
     private String motivoDescuento;
 
     public Alumno getEstudiante() {

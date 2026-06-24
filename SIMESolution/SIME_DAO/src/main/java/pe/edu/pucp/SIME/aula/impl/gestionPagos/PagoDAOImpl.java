@@ -12,6 +12,7 @@ import pe.edu.pucp.SIME.model.gestionPagos.Pago;
 import pe.edu.pucp.SIME.model.gestionPagos.TipoEstado;
 
 import java.sql.*;
+import java.util.List;
 
 public class PagoDAOImpl implements PagoDAO {
 
@@ -176,5 +177,10 @@ public class PagoDAOImpl implements PagoDAO {
             pstm.setInt(1, pago.getIdPago());
             pstm.executeUpdate();
         }
+    }
+
+    @Override
+    public List<Pago> listarPagosdeAlumno(int idMatriduladetalle) throws SQLException {
+        return List.of();
     }
 }

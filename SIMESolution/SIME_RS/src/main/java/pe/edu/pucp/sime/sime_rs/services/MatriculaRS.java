@@ -5,6 +5,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import pe.edu.pucp.SIME.BL.MatriculaBLImpl;
 import pe.edu.pucp.SIME.BL.impl.IMatriculaBL;
+import pe.edu.pucp.SIME.model.DTO.SolicitudMatriculaDTO;
+import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
 
 @Path("MatriculaRS")
 @Produces(MediaType.APPLICATION_JSON)
@@ -38,6 +40,29 @@ public class MatriculaRS {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
 		}
 	}
-}
 
+	@GET
+	@Path("detalle/{idAlumno}")
+	public Response cargarMatriculaAlumno(@PathParam("idAlumno") int idAlumno) {
+		try{
+			MatriculaDetalle matriculaDetalle = matriculaBL.cargarMatriculaAlumno(idAlumno);
+			return Response.ok(matriculaDetalle).build();
+		} catch (Exception e){
+			e.printStackTrace();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+		}
+	}
+
+	@POST
+	@Path("registrar")
+	public Response registrarMatricula(SolicitudMatriculaDTO solicitud){
+		try {
+			matriculaBL.procesarMatriculaCompleta(solicitud);
+			return Response.status(Response.Status.CREATED).build();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+}
 

@@ -3,6 +3,7 @@ package pe.edu.pucp.SIME.aula.impl.gestionDePersonal;
 import pe.edu.pucp.SIME.aula.DAO.gestionDePersonal.PersonaDAO;
 import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
+import pe.edu.pucp.SIME.model.DTO.ProfesorDTO;
 import pe.edu.pucp.SIME.model.DTO.ResumenPersonalDTO;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 import pe.edu.pucp.SIME.model.gestionDePersonal.TipoPersona;
@@ -305,4 +306,6 @@ public class PersonaDAOImpl implements PersonaDAO {
         }
         return empleados;
     }
+
+
 }

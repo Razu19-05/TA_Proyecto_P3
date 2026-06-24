@@ -7,5 +7,5 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface PagoDAO extends BaseDAO<Pago, Integer> {
-    List<Pago> listarPagosdeAlumno(int idMatriduladetalle) throws SQLException;
+    List<Pago> listarPagosdeAlumno(int idAlumno) throws SQLException;
 }

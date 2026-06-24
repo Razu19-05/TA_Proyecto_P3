@@ -6,11 +6,14 @@ import pe.edu.pucp.SIME.aula.DAO.gestionMatricula.MatriculaCabeceraDAO;
 import pe.edu.pucp.SIME.aula.impl.gestionDePersonal.PersonaDAOImpl;
 import pe.edu.pucp.SIME.aula.impl.gestionMatricula.MatriculaCabeceraDAOImpl;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
+import pe.edu.pucp.SIME.model.DTO.ProfesorDTO;
 import pe.edu.pucp.SIME.model.gestionAcademica.AsignacionDocente;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AsignacionDocenteDAOImpl implements AsignacionDocenteDAO {
 
@@ -76,7 +79,6 @@ public class AsignacionDocenteDAOImpl implements AsignacionDocenteDAO {
             // Extraemos los IDs de los objetos anidados
             pstm.setInt(1, asignacionDocente.getPersona().getIdPersona());
             pstm.setInt(2, asignacionDocente.getMatriculaCabecera().getIdMatriculaCabecera());
-
             pstm.setBoolean(3, asignacionDocente.isEsTutor());
             pstm.setString(4, asignacionDocente.getObservacion());
             pstm.setBoolean(5, asignacionDocente.isActivo());
@@ -134,5 +136,43 @@ public class AsignacionDocenteDAOImpl implements AsignacionDocenteDAO {
                 System.out.println("No se encontró la asignacion docent con ID: " + asignacionDocente.getIdAsignacionDocente());
             }
         }
+    }
+
+    @Override
+    public List<ProfesorDTO> listarProfesoresPorAula(String nivel, String grado, int anio) throws SQLException {
+        List<ProfesorDTO> lista = new ArrayList<>();
+
+
+        String sql = """
+        SELECT p.id_persona, ad.id_asignacion_docente, p.dni,
+                CONCAT(p.nombres, ' ', p.apellido_paterno) AS nombre_completo, 
+                p.especialidad, ad.es_tutor 
+                FROM SIME_ASIGNACION_DOCENTE ad
+                INNER JOIN SIME_PERSONA p ON ad.id_persona = p.id_persona
+                INNER JOIN SIME_MATRICULA_CABECERA c ON ad.id_matricula_cabecera = c.id_matricula_cabecera
+                INNER JOIN SIME_GRADO_SECCION gs ON c.id_grado_seccion = gs.id_grado_seccion
+                INNER JOIN SIME_PERIODO_ACADEMICO pa ON c.id_periodo_academico = pa.id_periodo_academico 
+                WHERE gs.nivel = ? AND gs.grado = ? AND pa.anio_escolar = ? AND ad.activo = 1 
+        """;
+
+        Connection con = TransactionContext.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, nivel);
+            ps.setString(2, grado);
+            ps.setInt(3, anio);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ProfesorDTO dto = new ProfesorDTO();
+                    dto.setIdPersona(rs.getInt("id_persona"));
+                    dto.setIdAsignacionDocente(rs.getInt("id_asignacion_docente"));
+                    dto.setDni(rs.getString("dni"));
+                    dto.setNombreCompleto(rs.getString("nombre_completo"));
+                    dto.setEspecialidad(rs.getString("especialidad"));
+                    dto.setEsTutor(rs.getInt("es_tutor") == 1);
+                    lista.add(dto);
+                }
+            }
+        }
+        return lista;
     }
 }

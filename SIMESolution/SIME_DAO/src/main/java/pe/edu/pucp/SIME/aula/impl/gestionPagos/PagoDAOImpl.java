@@ -12,6 +12,7 @@ import pe.edu.pucp.SIME.model.gestionPagos.Pago;
 import pe.edu.pucp.SIME.model.gestionPagos.TipoEstado;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PagoDAOImpl implements PagoDAO {
@@ -180,7 +181,64 @@ public class PagoDAOImpl implements PagoDAO {
     }
 
     @Override
-    public List<Pago> listarPagosdeAlumno(int idMatriduladetalle) throws SQLException {
-        return List.of();
+    public List<Pago> listarPagosdeAlumno(int idAlumno) throws SQLException {
+        String sql = """
+
+                SELECT
+                    p.id_pago,
+                    p.id_matricula_detalle,
+                    p.id_concepto,
+                    p.monto_descuento,
+                    p.monto_final,
+                    p.fecha_emision,
+                    p.fecha_vencimiento,
+                    p.fecha_pago,
+                    p.estado,
+                    p.observacion,
+                    p.activo
+                FROM SIME_PAGO p
+                INNER JOIN SIME_MATRICULA_DETALLE md ON p.id_matricula_detalle = md.id_matricula_detalle
+                WHERE md.id_alumno = ? AND p.activo = 1
+                ORDER BY p.fecha_emision DESC
+                """;
+        Connection connection = TransactionContext.getConnection();
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+
+            pstm.setInt(1, idAlumno);
+            List<Pago> pagos = new ArrayList<>();
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    Pago pago = new Pago();
+                    pago.setIdPago(rs.getInt("id_pago"));
+                    pago.setMontoDescuento(rs.getDouble("monto_descuento"));
+                    pago.setMontoFinal(rs.getDouble("monto_final"));
+
+                    // Fechas
+                    pago.setFechaEmision(rs.getDate("fecha_emision"));
+                    pago.setFechaVencimiento(rs.getDate("fecha_vencimiento"));
+                    pago.setFechaPago(rs.getDate("fecha_pago")); // Retorna null si en la BD está vacío
+
+                    // Enum TipoEstado
+                    String estadoStr = rs.getString("estado");
+                    if (estadoStr != null) {
+                        pago.setEstado(TipoEstado.valueOf(estadoStr));
+                    }
+
+                    pago.setObservacion(rs.getString("observacion"));
+                    pago.setActivo(rs.getBoolean("activo"));
+
+                    MatriculaDetalle detalle = buscarMatricula(rs.getInt("id_matricula_detalle"));
+                    pago.setMatriculaDetalle(detalle);
+
+                    ConceptoPago concepto = busarConcepto(rs.getInt("id_concepto"));
+                    pago.setConceptoPago(concepto);
+
+                    pagos.add(pago);
+
+                }
+            }
+            return pagos;
+
+        }
     }
 }

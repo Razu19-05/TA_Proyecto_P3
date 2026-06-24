@@ -95,4 +95,18 @@ public class PersonalBLImpl implements IPersonalBL {
         }
     }
 
+    @Override
+    public Persona buscarProfesorPorDni(String dni) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            Persona profesor = personaDAO.buscarProfesorPorDni(dni);
+            TransactionContext.commit();
+            return profesor;
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al listar empleados: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

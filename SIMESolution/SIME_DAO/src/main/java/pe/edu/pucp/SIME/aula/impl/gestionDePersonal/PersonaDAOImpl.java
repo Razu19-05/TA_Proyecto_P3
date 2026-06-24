@@ -307,5 +307,39 @@ public class PersonaDAOImpl implements PersonaDAO {
         return empleados;
     }
 
+    @Override
+    public Persona buscarProfesorPorDni(String dni) throws SQLException {
+        String sql = """
+        SELECT id_persona, 
+        nombres, 
+        apellido_paterno, 
+        apellido_materno, 
+        dni, 
+        telefono, 
+        correo ,
+        direccion
+        ,tipo ,
+        especialidad, 
+        cargo, 
+        area, 
+        activo
+        from SIME_PERSONA where dni = ? AND tipo = 'PROFESOR' AND activo = 1
+        """;
+        Connection connection = TransactionContext.getConnection();
+        try(
+                PreparedStatement pstm = connection.prepareStatement(sql)){
+            pstm.setString(1,dni);
+            try(ResultSet rs = pstm.executeQuery()){
+                if(rs.next()){
+                    Persona persona = null;
+                    persona = mapearPersona(rs);
+                    return persona;
+                }
+            }
 
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
 }

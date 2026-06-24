@@ -7,6 +7,7 @@ import pe.edu.pucp.SIME.BL.PersonalBLImpl;
 import pe.edu.pucp.SIME.model.DTO.ResumenPersonalDTO;
 import pe.edu.pucp.SIME.BL.impl.IPersonalBL;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
+import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
 
 import java.util.List;
 
@@ -36,6 +37,18 @@ public class EmpleadosRS {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @GET
+    @Path("buscarProfesor/{dni}")
+    public Response cargarProfesor(@PathParam("dni") String dni) {
+        try{
+            Persona profesor = personalBL.buscarProfesorPorDni(dni);
+            return Response.ok(profesor).build();
+        } catch (Exception e){
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
 

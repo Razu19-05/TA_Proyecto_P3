@@ -13,4 +13,5 @@ public interface IPersonalBL {
     void eliminarEmpleado(Persona empleado) throws Exception;
     Persona actualizarEmpleado(Persona empleado) throws Exception;
     Persona buscarEmpleadoPorId(Integer id) throws Exception;
+    Persona buscarProfesorPorDni(String dni) throws Exception;
 }

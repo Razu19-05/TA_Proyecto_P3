@@ -7,7 +7,6 @@ import pe.edu.pucp.SIME.BL.AsignacionDocenteBL;
 import pe.edu.pucp.SIME.BL.impl.IAsignacionDocenteBL;
 import pe.edu.pucp.SIME.model.DTO.ProfesorDTO;
 import pe.edu.pucp.SIME.model.gestionAcademica.AsignacionDocente;
-import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 
 import java.util.List;
 

@@ -24,4 +24,34 @@ public class PagoBLImpl implements IPagoBL {
             TransactionContext.close();
         }
     }
+
+    @Override
+    public Pago actualizarPago(int id,Pago pagoAct) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            pagoAct.setIdPago(id);
+            pagoAct = pagoDAO.update(pagoAct);
+            TransactionContext.commit();
+            return pagoAct;
+        }catch (Exception e){
+            throw new Exception("Error al actualizar pago: " + e.getMessage());
+        }finally {
+            TransactionContext.commit();
+        }
+    }
+
+    @Override
+    public void eliminarPago(int idPago) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            Pago pago = new Pago();
+            pago.setIdPago(idPago);
+            pagoDAO.remove(pago);
+            TransactionContext.commit();
+        }catch (Exception e){
+            throw new Exception("Error al eliminar pago: " + e.getMessage());
+        }finally {
+            TransactionContext.close();
+        }
+    }
 }

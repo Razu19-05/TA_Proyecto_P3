@@ -5,6 +5,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import pe.edu.pucp.SIME.BL.PagoBLImpl;
 import pe.edu.pucp.SIME.BL.impl.IPagoBL;
+import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 import pe.edu.pucp.SIME.model.gestionPagos.Pago;
 
 import java.util.List;
@@ -26,5 +27,28 @@ public class PagoRS {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
 
+    }
+    @PUT
+    @Path("actualizar/{idPago}")
+    public Response actualizarPago(@PathParam("idPago") int idPago, Pago pagoAct) {
+        try {
+            pagoAct = pagoBL.actualizarPago(idPago,pagoAct);
+            return Response.ok(pagoAct).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+        }
+    }
+
+    @DELETE
+    @Path("eliminar/{id}")
+    public Response eliminarPago(@PathParam("id") int id) {
+        try{
+            pagoBL.eliminarPago(id);
+            return Response.noContent().build();
+        } catch (Exception e){
+            e.printStackTrace();
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
     }
 }

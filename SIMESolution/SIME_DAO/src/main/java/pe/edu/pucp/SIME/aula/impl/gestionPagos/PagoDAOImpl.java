@@ -183,17 +183,23 @@ public class PagoDAOImpl implements PagoDAO {
     @Override
     public List<Pago> listarPagosdeAlumno(int idAlumno) throws SQLException {
         String sql = """
+
                 SELECT
-                id_pago,
-                id_matricula_detalle,
-                id_concepto,
-                monto_descuento,
-                monto_final,
-                fecha_emision,
-                fecha_vencimiento,
-                fecha_pago,
-                estado,
-                observacion,activo FROM SIME_PAGO WHERE id_pago = ?
+                    p.id_pago,
+                    p.id_matricula_detalle,
+                    p.id_concepto,
+                    p.monto_descuento,
+                    p.monto_final,
+                    p.fecha_emision,
+                    p.fecha_vencimiento,
+                    p.fecha_pago,
+                    p.estado,
+                    p.observacion,
+                    p.activo
+                FROM SIME_PAGO p
+                INNER JOIN SIME_MATRICULA_DETALLE md ON p.id_matricula_detalle = md.id_matricula_detalle
+                WHERE md.id_alumno = ? AND p.activo = 1
+                ORDER BY p.fecha_emision DESC
                 """;
         Connection connection = TransactionContext.getConnection();
         try (PreparedStatement pstm = connection.prepareStatement(sql)) {

@@ -11,6 +11,7 @@ public interface PersonaDAO extends BaseDAO<Persona, Integer> {
     Persona buscarPorDni(String dni) throws SQLException;
     ResumenPersonalDTO obtenerEstadisticas() throws SQLException;
     List<Persona> listarEmpleados() throws SQLException;
+    Persona buscarProfesorPorDni(String dni) throws SQLException;
 
 }
 

@@ -1,0 +1,278 @@
+﻿@page "/matricula/pagos/anular"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject MatriculaState MatriculaState
+@inject NavigationManager Navigation
+
+<div class="sime-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="sime-main">
+
+        <Topbar Titulo="Anular Deuda"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="anular-page">
+
+            <h1>Anular Deuda</h1>
+
+            <div class="breadcrumb-custom">
+                <a href="/matricula/pagos">Pagos</a>
+                <span>/</span>
+                <strong>Anular deuda</strong>
+            </div>
+
+            <p class="subtitle">
+                Registre la observación y confirme la anulación de una deuda.
+            </p>
+
+            @if (deuda is null || alumno is null)
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    No se seleccionó ninguna deuda. Vuelva a la pantalla de pagos.
+                </div>
+
+                <button class="btn btn-outline-secondary btn-lg" @onclick="Volver">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver
+                </button>
+            }
+            else
+            {
+                <div class="student-card">
+                    <div>
+                        <h2>@alumno.NombreCompleto</h2>
+
+                        <p>
+                            DNI: <strong>@alumno.Dni</strong>
+                        </p>
+                    </div>
+
+                    <span class="badge bg-primary px-3 py-2">Activo</span>
+                </div>
+
+                <div class="card-box">
+                    <h3>Detalle de la deuda</h3>
+
+                    <div class="deuda-grid">
+                        <div>
+                            <span>Concepto</span>
+                            <strong>@deuda.Concepto</strong>
+                        </div>
+
+                        <div>
+                            <span>Fecha de emisión</span>
+                            <strong>@deuda.FechaEmision.ToString("dd/MM/yyyy")</strong>
+                        </div>
+
+                        <div>
+                            <span>Fecha de vencimiento</span>
+                            <strong>@deuda.FechaVencimiento.ToString("dd/MM/yyyy")</strong>
+                        </div>
+
+                        <div>
+                            <span>Monto original</span>
+                            <strong>S/ @deuda.MontoOriginal.ToString("N2")</strong>
+                        </div>
+
+                        <div>
+                            <span>Monto descuento</span>
+                            <strong>S/ @deuda.MontoDescuento.ToString("N2")</strong>
+                        </div>
+
+                        <div>
+                            <span>Monto final</span>
+                            <strong>S/ @deuda.MontoFinal.ToString("N2")</strong>
+                        </div>
+
+                        <div>
+                            <span>Estado actual</span>
+                            <strong>
+                                <span class="badge @ClaseEstado(deuda.Estado)">
+                                    @deuda.Estado
+                                </span>
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Observación actual</span>
+                            <strong>@deuda.Observacion</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-box">
+                    <h3>Confirmación de anulación</h3>
+
+                    <label class="form-label fw-bold">Observación (sustento)</label>
+
+                    <textarea class="form-control"
+                              rows="4"
+                              placeholder="Ingrese el motivo por el cual se anula esta deuda"
+                              @bind="observacionAnulacion"></textarea>
+
+                    @if (!string.IsNullOrEmpty(mensajeError))
+                    {
+                        <div class="alert alert-danger mt-3 mb-0">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            @mensajeError
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(mensajeExito))
+                    {
+                        <div class="alert alert-success mt-3 mb-0">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            @mensajeExito
+                        </div>
+                    }
+                </div>
+
+                <div class="status-change-card row g-0 text-center align-items-center">
+
+                    <div class="col-md-6 py-4 border-end">
+                        <span class="d-block text-muted fw-semibold mb-2">
+                            Monto afectado
+                        </span>
+
+                        <strong class="fs-2 fw-bold text-danger">
+                            S/ @deuda.MontoFinal.ToString("N2")
+                        </strong>
+                    </div>
+
+                    <div class="col-md-6 py-4">
+                        <span class="d-block text-muted fw-semibold mb-2">
+                            Nuevo estado
+                        </span>
+
+                        <span class="badge bg-secondary fs-6 px-4 py-2">
+                            ANULADO
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="alert alert-danger alert-warning-custom">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+
+                    <strong>
+                        La anulación cambiará el estado de la deuda a ANULADO y mantendrá el historial de la operación.
+                    </strong>
+                </div>
+
+                <div class="bottom-actions">
+                    <button class="btn btn-outline-secondary btn-lg" @onclick="Volver">
+                        <i class="bi bi-arrow-left"></i>
+                        Volver
+                    </button>
+
+                    <button class="btn btn-danger btn-lg"
+                            disabled="@(deuda.Estado != "PENDIENTE")"
+                            @onclick="ConfirmarAnulacion">
+                        <i class="bi bi-trash-fill"></i>
+                        Confirmar anulación
+                    </button>
+                </div>
+            }
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private PagoGeneradoMatriculaModel? deuda;
+    private AlumnoMatriculaModel? alumno;
+
+    private string observacionAnulacion = "";
+    private string mensajeError = "";
+    private string mensajeExito = "";
+
+    protected override void OnInitialized()
+    {
+        deuda = MatriculaState.DeudaSeleccionada;
+
+        if (MatriculaState.AlumnoPagoSeleccionadoId.HasValue)
+        {
+            alumno = MatriculaState.ObtenerAlumnoPorId(MatriculaState.AlumnoPagoSeleccionadoId.Value);
+        }
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void Volver()
+    {
+        if (MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+        {
+            Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
+        }
+        else
+        {
+            Navigation.NavigateTo("/matricula/pagos?retorno=pagos");
+        }
+    }
+
+    private void ConfirmarAnulacion()
+    {
+        mensajeError = "";
+        mensajeExito = "";
+
+        if (deuda is null)
+        {
+            mensajeError = "No se seleccionó ninguna deuda.";
+            return;
+        }
+
+        if (deuda.Estado != "PENDIENTE")
+        {
+            mensajeError = "Solo se puede anular una deuda en estado PENDIENTE.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(observacionAnulacion))
+        {
+            mensajeError = "Debe ingresar una observación que sustente la anulación.";
+            return;
+        }
+
+        if (observacionAnulacion.Trim().Length < 10)
+        {
+            mensajeError = "La observación debe tener al menos 10 caracteres.";
+            return;
+        }
+
+        deuda.Estado = "ANULADO";
+        deuda.Observacion = observacionAnulacion.Trim();
+
+        if (MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+        {
+            MatriculaState.VieneDePagoAlumnoRegular = true;
+            Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
+        }
+        else
+        {
+            Navigation.NavigateTo("/matricula/pagos?retorno=pagos");
+        }
+    }
+
+    private string ClaseEstado(string estado)
+    {
+        return estado switch
+        {
+            "PAGADO" => "bg-success",
+            "PENDIENTE" => "bg-warning text-dark",
+            "ANULADO" => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
+}

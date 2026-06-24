@@ -1,0 +1,108 @@
+/* CSS for Matriculas component */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f6fb;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.content-area {
+    padding: 28px 36px;
+}
+
+.welcome-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 18px;
+    padding: 42px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+}
+
+.welcome-icon {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #0d6efd;
+    margin: 0 auto 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 58px;
+}
+
+.welcome-card h2 {
+    color: #071653;
+    font-size: 36px;
+    font-weight: 900;
+    margin-bottom: 14px;
+}
+
+.welcome-card p {
+    color: #4b5563;
+    font-size: 18px;
+    max-width: 850px;
+    margin: 0 auto 28px;
+    line-height: 1.6;
+}
+
+.info-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 28px;
+    min-height: 250px;
+    text-align: center;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+.info-icon {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+}
+
+    .info-icon.blue {
+        background: #dbeafe;
+        color: #0d6efd;
+    }
+
+    .info-icon.green {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .info-icon.orange {
+        background: #ffedd5;
+        color: #f97316;
+    }
+
+.info-card h3 {
+    color: #071653;
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 12px;
+}
+
+.info-card p {
+    color: #4b5563;
+    font-size: 16px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.btn-primary {
+    background: #0d6efd;
+    border-color: #0d6efd;
+}

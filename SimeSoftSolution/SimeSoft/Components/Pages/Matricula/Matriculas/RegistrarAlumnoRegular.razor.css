@@ -1,0 +1,1007 @@
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f3f6fb;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.alumno-regular-page {
+    padding: 24px 32px 34px 32px;
+}
+
+/* =========================
+   CABECERA
+========================= */
+
+.alumno-regular-page .matricula-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.alumno-regular-page .matricula-header h2,
+.alumno-regular-page h2 {
+    color: #06276b;
+    font-size: 34px;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.alumno-regular-page .matricula-header p,
+.alumno-regular-page .page-description {
+    color: #475569;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* =========================
+   STEPPER REGULAR
+========================= */
+
+.alumno-regular-page .stepper-regular {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
+    margin-bottom: 24px;
+}
+
+.alumno-regular-page .step-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #64748b;
+    font-weight: 900;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.alumno-regular-page .step-item .step-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #334155;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.alumno-regular-page .step-item.active .step-circle {
+    background: #0d6efd;
+    color: white;
+}
+
+.alumno-regular-page .step-item.active span {
+    color: #06276b;
+}
+
+.alumno-regular-page .step-item.done .step-circle {
+    background: #198754;
+    color: white;
+}
+
+.alumno-regular-page .step-item.done span {
+    color: #198754;
+}
+
+/* =========================
+   FORMULARIOS GENERALES
+========================= */
+
+.alumno-regular-page label {
+    color: #111827;
+    font-size: 15px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.alumno-regular-page .form-control,
+.alumno-regular-page .form-select {
+    border-radius: 10px;
+    border: 1px solid #94a3b8;
+    background: #f8fafc;
+}
+
+.alumno-regular-page .form-control:focus,
+.alumno-regular-page .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+}
+
+.alumno-regular-page hr {
+    border-color: #d8dee9;
+    opacity: 1;
+    margin: 22px 0;
+}
+
+/* =========================
+   PASO 1: BÚSQUEDA
+========================= */
+
+.alumno-regular-page .search-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.alumno-regular-page .search-row {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.alumno-regular-page .search-row input {
+    flex: 1;
+}
+
+.alumno-regular-page .custom-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+}
+
+.alumno-regular-page .student-summary {
+    margin-top: 18px;
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
+}
+
+.alumno-regular-page .student-summary div {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.alumno-regular-page .student-summary span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.alumno-regular-page .student-summary strong {
+    color: #06276b;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+/* =========================
+   PASO 2: DATOS
+========================= */
+
+.alumno-regular-page .identity-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.alumno-regular-page .identity-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.alumno-regular-page .identity-title i {
+    color: #074996;
+    font-size: 34px;
+}
+
+.alumno-regular-page .identity-title h3 {
+    color: #07347a;
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+}
+
+/* =========================
+   PASO 3: APODERADOS
+========================= */
+
+.alumno-regular-page .guardian-header {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 22px 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
+}
+
+.alumno-regular-page .guardian-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.alumno-regular-page .guardian-title i {
+    color: #198754;
+    font-size: 34px;
+}
+
+.alumno-regular-page .guardian-title h3 {
+    color: #06276b;
+    font-size: 27px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.alumno-regular-page .empty-guardian-box {
+    margin-top: 22px;
+    border: 2px dashed #bfdbfe;
+    background: #eff6ff;
+    color: #06276b;
+    border-radius: 16px;
+    padding: 34px;
+    text-align: center;
+}
+
+.alumno-regular-page .empty-guardian-box i {
+    font-size: 54px;
+    color: #0d6efd;
+    margin-bottom: 12px;
+}
+
+.alumno-regular-page .empty-guardian-box h4 {
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.alumno-regular-page .empty-guardian-box p {
+    color: #475569;
+    font-weight: 600;
+}
+
+.alumno-regular-page .responsables-grid {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.alumno-regular-page .responsable-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
+}
+
+.alumno-regular-page .responsable-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.alumno-regular-page .parentesco-badge {
+    background: #dcfce7;
+    color: #166534;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.alumno-regular-page .responsable-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.alumno-regular-page .icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 9px;
+    color: white;
+    display: grid;
+    place-items: center;
+}
+
+.alumno-regular-page .icon-btn.edit {
+    background: #0d6efd;
+}
+
+.alumno-regular-page .icon-btn.delete {
+    background: #dc3545;
+}
+
+.alumno-regular-page .responsable-card h4 {
+    color: #06276b;
+    font-size: 20px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+
+.alumno-regular-page .responsable-card p {
+    color: #334155;
+    margin-bottom: 7px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.alumno-regular-page .emergency-label,
+.alumno-regular-page .normal-label {
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alumno-regular-page .emergency-label {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.alumno-regular-page .normal-label {
+    background: #e5e7eb;
+    color: #475569;
+}
+
+/* =========================
+   PASO 4: ACADÉMICO
+========================= */
+
+.alumno-regular-page .academic-detail-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.alumno-regular-page .academic-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.alumno-regular-page .academic-title i {
+    color: #074996;
+    font-size: 34px;
+}
+
+.alumno-regular-page .academic-title h3 {
+    color: #07347a;
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.alumno-regular-page .level-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+.alumno-regular-page .level-card {
+    height: 170px;
+    border: 1px solid #94a3b8;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    background: white;
+}
+
+.alumno-regular-page .level-card i {
+    font-size: 52px;
+    color: #111827;
+}
+
+.alumno-regular-page .level-card strong {
+    display: block;
+    color: #111827;
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.alumno-regular-page .level-card.selected {
+    background: #dbeafe;
+    border: 3px solid #1d4fa3;
+}
+
+.alumno-regular-page .level-card.selected i,
+.alumno-regular-page .level-card.selected strong {
+    color: #07347a;
+}
+
+.alumno-regular-page .vacancy-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.alumno-regular-page .vacancy-summary div {
+    background: #f8fafc;
+    border: 1px solid #d8dee9;
+    border-radius: 12px;
+    padding: 18px 20px;
+}
+
+.alumno-regular-page .vacancy-summary span {
+    display: block;
+    color: #64748b;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+
+.alumno-regular-page .vacancy-summary strong {
+    color: #06276b;
+    font-size: 30px;
+    font-weight: 900;
+}
+
+/* =========================
+   PASO 5: DEUDAS
+========================= */
+
+.alumno-regular-page .debt-check-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.alumno-regular-page .debt-check-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.alumno-regular-page .debt-check-title i {
+    color: #0d6efd;
+    font-size: 42px;
+}
+
+.alumno-regular-page .debt-check-title h3 {
+    color: #06276b;
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.alumno-regular-page .debt-check-title p {
+    margin: 4px 0 0 0;
+    color: #475569;
+    font-weight: 600;
+}
+
+.alumno-regular-page .debt-status {
+    margin-top: 24px;
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.alumno-regular-page .debt-status i {
+    font-size: 46px;
+}
+
+.alumno-regular-page .debt-status h4 {
+    font-size: 24px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.alumno-regular-page .debt-status p {
+    margin: 4px 0 0 0;
+    font-weight: 600;
+}
+
+.alumno-regular-page .debt-status.danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alumno-regular-page .debt-status.success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.alumno-regular-page .debt-action-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 14px;
+    padding: 22px 26px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+}
+
+.alumno-regular-page .debt-action-box h4 {
+    color: #06276b;
+    font-size: 24px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.alumno-regular-page .debt-action-box p {
+    color: #475569;
+    font-weight: 600;
+    margin: 4px 0 0 0;
+}
+
+/* =========================
+   PASO 6: PAGOS
+========================= */
+
+.alumno-regular-page .payment-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.alumno-regular-page .payment-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.alumno-regular-page .payment-title i {
+    color: #074996;
+    font-size: 34px;
+}
+
+.alumno-regular-page .payment-title h3 {
+    color: #07347a;
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.alumno-regular-page .educational-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    color: #07347a;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.alumno-regular-page .educational-box i {
+    font-size: 42px;
+    color: #0d6efd;
+}
+
+.alumno-regular-page .educational-box p {
+    margin: 4px 0 0 0;
+}
+
+.alumno-regular-page .table {
+    background: white;
+}
+
+.alumno-regular-page .table thead th {
+    background: #f1f5f9;
+    color: #111827;
+    font-weight: 900;
+}
+
+.alumno-regular-page .table tbody td {
+    color: #111827;
+    vertical-align: middle;
+}
+
+.alumno-regular-page .economic-summary {
+    background: #1557a5;
+    color: white;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+.alumno-regular-page .summary-header {
+    background: #2468c9;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.alumno-regular-page .summary-header i {
+    font-size: 40px;
+}
+
+.alumno-regular-page .summary-header h3 {
+    font-size: 32px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.alumno-regular-page .summary-header p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.alumno-regular-page .summary-body {
+    padding: 28px 38px;
+}
+
+.alumno-regular-page .summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 23px;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+.alumno-regular-page .summary-row.total {
+    font-size: 34px;
+    margin-top: 28px;
+}
+
+.alumno-regular-page .summary-row.discount {
+    font-size: 21px;
+    color: #a7f3d0;
+    margin-top: 24px;
+}
+
+/* =========================
+   PASO 7: RESUMEN FINAL
+========================= */
+
+.alumno-regular-page .final-summary-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.alumno-regular-page .student-final-card {
+    background: #f8fafc;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+}
+
+.alumno-regular-page .final-avatar i {
+    color: #1d4fa3;
+    font-size: 96px;
+    margin-bottom: 20px;
+}
+
+.alumno-regular-page .student-final-card h3 {
+    color: #111827;
+    font-size: 26px;
+    font-weight: 900;
+}
+
+.alumno-regular-page .student-final-card p {
+    text-align: left;
+    color: #111827;
+    font-size: 15px;
+}
+
+.alumno-regular-page .summary-section-card {
+    background: #f8fafc;
+    border: 1px solid #d8dee9;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.alumno-regular-page .summary-section-card h3 {
+    color: #111827;
+    font-size: 26px;
+    font-weight: 900;
+    margin-bottom: 18px;
+}
+
+.alumno-regular-page .apoderado-summary-row {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alumno-regular-page .apoderado-summary-row strong {
+    display: block;
+    color: #111827;
+}
+
+.alumno-regular-page .apoderado-summary-row span {
+    color: #475569;
+    font-weight: 700;
+}
+
+.alumno-regular-page .financial-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #d8dee9;
+    font-size: 20px;
+}
+
+.alumno-regular-page .financial-row strong {
+    font-weight: 900;
+}
+
+.alumno-regular-page .financial-row.discount {
+    color: #047857;
+}
+
+.alumno-regular-page .discount-detail-box {
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+    color: #047857;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    font-weight: 700;
+}
+
+.alumno-regular-page .financial-total {
+    background: #dbeafe;
+    padding: 20px;
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.alumno-regular-page .confirmation-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+/* =========================
+   ÉXITO FINAL
+========================= */
+
+.alumno-regular-page .success-card {
+    background: white;
+    border: 1px solid #bbf7d0;
+    border-radius: 18px;
+    padding: 56px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.alumno-regular-page .success-icon {
+    width: 92px;
+    height: 92px;
+    margin: 0 auto 18px auto;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #16a34a;
+    display: grid;
+    place-items: center;
+    font-size: 54px;
+}
+
+.alumno-regular-page .success-card h2 {
+    color: #166534;
+    font-size: 36px;
+    font-weight: 900;
+}
+
+.alumno-regular-page .success-card p {
+    color: #475569;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.alumno-regular-page .success-actions {
+    margin-top: 28px;
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+}
+
+/* =========================
+   MODAL APODERADO REGULAR
+========================= */
+
+.alumno-regular-page .modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .55);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.alumno-regular-page .modal-apoderado-regular {
+    width: min(900px, 96vw);
+    max-height: 92vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 22px 70px rgba(0, 0, 0, .28);
+}
+
+.alumno-regular-page .modal-apoderado-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+}
+
+.alumno-regular-page .modal-apoderado-header h3 {
+    color: #06276b;
+    font-size: 28px;
+    font-weight: 900;
+    margin: 0;
+}
+
+.alumno-regular-page .registro-badge {
+    background: #dbeafe;
+    color: #07347a;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 13px;
+}
+
+.alumno-regular-page .emergency-box {
+    border: 1px solid #fecaca;
+    background: #fff1f2;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.alumno-regular-page .emergency-box input {
+    width: 20px;
+    height: 20px;
+}
+
+.alumno-regular-page .emergency-box strong {
+    display: block;
+    color: #991b1b;
+}
+
+.alumno-regular-page .emergency-box span {
+    color: #7f1d1d;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.alumno-regular-page .emergency-box i {
+    font-size: 28px;
+    color: #dc3545;
+}
+
+.alumno-regular-page .modal-apoderado-actions {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+}
+
+/* =========================
+   BOTONES INFERIORES
+========================= */
+
+.alumno-regular-page .bottom-actions {
+    margin-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+/* =========================
+   BOTONES
+========================= */
+
+.alumno-regular-page .btn-primary {
+    background: #074996;
+    border-color: #074996;
+}
+
+.alumno-regular-page .btn-success {
+    background: #198754;
+    border-color: #198754;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1200px) {
+    .alumno-regular-page .matricula-header,
+    .alumno-regular-page .stepper-regular,
+    .alumno-regular-page .guardian-header,
+    .alumno-regular-page .debt-action-box,
+    .alumno-regular-page .success-actions,
+    .alumno-regular-page .bottom-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .alumno-regular-page .student-summary,
+    .alumno-regular-page .responsables-grid,
+    .alumno-regular-page .level-options,
+    .alumno-regular-page .vacancy-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .alumno-regular-page .search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .alumno-regular-page .step-item {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .alumno-regular-page {
+        padding: 18px;
+    }
+
+    .alumno-regular-page .matricula-header h2,
+    .alumno-regular-page h2 {
+        font-size: 28px;
+    }
+
+    .alumno-regular-page .student-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .alumno-regular-page .summary-row,
+    .alumno-regular-page .financial-row,
+    .alumno-regular-page .financial-total {
+        font-size: 18px;
+    }
+}

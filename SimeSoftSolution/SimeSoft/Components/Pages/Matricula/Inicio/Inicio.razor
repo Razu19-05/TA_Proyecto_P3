@@ -1,0 +1,57 @@
+﻿@page "/matricula/inicio"
+@rendermode InteractiveServer
+
+<div class="sime-layout">
+
+    <SidebarMatricula MenuAbierto="@menuAbierto" />
+
+    <main class="sime-main">
+
+        <Topbar Titulo="Página de Inicio"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="inicio-page">
+
+            <div class="bienvenida-card">
+
+                <div class="bienvenida-overlay"></div>
+
+                <div class="bienvenida-content">
+
+                    <span class="etiqueta">BIENVENIDO(A)</span>
+
+                    <h1>Sistema Integral de Matrícula Escolar</h1>
+
+                    <h2>¡Hola, Favio Yauri! 👋</h2>
+
+                    <p>
+                        Desde esta plataforma puedes gestionar de manera eficiente
+                        todos los procesos académicos y administrativos de nuestra institución.
+                    </p>
+
+                    <strong>Estamos aquí para ayudarte en cada paso.</strong>
+
+                </div>
+
+            </div>
+
+            <footer class="footer-inicio">
+                © 2026 Sistema Integral de Matrícula Escolar (SIME) • Todos los derechos reservados.
+            </footer>
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private bool menuAbierto = true;
+
+    private void CambiarMenu()
+    {
+        menuAbierto = !menuAbierto;
+    }
+}

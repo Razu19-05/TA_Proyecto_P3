@@ -1,0 +1,503 @@
+﻿@page "/matricula/pagos"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject MatriculaState MatriculaState
+@inject NavigationManager Navigation
+
+<div class="sime-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="sime-main">
+
+        <Topbar Titulo="Gestión de Pagos"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="pagos-page">
+
+            <p class="page-description">
+                Busque al alumno por DNI, nombres o apellidos y gestione sus deudas pendientes.
+            </p>
+
+            @if (!vieneDeMatriculaRegular)
+            {
+                <div class="filter-card">
+
+                    <div class="row g-3 align-items-end">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Buscar alumno</label>
+
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+
+                                <input class="form-control"
+                                       placeholder="Ingrese DNI, nombres o apellidos del alumno"
+                                       @bind="criterioBusqueda"
+                                       @bind:event="oninput" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Estado</label>
+
+                            <select class="form-select"
+                                    @bind="estadoSeleccionado"
+                                    disabled="@(!alumnoEncontrado)">
+                                <option value="">Todos</option>
+                                <option value="PENDIENTE">Pendiente</option>
+                                <option value="PAGADO">Pagado</option>
+                                <option value="ANULADO">Anulado</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 d-grid">
+                            <button class="btn btn-primary fw-bold"
+                                    @onclick="BuscarAlumno">
+                                <i class="bi bi-search me-2"></i>
+                                Buscar
+                            </button>
+                        </div>
+
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensajeError))
+                    {
+                        <div class="alert alert-danger mt-3 mb-0">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            @mensajeError
+                        </div>
+                    }
+
+                </div>
+            }
+
+            @if (!alumnoEncontrado)
+            {
+                <div class="empty-card">
+                    <div class="empty-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+
+                    <h2>Busque un alumno para visualizar sus deudas</h2>
+                    <p>Primero debe ingresar el DNI, nombres o apellidos del alumno.</p>
+                </div>
+            }
+            else
+            {
+                <div class="student-card">
+                    <div>
+                        <h2>@NombreCompletoAlumno</h2>
+
+                        <p>
+                            DNI: <strong>@dni</strong>
+                        </p>
+                    </div>
+
+                    <span class="badge bg-primary px-3 py-2">Activo</span>
+                </div>
+
+                <div class="row g-3 mb-3">
+
+                    <div class="col-md-4">
+                        <div class="summary-card">
+                            <div>
+                                <h3 class="text-primary">S/ @TotalGenerado.ToString("N2")</h3>
+                                <p>Total generado</p>
+                            </div>
+
+                            <i class="bi bi-receipt-cutoff"></i>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="summary-card">
+                            <div>
+                                <h3 class="text-success">S/ @TotalPagado.ToString("N2")</h3>
+                                <p>Total pagado</p>
+                            </div>
+
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="summary-card">
+                            <div>
+                                <h3 class="text-danger">S/ @TotalPendiente.ToString("N2")</h3>
+                                <p>Pendiente</p>
+                            </div>
+
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="table-card">
+                    <h3>Lista de deudas del alumno</h3>
+
+                    @if (vieneDeMatriculaRegular)
+                    {
+                        <p>
+                            Pague las deudas pendientes y luego presione <strong>Volver a matrícula</strong>
+                            para continuar el proceso.
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            Acciones permitidas: pagar o anular deudas pendientes.
+                        </p>
+                    }
+
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Emisión</th>
+                                    <th>Vencimiento</th>
+                                    <th>Monto descuento</th>
+                                    <th>Monto final</th>
+                                    <th>Estado</th>
+                                    <th>Observación</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var deuda in DeudasFiltradas)
+                                {
+                                    <tr>
+                                        <td>@deuda.Concepto</td>
+                                        <td>@deuda.FechaEmision.ToString("dd/MM/yyyy")</td>
+                                        <td>@deuda.FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                                        <td>S/ @deuda.MontoDescuento.ToString("N2")</td>
+                                        <td class="fw-bold">S/ @deuda.MontoFinal.ToString("N2")</td>
+
+                                        <td>
+                                            <span class="badge @ClaseEstado(deuda.Estado)">
+                                                @deuda.Estado
+                                            </span>
+                                        </td>
+
+                                        <td>@deuda.Observacion</td>
+
+                                        <td>
+                                            <div class="acciones">
+
+                                                <button class="btn btn-sm btn-primary"
+                                                        @onclick="() => VerDetalle(deuda)">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                    Detalle
+                                                </button>
+
+                                                @if (deuda.Estado == "PENDIENTE")
+                                                {
+                                                    
+                                                    <button class="btn btn-sm btn-success"
+                                                            @onclick="() => IrPagarDeuda(deuda)">
+                                                        <i class="bi bi-check-circle-fill"></i>
+                                                        Pagar
+                                                    </button>
+
+                                                    <button class="btn btn-sm btn-danger"
+                                                            @onclick="() => IrAnularDeuda(deuda)">
+                                                        <i class="bi bi-x-circle-fill"></i>
+                                                        Anular
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted fw-bold">Sin acciones</span>
+                                                }
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                    @if (!DeudasFiltradas.Any())
+                    {
+                        <div class="alert alert-info mt-3 mb-0">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            No hay deudas para mostrar con el filtro seleccionado.
+                        </div>
+                    }
+                </div>
+
+                @if (vieneDeMatriculaRegular)
+                {
+                    <div class="return-matricula-box @(TieneDeudasPendientes ? "blocked" : "ready")">
+                        <div>
+                            <h4>
+                                <i class="bi @(TieneDeudasPendientes ? "bi-exclamation-triangle-fill" : "bi-check-circle-fill") me-2"></i>
+                                Proceso de matrícula regular
+                            </h4>
+
+                            @if (TieneDeudasPendientes)
+                            {
+                                <p>
+                                    Primero debe pagar o anular todas las deudas pendientes para volver a la matrícula.
+                                </p>
+                            }
+                            else
+                            {
+                                <p>
+                                    Las deudas ya fueron regularizadas. Ahora puede volver a la matrícula para continuar.
+                                </p>
+                            }
+                        </div>
+
+                        <button class="btn fw-bold px-4 @(TieneDeudasPendientes ? "btn-secondary" : "btn-success")"
+                                disabled="@TieneDeudasPendientes"
+                                @onclick="VolverAMatriculaRegular">
+                            <i class="bi bi-arrow-left-circle-fill me-2"></i>
+                            Volver a matrícula
+                        </button>
+                    </div>
+                }
+            }
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+
+    [SupplyParameterFromQuery]
+    public string? origen { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? retorno { get; set; }
+
+    private string mensajeError = "";
+
+    private string criterioBusqueda = "";
+    private string estadoSeleccionado = "";
+
+    private bool alumnoEncontrado = false;
+    private bool vieneDeMatriculaRegular = false;
+
+    private AlumnoMatriculaModel? alumnoSeleccionado;
+
+    private string dni = "";
+    private string nombres = "";
+    private string apellidoPaterno = "";
+    private string apellidoMaterno = "";
+
+    private List<PagoGeneradoMatriculaModel> pagos = new();
+
+    private string NombreCompletoAlumno =>
+        $"{nombres} {apellidoPaterno} {apellidoMaterno}";
+
+    private bool TieneDeudasPendientes =>
+    pagos.Any(p => p.Estado == "PENDIENTE");
+
+    private IEnumerable<PagoGeneradoMatriculaModel> DeudasFiltradas =>
+        pagos.Where(d =>
+            string.IsNullOrEmpty(estadoSeleccionado) || d.Estado == estadoSeleccionado);
+
+    private decimal TotalGenerado =>
+        pagos.Sum(d => d.MontoFinal);
+
+    private decimal TotalPagado =>
+        pagos.Where(d => d.Estado == "PAGADO")
+             .Sum(d => d.MontoFinal);
+
+    private decimal TotalPendiente =>
+        pagos.Where(d => d.Estado == "PENDIENTE")
+             .Sum(d => d.MontoFinal);
+
+    protected override void OnInitialized()
+    {
+        if (MatriculaState.LimpiarPagosAlVolver)
+        {
+            LimpiarPantallaPagos();
+            MatriculaState.LimpiarPagosAlVolver = false;
+            return;
+        }
+
+        if (origen == "matricula-regular" &&
+            MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+        {
+            var alumno = MatriculaState.ObtenerAlumnoPorId(
+                MatriculaState.AlumnoRegularEnProcesoId.Value);
+
+            if (alumno is not null)
+            {
+                CargarAlumno(alumno);
+
+                pagos = MatriculaState.ObtenerDeudasPendientes(alumno.Id);
+
+                vieneDeMatriculaRegular = true;
+                alumnoEncontrado = true;
+
+                criterioBusqueda = string.IsNullOrWhiteSpace(MatriculaState.CriterioPagoActual)
+                    ? alumno.Dni
+                    : MatriculaState.CriterioPagoActual;
+
+                MatriculaState.AlumnoPagoSeleccionadoId = alumno.Id;
+            }
+
+            return;
+        }
+
+        if (retorno == "pagos" &&
+            MatriculaState.AlumnoPagoSeleccionadoId.HasValue)
+        {
+            var alumno = MatriculaState.ObtenerAlumnoPorId(
+                MatriculaState.AlumnoPagoSeleccionadoId.Value);
+
+            if (alumno is not null)
+            {
+                CargarAlumno(alumno);
+
+                pagos = MatriculaState.ObtenerPagosAlumno(alumno.Id);
+
+                alumnoEncontrado = true;
+                vieneDeMatriculaRegular = false;
+
+                criterioBusqueda = MatriculaState.CriterioPagoActual;
+            }
+
+            return;
+        }
+
+        LimpiarPantallaPagos();
+    }
+
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void BuscarAlumno()
+    {
+        mensajeError = "";
+
+        if (string.IsNullOrWhiteSpace(criterioBusqueda))
+        {
+            mensajeError = "Debe ingresar el DNI, nombres o apellidos del alumno.";
+            alumnoEncontrado = false;
+            pagos.Clear();
+            return;
+        }
+        MatriculaState.CriterioPagoActual = criterioBusqueda;
+        var alumno = MatriculaState.BuscarAlumno(criterioBusqueda);
+
+        if (alumno is null)
+        {
+            mensajeError = "No se encontró ningún alumno con el criterio ingresado.";
+            alumnoEncontrado = false;
+            alumnoSeleccionado = null;
+            pagos.Clear();
+            return;
+        }
+
+        CargarAlumno(alumno);
+        MatriculaState.AlumnoPagoSeleccionadoId = alumno.Id;
+        pagos = MatriculaState.ObtenerPagosAlumno(alumno.Id);
+
+        alumnoEncontrado = true;
+    }
+
+    private void CargarAlumno(AlumnoMatriculaModel alumno)
+    {
+        alumnoSeleccionado = alumno;
+
+        dni = alumno.Dni;
+        nombres = alumno.Nombres;
+        apellidoPaterno = alumno.ApellidoPaterno;
+        apellidoMaterno = alumno.ApellidoMaterno;
+    }
+
+    private void VerDetalle(PagoGeneradoMatriculaModel deuda)
+    {
+        if (alumnoSeleccionado is null)
+        {
+            return;
+        }
+
+        MatriculaState.SeleccionarDeuda(alumnoSeleccionado.Id, deuda);
+        Navigation.NavigateTo("/matricula/pagos/detalle");
+    }
+
+    private void IrPagarDeuda(PagoGeneradoMatriculaModel deuda)
+    {
+        if (alumnoSeleccionado is null)
+        {
+            return;
+        }
+
+        MatriculaState.SeleccionarDeuda(alumnoSeleccionado.Id, deuda);
+        Navigation.NavigateTo("/matricula/pagos/pagar");
+    }
+
+    private void IrAnularDeuda(PagoGeneradoMatriculaModel deuda)
+    {
+        if (alumnoSeleccionado is null)
+        {
+            return;
+        }
+
+        MatriculaState.SeleccionarDeuda(alumnoSeleccionado.Id, deuda);
+        Navigation.NavigateTo("/matricula/pagos/anular");
+    }
+
+    private void VolverAMatriculaRegular()
+    {
+        MatriculaState.VieneDePagoAlumnoRegular = true;
+        MatriculaState.LimpiarPagosAlVolver = true;
+
+        LimpiarPantallaPagos();
+
+        Navigation.NavigateTo("/matricula/matriculas/alumno-regular");
+    }
+
+    private void LimpiarPantallaPagos()
+    {
+        mensajeError = "";
+        criterioBusqueda = "";
+        estadoSeleccionado = "";
+
+        alumnoEncontrado = false;
+        vieneDeMatriculaRegular = false;
+        alumnoSeleccionado = null;
+
+        dni = "";
+        nombres = "";
+        apellidoPaterno = "";
+        apellidoMaterno = "";
+
+        pagos.Clear();
+
+        MatriculaState.CriterioPagoActual = "";
+        MatriculaState.AlumnoPagoSeleccionadoId = null;
+        MatriculaState.DeudaSeleccionada = null;
+    }
+
+    private string ClaseEstado(string estado)
+    {
+        return estado switch
+        {
+            "PAGADO" => "bg-success",
+            "PENDIENTE" => "bg-warning text-dark",
+            "ANULADO" => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
+}

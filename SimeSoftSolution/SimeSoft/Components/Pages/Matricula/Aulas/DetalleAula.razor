@@ -1,0 +1,78 @@
+﻿@page "/matricula/aulas/detalle-aula"
+@rendermode InteractiveServer
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject AulaState AulaState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+    <main class="main-content">
+        <Topbar Titulo="Detalle del Aula" NombreUsuario="Admin Favio" RolUsuario="Administrador" OnToggleMenu="CambiarMenu" />
+        <section class="content-area">
+            <div class="breadcrumb-custom"><span>Aulas</span> / <span>Consultar</span> / <strong>Detalle</strong></div>
+            <h2>Detalle del Aula</h2>
+            <p class="page-description">Consulta la información detallada del aula seleccionada.</p>
+
+            @if (aula is not null)
+            {
+                <div class="detail-card">
+                    <div class="detail-grid">
+                        <div><span>Periodo</span><strong>@aula.Periodo</strong></div><div><span>Nivel</span><strong>@aula.Nivel</strong></div><div><span>Grado</span><strong>@aula.Grado</strong></div>
+                        <div><span>Aula</span><strong>@aula.Codigo</strong></div><div><span>Tipo</span><strong>@aula.TipoAula</strong></div><div><span>Capacidad</span><strong>@aula.Capacidad</strong></div>
+                        <div><span>Totales</span><strong>@aula.VacantesTotales</strong></div><div><span>Ocupadas</span><strong class="text-warning">@aula.VacantesOcupadas</strong></div>
+                        <div><span>Disponibles</span><strong class="text-success">@aula.VacantesDisponibles</strong></div><div><span>Estado</span><strong><span class="badge bg-success-subtle text-success">@aula.Estado</span></strong></div>
+                    </div>
+                </div>
+
+                <h3 class="mt-4">Profesores que enseñan en el aula</h3>
+                <div class="table-responsive table-card">
+                    <table class="table table-bordered text-center align-middle mb-0">
+                        <thead class="dark-head"><tr><th>DNI</th><th>Nombres y apellidos</th><th>Especialidad</th><th>Cargo</th><th>Teléfono</th><th>Correo</th><th>Es tutor</th><th>Estado</th></tr></thead>
+                        <tbody>
+                            @foreach (var p in profesores)
+                            {
+                                <tr>
+                                    <td>@p.Dni</td>
+                                    <td>@p.NombreCompleto</td>
+                                    <td>@p.Especialidad</td>
+                                    <td>@p.Cargo</td>
+                                    <td>@p.Telefono</td>
+                                    <td>@p.Correo</td>
+                                    <td>@if (p.EsTutor) {
+                                        <span class="badge bg-success-subtle text-success">Sí (Tutor)</span>
+                                    } else
+                                    {
+
+                                        <span class="badge bg-light text-dark border">No</span>
+                                    }
+                                </td>
+                                <td><span class="badge bg-success-subtle text-success">@p.Estado</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div class="info-box mt-3"><i class="bi bi-info-circle-fill"></i><div><strong>Nota:</strong> Las aulas de tipo “Aula regular” pertenecen a un nivel y grado específico.</div></div>
+        <div class="bottom-actions"><button class="btn btn-outline-secondary btn-lg fw-bold px-5" @onclick="Volver"><i class="bi bi-arrow-left me-2"></i>Volver</button></div>
+    </section>
+</main>
+</div>
+
+@code {
+    private AulaModel? aula;
+    private List<ProfesorAulaModel> profesores = new();
+
+    protected override void OnInitialized()
+    {
+        aula = AulaState.AulaSeleccionada ?? AulaState.Aulas.FirstOrDefault();
+        if (aula is not null)
+            profesores = AulaState.ProfesoresPorAula(aula.Periodo, aula.Codigo).ToList();
+    }
+
+    private void CambiarMenu() => MenuState.CambiarMenu();
+    private void Volver() => Navigation.NavigateTo("/matricula/aulas/consultar");
+}
+

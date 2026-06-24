@@ -1,0 +1,153 @@
+/* CSS for VerProfesorAula component */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8f9fc;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.content-area {
+    padding: 24px 32px;
+}
+
+.breadcrumb-custom {
+    font-size: 15px;
+    margin-bottom: 12px;
+    color: #111827;
+}
+
+    .breadcrumb-custom span {
+        color: #0d6efd;
+        font-weight: 900;
+    }
+
+h2 {
+    color: #07347a;
+    font-size: 34px;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+h3 {
+    color: #07347a;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.page-description {
+    color: #4b5563;
+    margin-bottom: 18px;
+}
+
+.readonly-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 12px;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+}
+
+    .readonly-card div {
+        border-right: 1px solid #d8dee9;
+        padding-right: 12px;
+    }
+
+        .readonly-card div:nth-child(4n) {
+            border-right: none;
+        }
+
+    .readonly-card span {
+        display: block;
+        color: #4b5563;
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .readonly-card strong {
+        color: #07347a;
+        font-size: 20px;
+        font-weight: 900;
+    }
+
+.panel-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+}
+
+label {
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+table th {
+    background: #eef2f7;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+table td {
+    color: #0b1f44;
+    font-size: 14px;
+}
+
+.info-box {
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #0b2f72;
+    padding: 16px 20px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-size: 14px;
+}
+
+    .info-box i {
+        font-size: 32px;
+        color: #0d6efd;
+    }
+
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-editar {
+    width: 500px;
+    background: white;
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+    .modal-editar h3 {
+        color: #07347a;
+        font-size: 28px;
+        font-weight: 900;
+    }
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 22px;
+}

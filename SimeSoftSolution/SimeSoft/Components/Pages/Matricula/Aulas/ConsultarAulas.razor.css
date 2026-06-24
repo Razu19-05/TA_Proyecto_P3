@@ -1,0 +1,242 @@
+/* CSS for ConsultarAulas component */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f8f9fc;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.content-area {
+    padding: 24px 36px;
+}
+
+h2 {
+    color: #07347a;
+    font-size: 34px;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+h3 {
+    color: #07347a;
+    font-weight: 900;
+}
+
+.page-description {
+    color: #4b5563;
+    font-size: 17px;
+    margin-bottom: 20px;
+}
+
+.breadcrumb-custom {
+    font-size: 15px;
+    margin-bottom: 12px;
+    color: #111827;
+}
+
+    .breadcrumb-custom span {
+        color: #0d6efd;
+        font-weight: 900;
+    }
+
+.filter-card, .table-card, .panel-card, .detail-card, .option-card {
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.04);
+}
+
+.filter-card, .panel-card, .detail-card {
+    padding: 20px;
+}
+
+.table-card {
+    overflow: hidden;
+}
+
+label {
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+table th {
+    background: #eef2f7;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+table td {
+    color: #0b1f44;
+    font-size: 14px;
+}
+
+.dark-head th {
+    background: #07347a !important;
+    color: white !important;
+}
+
+.info-box {
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #0b2f72;
+    padding: 16px 20px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-size: 15px;
+}
+
+    .info-box i {
+        font-size: 32px;
+        color: #0d6efd;
+    }
+
+.bottom-actions {
+    margin-top: 22px;
+    display: flex;
+    gap: 16px;
+}
+
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.55);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-aula, .modal-editar {
+    background: white;
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+
+.modal-aula {
+    width: 980px;
+    max-height: 94vh;
+    overflow-y: auto;
+}
+
+.modal-editar {
+    width: 470px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 22px;
+}
+
+.validation-box {
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    background: #fffbeb;
+    color: #92400e;
+    padding: 14px 18px;
+}
+
+.option-card {
+    min-height: 410px;
+    padding: 48px 36px;
+    text-align: center;
+}
+
+.option-icon {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 25px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 62px;
+}
+
+    .option-icon.blue {
+        color: #0d6efd;
+        background: #dbeafe;
+    }
+
+    .option-icon.green {
+        color: #16a34a;
+        background: #dcfce7;
+    }
+
+.option-card h3 {
+    font-size: 32px;
+}
+
+.option-card p {
+    font-size: 19px;
+    min-height: 80px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    text-align: center;
+}
+
+    .detail-grid span {
+        display: block;
+        color: #0b1f44;
+        margin-bottom: 8px;
+    }
+
+    .detail-grid strong {
+        color: #07347a;
+        font-size: 21px;
+        font-weight: 900;
+    }
+
+.summary-strip {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+    background: white;
+    border: 1px solid #d8dee9;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+    .summary-strip span {
+        display: block;
+        font-size: 13px;
+    }
+
+    .summary-strip strong {
+        display: block;
+        font-size: 20px;
+        color: #07347a;
+    }
+
+.dot {
+    width: 9px;
+    height: 9px;
+    display: inline-block;
+    background: #16a34a;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+@media print {
+    .sidebar, .topbar, .bottom-actions {
+        display: none !important;
+    }
+
+    .content-area {
+        padding: 0;
+    }
+}

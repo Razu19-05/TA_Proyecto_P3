@@ -1,0 +1,88 @@
+﻿.sime-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f6fb;
+    overflow-x: hidden;
+}
+
+.sime-main {
+    flex: 1;
+    min-width: 0;
+    background: #f4f6fb;
+}
+
+.inicio-page {
+    padding: 28px;
+    background: #f4f7fb;
+    min-height: calc(100vh - 88px);
+}
+
+.bienvenida-card {
+    position: relative;
+    min-height: calc(100vh - 165px);
+    border-radius: 24px;
+    overflow: hidden;
+    background-image: url('/img/bienvenida-colegio.png');
+    background-size: cover;
+    background-position: center 42%;
+    background-repeat: no-repeat;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.bienvenida-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient( 90deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.84) 34%, rgba(255,255,255,0.42) 62%, rgba(255,255,255,0.08) 100% );
+}
+
+.bienvenida-content {
+    position: relative;
+    z-index: 2;
+    max-width: 610px;
+    padding: 64px 55px;
+    color: #071653;
+}
+
+
+.etiqueta {
+    display: block;
+    color: #2458b8;
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 16px;
+}
+
+.bienvenida-content h1 {
+    font-size: 46px;
+    line-height: 1.15;
+    font-weight: 900;
+    margin-bottom: 20px;
+    color: #071653;
+}
+
+.bienvenida-content h2 {
+    color: #0f3f9e;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 18px;
+}
+
+.bienvenida-content p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #17255f;
+    margin-bottom: 18px;
+}
+
+.bienvenida-content strong {
+    color: #0f3f9e;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.footer-inicio {
+    text-align: center;
+    padding-top: 18px;
+    font-size: 14px;
+    color: #071653;
+}

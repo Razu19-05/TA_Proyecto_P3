@@ -1,0 +1,105 @@
+﻿@page "/matricula/aulas"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Aulas"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Administrador"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            <h2>Módulo de Aulas</h2>
+
+            <p class="page-description">
+                Desde este módulo puedes consultar las aulas configuradas o realizar la gestión de aulas.
+            </p>
+
+            <div class="row g-4 mt-4">
+
+                <div class="col-md-6">
+                    <div class="option-card">
+
+                        <div class="option-icon blue">
+                            <i class="bi bi-display"></i>
+                        </div>
+
+                        <h3>Consultar Aulas</h3>
+
+                        <p>
+                            Lista aulas por periodo, nivel, grado, estado y tutor o encargado.
+                        </p>
+
+                        <button class="btn btn-primary btn-lg fw-bold px-5"
+                                @onclick="IrConsultarAulas">
+                            Ingresar
+                            <i class="bi bi-chevron-right ms-2"></i>
+                        </button>
+
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="option-card">
+
+                        <div class="option-icon green">
+                            <i class="bi bi-gear-fill"></i>
+                        </div>
+
+                        <h3>Administrar Aulas</h3>
+
+                        <p>
+                            Crea, edita, elimina aulas y administra asignaciones de profesores.
+                        </p>
+
+                        <button class="btn btn-success btn-lg fw-bold px-5"
+                                @onclick="IrAdministrarAulas">
+                            Ingresar
+                            <i class="bi bi-chevron-right ms-2"></i>
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="info-box mt-4">
+                <i class="bi bi-info-circle-fill"></i>
+
+                <div>
+                    <strong>Importante:</strong><br />
+                    Consultar es solo visualización. Administrar permite registro, edición, eliminación y asignación de profesores.
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void IrConsultarAulas()
+    {
+        Navigation.NavigateTo("/matricula/aulas/consultar");
+    }
+
+    private void IrAdministrarAulas()
+    {
+        Navigation.NavigateTo("/matricula/aulas/administrar");
+    }
+}

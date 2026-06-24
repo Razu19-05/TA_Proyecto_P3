@@ -1,0 +1,105 @@
+﻿@page "/matricula/matriculas"
+@rendermode InteractiveServer
+
+@using SimeSoft.Components.State
+@inject MenuState MenuState
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+
+    <SidebarMatricula MenuAbierto="@MenuState.MenuAbierto" />
+
+    <main class="main-content">
+
+        <Topbar Titulo="Matrículas"
+                NombreUsuario="Admin Favio"
+                RolUsuario="Personal de Matrícula"
+                OnToggleMenu="CambiarMenu" />
+
+        <section class="content-area">
+
+            <div class="welcome-card">
+
+                <div class="welcome-icon">
+                    <i class="bi bi-person-fill-add"></i>
+                </div>
+
+                <h2>Bienvenido al Portal de Matrícula</h2>
+
+                <p>
+                    Para comenzar el proceso de matrícula, primero se debe verificar la disponibilidad
+                    de vacantes según el nivel y grado seleccionado. Luego podrá elegir si el estudiante
+                    corresponde a un alumno nuevo o regular.
+                </p>
+
+                <button class="btn btn-primary btn-lg fw-bold px-5"
+                        @onclick="IniciarProcesoMatricula">
+                    <i class="bi bi-arrow-right-circle-fill me-2"></i>
+                    Iniciar proceso de matrícula
+                </button>
+
+            </div>
+
+            <div class="row g-4 mt-4">
+
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-icon blue">
+                            <i class="bi bi-search"></i>
+                        </div>
+
+                        <h3>1. Verificar vacantes</h3>
+
+                        <p>
+                            Se consulta la cantidad de vacantes disponibles para el nivel y grado seleccionado.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-icon green">
+                            <i class="bi bi-person-check-fill"></i>
+                        </div>
+
+                        <h3>2. Elegir tipo</h3>
+
+                        <p>
+                            Luego se selecciona si el estudiante será registrado como alumno nuevo o regular.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-icon orange">
+                            <i class="bi bi-file-earmark-check-fill"></i>
+                        </div>
+
+                        <h3>3. Completar matrícula</h3>
+
+                        <p>
+                            Se registran o actualizan los datos, apoderados, pagos, descuentos y confirmación.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+@code {
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void IniciarProcesoMatricula()
+    {
+        Navigation.NavigateTo("/matricula/matriculas/tipo");
+    }
+}

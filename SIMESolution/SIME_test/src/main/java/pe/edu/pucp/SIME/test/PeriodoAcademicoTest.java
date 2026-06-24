@@ -1,32 +1,18 @@
 package pe.edu.pucp.SIME.test;
 
-import pe.edu.pucp.SIME.aula.DAO.PeriodoAcademicoDAO;
-import pe.edu.pucp.SIME.aula.impl.PeriodoAcademicoDAOImp;
-import pe.edu.pucp.SIME.model.PeriodoAcademico;
+import pe.edu.pucp.SIME.aula.DAO.gestionAcademica.PeriodoAcademicoDAO;
+import pe.edu.pucp.SIME.aula.impl.gestionAcademica.PeriodoAcademicoDAOImpl;
+import pe.edu.pucp.SIME.model.gestionAcademica.PeriodoAcademico;
 
-import java.util.Date;
+import java.sql.SQLException;
 
 public class PeriodoAcademicoTest {
-    public static void main(String[] args) {
-        PeriodoAcademicoDAO periodoDAO = new PeriodoAcademicoDAOImp();
-        //Prueba de load
-        PeriodoAcademico periodoElegido = new PeriodoAcademico();
-        periodoElegido = periodoDAO.load(1);
-        System.out.println(periodoElegido.getAnioEscolar());
-        //Prueba de save
-        PeriodoAcademico periodoGuarda = new PeriodoAcademico();
-//        periodoGuarda.setAnioEscolar(2027);
-//        periodoGuarda.setActivo(1);
-//        periodoGuarda.setFechaInicio(java.sql.Date.valueOf(java.time.LocalDate.of(2027, 3, 27)));
-//        periodoGuarda.setFechaFin(java.sql.Date.valueOf(java.time.LocalDate.of(2027, 12, 15)));
-//        periodoGuarda.setActivo(1);
-//        periodoDAO.save(periodoGuarda);
-        //Prueba de update
-        periodoGuarda.setIdPeriodoAcademico(6);
-//        periodoGuarda.setFechaFin(java.sql.Date.valueOf(java.time.LocalDate.of(2027, 12, 25)));
-//        periodoDAO.update(periodoGuarda);
-//        periodoDAO.remove(periodoGuarda);
-
-
+    public static void main(String [] args) throws SQLException{
+        PeriodoAcademicoDAO periodoDAO = new PeriodoAcademicoDAOImpl();
+        PeriodoAcademico periodo = periodoDAO.load(1);
+        System.out.println(periodo.getIdPeriodoAcademico());
+        System.out.println(periodo.getAnioEscolar());
+        System.out.println(periodo.getFechaInicio());
+        System.out.println(periodo.getFechaInicio());
     }
 }

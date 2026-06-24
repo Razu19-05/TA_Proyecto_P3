@@ -13,6 +13,8 @@
         <module>SIME_DAO</module>
         <module>SIME_test</module>
         <module>SIME_DB_Manager</module>
+        <module>SIME_BL</module>
+        <module>SIME_RS</module>
     </modules>
 
     <properties>
@@ -20,5 +22,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+
 
 </project>

@@ -11,13 +11,18 @@ public class DBManager {
 
     private static DBManager instance;
     private Properties properties;
-    private final String url;
+    private String url;
     private final String user;
     private final String password;
     private final String DB_CREDENTIALS_FILE = "db.properties";
 
     private DBManager() {
         properties = new Properties();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         try{
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(DB_CREDENTIALS_FILE);
             properties.load(inputStream);
@@ -28,6 +33,7 @@ public class DBManager {
         String port = properties.getProperty("port");
         String database = properties.getProperty("database");
         this.url = "jdbc:mysql://" + host + ":" + port + "/" + database;
+        this.url += "?allowPublicKeyRetrieval=true&useSSL=false";
         this.user = properties.getProperty("user");
         this.password = properties.getProperty("password");
     }

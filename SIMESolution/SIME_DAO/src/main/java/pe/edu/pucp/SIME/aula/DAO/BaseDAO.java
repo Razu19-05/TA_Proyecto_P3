@@ -1,11 +1,10 @@
 package pe.edu.pucp.SIME.aula.DAO;
 
-import java.util.List;
+import java.sql.SQLException;
 
-public interface BaseDAO <T, ID>{
-    T load(ID id);
-    T save(T t);
-    T update(T t);
-    void remove(T t);
-    List<T>listAll();
+public interface BaseDAO <T, ID> {
+    T load(ID id) throws SQLException;
+    T save(T t) throws SQLException;
+    T update(T t) throws SQLException;
+    void remove(T t) throws SQLException;
 }

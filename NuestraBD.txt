@@ -2,4 +2,4 @@ DB instance: dataBase-ProjectTA
 user: admin
 password: Admin123.-.
 esquema: SIME
-host-name: database-projectta.clfhtahpt8ub.us-east-1.rds.amazonaws.com
+host-name: database-projectta.cw4oxpmhoavc.us-east-1.rds.amazonaws.com

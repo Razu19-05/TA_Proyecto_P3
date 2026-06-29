@@ -12,4 +12,8 @@ public interface IPagoBL {
     void eliminarPago(int idPago) throws Exception;
 
     List<Pago> listarPagosPendientesAlumno(int idALumno) throws Exception;
+
+    Pago pagarPago(int idPago, String observacion) throws Exception;
+
+    Pago anularPago(int idPago, String observacion) throws Exception;
 }

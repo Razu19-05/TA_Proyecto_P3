@@ -9,6 +9,12 @@ import java.util.List;
 
 public interface PagoDAO extends BaseDAO<Pago, Integer> {
     List<Pago> listarPagosdeAlumno(int idAlumno) throws SQLException;
+
     int insertarPagoMatricula(int idAlumno, int idMatriculaDetalle, PagoMatriculaDTO pago) throws SQLException;
+
     List<Pago> listarPagosPendientesdeAlumno(int idAlumno) throws SQLException;
+
+    Pago marcarComoPagado(int idPago, String observacion) throws SQLException;
+
+    Pago marcarComoAnulado(int idPago, String observacion) throws SQLException;
 }

@@ -367,4 +367,60 @@ public class PagoDAOImpl implements PagoDAO {
             return pagos;
         }
     }
+
+    @Override
+    public Pago marcarComoPagado(int idPago, String observacion) throws SQLException {
+        String sql = """
+        UPDATE SIME_PAGO
+        SET estado = 'PAGADO',
+            fecha_pago = CURDATE(),
+            observacion = ?
+        WHERE id_pago = ?
+          AND activo = 1
+          AND estado = 'PENDIENTE'
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setString(1, observacion);
+            pstm.setInt(2, idPago);
+
+            int filasAfectadas = pstm.executeUpdate();
+
+            if (filasAfectadas == 0) {
+                throw new SQLException("No se pudo pagar el pago. Verifique que exista y esté en estado PENDIENTE.");
+            }
+        }
+
+        return load(idPago);
+    }
+
+    @Override
+    public Pago marcarComoAnulado(int idPago, String observacion) throws SQLException {
+        String sql = """
+        UPDATE SIME_PAGO
+        SET estado = 'ANULADO',
+            fecha_pago = NULL,
+            observacion = ?
+        WHERE id_pago = ?
+          AND activo = 1
+          AND estado = 'PENDIENTE'
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setString(1, observacion);
+            pstm.setInt(2, idPago);
+
+            int filasAfectadas = pstm.executeUpdate();
+
+            if (filasAfectadas == 0) {
+                throw new SQLException("No se pudo anular el pago. Verifique que exista y esté en estado PENDIENTE.");
+            }
+        }
+
+        return load(idPago);
+    }
 }

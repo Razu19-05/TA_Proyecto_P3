@@ -7,6 +7,7 @@ import pe.edu.pucp.SIME.BL.PagoBLImpl;
 import pe.edu.pucp.SIME.BL.impl.IPagoBL;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
 import pe.edu.pucp.SIME.model.gestionPagos.Pago;
+import pe.edu.pucp.SIME.model.DTO.CambioEstadoPagoDTO;
 
 import java.util.List;
 
@@ -62,6 +63,48 @@ public class PagoRS {
         } catch (Exception e){
             e.printStackTrace();
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    @PUT
+    @Path("pagar/{idPago}")
+    public Response pagarPago(
+            @PathParam("idPago") int idPago,
+            CambioEstadoPagoDTO request) {
+        try {
+            String observacion = request == null ? "" : request.getObservacion();
+
+            Pago pago = pagoBL.pagarPago(idPago, observacion);
+
+            return Response.ok(pago).build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("anular/{idPago}")
+    public Response anularPago(
+            @PathParam("idPago") int idPago,
+            CambioEstadoPagoDTO request) {
+        try {
+            String observacion = request == null ? "" : request.getObservacion();
+
+            Pago pago = pagoBL.anularPago(idPago, observacion);
+
+            return Response.ok(pago).build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
         }
     }
 }

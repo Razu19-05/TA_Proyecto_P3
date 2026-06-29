@@ -128,4 +128,33 @@ public class MatriculaApiService
 
         return await response.Content.ReadFromJsonAsync<PersonaRequestDto>();
     }
+
+    // Lista los apoderados (relaciones familiares activas) ya registrados de un
+    // alumno a partir de su DNI (GET ApoderadosRS/listar/{dni}).
+    // Devuelve lista vacía si el alumno no tiene apoderados o si el servicio falla.
+    public async Task<List<RelacionFamiliarDto>> ListarApoderadosAsync(string dni)
+    {
+        if (string.IsNullOrWhiteSpace(dni))
+        {
+            return new();
+        }
+
+        HttpResponseMessage response =
+            await _httpClient.GetAsync($"ApoderadosRS/listar/{Uri.EscapeDataString(dni.Trim())}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return new();
+        }
+
+        if (response.Content.Headers.ContentLength == 0)
+        {
+            return new();
+        }
+
+        List<RelacionFamiliarDto>? apoderados =
+            await response.Content.ReadFromJsonAsync<List<RelacionFamiliarDto>>();
+
+        return apoderados ?? new();
+    }
 }

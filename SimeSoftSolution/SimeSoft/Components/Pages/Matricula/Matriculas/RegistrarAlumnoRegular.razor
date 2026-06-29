@@ -453,6 +453,14 @@
                         </div>
                     </div>
 
+                    @if (!string.IsNullOrWhiteSpace(errorDeudas))
+                    {
+                        <div class="alert alert-danger mt-3">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            @errorDeudas
+                        </div>
+                    }
+
                     @if (TieneDeudasPendientes)
                     {
                         <div class="debt-status danger">
@@ -1158,7 +1166,7 @@
             _ => false
         };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         CargarDatosVacanteSeleccionada();
 
@@ -1173,7 +1181,7 @@
                 CargarAlumno(alumno);
                 alumnoEncontrado = true;
 
-                VerificarDeudas();
+                await VerificarDeudas();
 
                 if (TieneDeudasPendientes)
                 {
@@ -1272,12 +1280,12 @@
             return;
         }
 
-        CargarAlumnoDesdeDto(alumno);
+        await CargarAlumnoDesdeDto(alumno);
         alumnoEncontrado = true;
     }
 
     // Carga en el formulario un alumno obtenido del servicio REST (AlumnoRS/buscar).
-    private void CargarAlumnoDesdeDto(AlumnoDto alumno)
+    private async Task CargarAlumnoDesdeDto(AlumnoDto alumno)
     {
         idAlumno = alumno.IdAlumno;
 
@@ -1306,10 +1314,41 @@
             Activo = alumno.Activo
         };
 
-        // Los apoderados se registran/ajustan manualmente (con búsqueda por DNI vía REST).
-        apoderados.Clear();
+        // Se cargan los apoderados (relaciones familiares activas) ya registrados
+        // del alumno desde el servicio REST (ApoderadosRS/listar/{dni}). El usuario
+        // puede luego editar, eliminar o agregar (máximo 3).
+        apoderados = await CargarApoderadosDelAlumno(alumno.Dni);
+
         deudasPendientes.Clear();
         pagosGenerados.Clear();
+    }
+
+    // Consulta los apoderados registrados del alumno y los mapea al modelo interno.
+    private async Task<List<ApoderadoMatriculaModel>> CargarApoderadosDelAlumno(string dni)
+    {
+        var relaciones = await MatriculaApi.ListarApoderadosAsync(dni);
+
+        return relaciones.Select(r => new ApoderadoMatriculaModel
+        {
+            Id = r.IdRelacionFamiliar,
+            AlumnoId = idAlumno,
+            IdPersona = r.Persona.IdPersona,
+            Dni = r.Persona.Dni,
+            Nombres = r.Persona.Nombres,
+            ApellidoPaterno = r.Persona.ApellidoPaterno,
+            ApellidoMaterno = r.Persona.ApellidoMaterno,
+            Telefono = r.Persona.Telefono,
+            Correo = r.Persona.Correo,
+            Direccion = r.Persona.Direccion,
+            Tipo = string.IsNullOrWhiteSpace(r.Persona.Tipo) ? "EXTERNO" : r.Persona.Tipo,
+            Especialidad = r.Persona.Especialidad,
+            Cargo = r.Persona.Cargo,
+            Area = r.Persona.Area,
+            Parentesco = string.IsNullOrWhiteSpace(r.Parentesco) ? "OTRO" : r.Parentesco,
+            ContactoEmergencia = r.ContactoEmergencia,
+            Observaciones = r.Observaciones,
+            Activo = r.Activo
+        }).ToList();
     }
 
     // El backend envía LocalDate como "yyyy-MM-dd" (a veces con 'Z' al final).
@@ -1349,11 +1388,11 @@
         pagosGenerados.Clear();
     }
 
-    private void Siguiente()
+    private async Task Siguiente()
     {
         if (pasoActual == 4)
         {
-            VerificarDeudas();
+            await VerificarDeudas();
         }
 
         if (pasoActual == 5 && !TieneDeudasPendientes)
@@ -1388,15 +1427,65 @@
         pasoActual--;
     }
 
-    private void VerificarDeudas()
+    private string errorDeudas = "";
+
+    private async Task VerificarDeudas()
     {
+        errorDeudas = "";
+
         if (alumnoSeleccionado is null)
         {
             deudasPendientes.Clear();
             return;
         }
 
-        deudasPendientes = MatriculaState.ObtenerDeudasPendientes(alumnoSeleccionado.Id);
+        // Deudas reales del alumno desde el servicio REST
+        // (PagoRS/listar_pagos_pendientes_alumno/{idAlumno}).
+        var (ok, pagos, error) = await MatriculaApi.ListarPagosAlumnoAsync(idAlumno);
+
+        if (!ok)
+        {
+            errorDeudas = error;
+            deudasPendientes.Clear();
+            return;
+        }
+
+        deudasPendientes = pagos.Select(MapearDeuda).ToList();
+    }
+
+    // Mapea un pago pendiente del REST al modelo usado por la tabla de deudas.
+    private PagoGeneradoMatriculaModel MapearDeuda(PagoAlumnoDto dto)
+    {
+        return new PagoGeneradoMatriculaModel
+        {
+            AlumnoId = idAlumno,
+            Concepto = dto.ConceptoPago?.Nombre ?? "",
+            MontoOriginal = (decimal)(dto.ConceptoPago?.Monto ?? 0),
+            MontoDescuento = (decimal)dto.MontoDescuento,
+            MontoFinal = (decimal)dto.MontoFinal,
+            FechaEmision = ParsearFechaPago(dto.FechaEmision),
+            FechaVencimiento = ParsearFechaPago(dto.FechaVencimiento),
+            FechaPago = string.IsNullOrWhiteSpace(dto.FechaPago)
+                ? null
+                : ParsearFechaPago(dto.FechaPago),
+            Estado = string.IsNullOrWhiteSpace(dto.Estado) ? "PENDIENTE" : dto.Estado,
+            Observacion = dto.Observacion
+        };
+    }
+
+    // El backend serializa las fechas de pago como string (yyyy-MM-dd, a veces ISO con 'Z').
+    private DateTime ParsearFechaPago(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+        {
+            return DateTime.Today;
+        }
+
+        var limpio = valor.Replace("Z", "").Trim();
+
+        return DateTime.TryParse(limpio, out var fecha)
+            ? fecha
+            : DateTime.Today;
     }
 
     private void GenerarPagosMatricula()
@@ -1600,14 +1689,14 @@
         {
             return;
         }
-
+        
         buscandoPersona = true;
         var persona = await MatriculaApi.BuscarPersonaPorDniAsync(apoderadoDni.Trim());
         buscandoPersona = false;
 
         if (persona is null)
         {
-            // No existe: el usuario completa los datos manualmente.
+            //No existe: el usuario completa los datos manualmente.
             return;
         }
 

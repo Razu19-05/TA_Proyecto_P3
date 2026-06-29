@@ -127,6 +127,25 @@ public class MatriculaApiService
         return pagos ?? new();
     }
 
+    // Lista TODAS las matrículas (histórico) de un alumno, ya aplanadas
+    // (periodo, nivel, grado, aula) para la ficha del alumno
+    // (GET MatriculaRS/listar_por_alumno/{idAlumno}).
+    public async Task<List<MatriculaAlumnoResponseDto>> ListarMatriculasPorAlumnoAsync(int idAlumno)
+    {
+        HttpResponseMessage response =
+            await _httpClient.GetAsync($"MatriculaRS/listar_por_alumno/{idAlumno}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return new();
+        }
+
+        List<MatriculaAlumnoResponseDto>? matriculas =
+            await response.Content.ReadFromJsonAsync<List<MatriculaAlumnoResponseDto>>();
+
+        return matriculas ?? new();
+    }
+
     // Busca cualquier persona por DNI (trabajador o externo ya registrado).
     // Devuelve null si no existe (HTTP 404) -> el formulario se llena a mano.
     public async Task<PersonaRequestDto?> BuscarPersonaPorDniAsync(string dni)

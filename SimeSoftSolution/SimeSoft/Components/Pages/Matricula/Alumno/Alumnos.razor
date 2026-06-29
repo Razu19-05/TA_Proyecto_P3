@@ -896,8 +896,27 @@
             .Select(MapearPago)
             .ToList();
 
-        // Historial de matrículas: aún sin endpoint REST disponible.
-        matriculas = AlumnoState.ObtenerMatriculas(alumno.Id);
+        // Historial de matrículas reales (GET MatriculaRS/listar_por_alumno/{idAlumno}).
+        matriculas = (await MatriculaApiService.ListarMatriculasPorAlumnoAsync(alumno.Id))
+            .Select(MapearMatricula)
+            .ToList();
+    }
+
+    private MatriculaAlumnoModel MapearMatricula(MatriculaAlumnoResponseDto m)
+    {
+        return new MatriculaAlumnoModel
+        {
+            Id = m.IdMatriculaDetalle,
+            AlumnoId = alumno!.Id,
+            Periodo = m.Periodo,
+            Nivel = m.Nivel,
+            Grado = m.Grado,
+            FechaInicio = FormatearFecha(m.FechaInicio),
+            FechaFin = FormatearFecha(m.FechaFin),
+            FechaMatricula = FormatearFecha(m.FechaMatricula),
+            Estado = m.Estado,
+            Activo = m.Activo
+        };
     }
 
     private ApoderadoModel MapearApoderado(RelacionFamiliarDto r)
@@ -930,6 +949,7 @@
         {
             Id = p.IdPago,
             AlumnoId = alumno?.Id ?? 0,
+            MatriculaId = p.MatriculaDetalle?.IdMatriculaDetalle ?? 0,
             Concepto = p.ConceptoPago?.Nombre ?? "",
             MontoDescuento = (decimal)p.MontoDescuento,
             MontoFinal = (decimal)p.MontoFinal,

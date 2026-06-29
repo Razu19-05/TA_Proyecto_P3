@@ -21,6 +21,7 @@ import pe.edu.pucp.SIME.aula.impl.gestionPagos.ConceptoPagoDAOImpl;
 import pe.edu.pucp.SIME.aula.impl.gestionPagos.PagoDAOImpl;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
 import pe.edu.pucp.SIME.model.DTO.ApoderadoDetalleDTO;
+import pe.edu.pucp.SIME.model.DTO.MatriculaAlumnoDTO;
 import pe.edu.pucp.SIME.model.DTO.SolicitudMatriculaDTO;
 import pe.edu.pucp.SIME.model.gestionAcademica.GradoSeccion;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
@@ -37,6 +38,8 @@ import pe.edu.pucp.SIME.model.gestionPagos.Pago;
 import pe.edu.pucp.SIME.model.gestionPagos.TipoEstado;
 
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MatriculaBLImpl implements IMatriculaBL {
     private AlumnoDAO alumnoDAO = new AlumnoDAOImpl();
@@ -271,5 +274,42 @@ public class MatriculaBLImpl implements IMatriculaBL {
     @Override
     public MatriculaDetalle cargarMatriculaAlumno(int idAlumno) throws Exception {
         return detalleDAO.obtenerPorAlumno(idAlumno);
+    }
+
+    @Override
+    public List<MatriculaAlumnoDTO> listarMatriculasPorAlumno(int idAlumno) throws Exception {
+        List<MatriculaDetalle> detalles = detalleDAO.listarMatriculasPorAlumno(idAlumno);
+        List<MatriculaAlumnoDTO> resultado = new ArrayList<>();
+
+        for (MatriculaDetalle detalle : detalles) {
+            MatriculaCabecera cabecera = detalle.getMatriculaCabecera();
+
+            MatriculaAlumnoDTO dto = new MatriculaAlumnoDTO();
+            dto.setIdMatriculaDetalle(detalle.getIdMatriculaDetalle());
+            dto.setFechaMatricula(detalle.getFechaMatricula());
+            dto.setEstado(detalle.getEstado().name());
+            dto.setActivo(detalle.isActivo());
+
+            if (cabecera != null) {
+                dto.setIdMatriculaCabecera(cabecera.getIdMatriculaCabecera());
+                dto.setFechaInicio(cabecera.getFechaInicioMatricula());
+                dto.setFechaFin(cabecera.getFechaFinMatricula());
+
+                if (cabecera.getPeriodoAcademico() != null) {
+                    dto.setPeriodo(String.valueOf(cabecera.getPeriodoAcademico().getAnioEscolar()));
+                }
+                if (cabecera.getGradoSeccion() != null) {
+                    dto.setNivel(cabecera.getGradoSeccion().getTipo().name());
+                    dto.setGrado(cabecera.getGradoSeccion().getGrado());
+                }
+                if (cabecera.getAula() != null) {
+                    dto.setAula(cabecera.getAula().getCodigo());
+                }
+            }
+
+            resultado.add(dto);
+        }
+
+        return resultado;
     }
 }

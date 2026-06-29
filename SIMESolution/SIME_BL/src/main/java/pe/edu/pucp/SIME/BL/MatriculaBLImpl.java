@@ -86,7 +86,7 @@ public class MatriculaBLImpl implements IMatriculaBL {
         pagoInscripcion.setMontoDescuento(montoDesc);
         pagoInscripcion.setMontoFinal(concepto.getMonto()-montoDesc);
         pagoInscripcion.setFechaEmision(new Date(System.currentTimeMillis()));
-        pagoInscripcion.setFechaVencimiento(new Date(System.currentTimeMillis() + (7L * 24 * 60 * 60 * 1000)));
+        pagoInscripcion.setFechaVencimiento(new Date(System.currentTimeMillis() + (30L * 24 * 60 * 60 * 1000)));
         pagoInscripcion.setEstado(TipoEstado.PENDIENTE);
         pagoInscripcion.setObservacion(observacion(concepto));
         pagoInscripcion.setActivo(true);
@@ -131,9 +131,6 @@ public class MatriculaBLImpl implements IMatriculaBL {
             apoderado.setTipo(TipoPersona.EXTERNO);
             apoderado = personaDAO.save(apoderado);
         } else {
-            // La persona ya existe: se usa el id real encontrado en la BD
-            // (no el del DTO, que puede venir en 0) para evitar que la
-            // relación familiar quede con id_persona = 0 y falle la FK.
             apoderado.setIdPersona(apoderadoBuscar.getIdPersona());
             apoderado = personaDAO.update(apoderado);
         }

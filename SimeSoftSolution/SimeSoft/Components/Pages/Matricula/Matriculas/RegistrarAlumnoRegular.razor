@@ -3,8 +3,13 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Services.Api
+@using SimeSoft.Models.Matriculas
+@using SimeSoft.Models.Alumnos
 @inject MenuState MenuState
 @inject MatriculaState MatriculaState
+@inject MatriculaApiService MatriculaApi
+@inject AlumnoApiService AlumnoApi
 @inject NavigationManager Navigation
 
 <div class="dashboard-layout">
@@ -77,9 +82,18 @@
                                    @bind:event="oninput" />
 
                             <button class="btn btn-primary btn-lg fw-bold px-5"
+                                    disabled="@buscandoAlumno"
                                     @onclick="BuscarAlumno">
-                                <i class="bi bi-search me-2"></i>
-                                Buscar
+                                @if (buscandoAlumno)
+                                {
+                                    <i class="bi bi-arrow-repeat me-2"></i>
+                                    <span>Buscando...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-search me-2"></i>
+                                    <span>Buscar</span>
+                                }
                             </button>
                         </div>
 
@@ -816,6 +830,14 @@
                             </label>
                         </div>
                     </div>
+
+                    @if (!string.IsNullOrWhiteSpace(errorConfirmacion))
+                    {
+                        <div class="alert alert-danger mt-3">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            @errorConfirmacion
+                        </div>
+                    }
                 </div>
             }
 
@@ -868,10 +890,27 @@
                             </div>
                         }
 
+                        @if (!string.IsNullOrWhiteSpace(infoPersonaApoderado))
+                        {
+                            <div class="alert alert-success mt-3">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                @infoPersonaApoderado
+                            </div>
+                        }
+
                         <div class="row g-4 mt-2">
                             <div class="col-md-6">
                                 <label>DNI / Documento de Identidad</label>
-                                <input class="form-control form-control-lg" @bind="apoderadoDni" />
+                                <input class="form-control form-control-lg"
+                                       @bind="apoderadoDni"
+                                       @bind:event="oninput"
+                                       @onblur="BuscarPersonaApoderado" />
+                                @if (buscandoPersona)
+                                {
+                                    <small class="text-muted">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Buscando persona...
+                                    </small>
+                                }
                             </div>
 
                             <div class="col-md-6">
@@ -1020,6 +1059,10 @@
     private string criterioBusqueda = "";
     private string mensajeError = "";
     private bool alumnoEncontrado = false;
+    private bool buscandoAlumno = false;
+
+    // ID real del alumno devuelto por el servicio REST (AlumnoRS/buscar).
+    private int idAlumno = 0;
 
     private AlumnoMatriculaModel? alumnoSeleccionado;
 
@@ -1050,6 +1093,7 @@
     private ApoderadoMatriculaModel? apoderadoEditando = null;
     private bool mostrarFormularioApoderado = false;
 
+    private int apoderadoIdPersona = 0;
     private string apoderadoDni = "";
     private string apoderadoNombres = "";
     private string apoderadoApellidoPaterno = "";
@@ -1065,6 +1109,8 @@
     private string apoderadoObservaciones = "";
     private bool apoderadoContactoEmergencia = false;
     private string errorApoderado = "";
+    private string infoPersonaApoderado = "";
+    private bool buscandoPersona = false;
 
     private List<PagoGeneradoMatriculaModel> deudasPendientes = new();
     private List<PagoGeneradoMatriculaModel> pagosGenerados = new();
@@ -1182,7 +1228,7 @@
         };
     }
 
-    private void BuscarAlumno()
+    private async Task BuscarAlumno()
     {
         mensajeError = "";
 
@@ -1192,7 +1238,28 @@
             return;
         }
 
-        var alumno = MatriculaState.BuscarAlumno(criterioBusqueda);
+        buscandoAlumno = true;
+
+        AlumnoDto? alumno;
+
+        try
+        {
+            alumno = await AlumnoApi.BuscarAsync(criterioBusqueda.Trim());
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Ocurrió un error al conectar con el servicio REST de alumnos: {ex.Message}";
+            alumnoEncontrado = false;
+            alumnoSeleccionado = null;
+            apoderados.Clear();
+            deudasPendientes.Clear();
+            pagosGenerados.Clear();
+            return;
+        }
+        finally
+        {
+            buscandoAlumno = false;
+        }
 
         if (alumno is null)
         {
@@ -1205,13 +1272,65 @@
             return;
         }
 
-        CargarAlumno(alumno);
+        CargarAlumnoDesdeDto(alumno);
         alumnoEncontrado = true;
+    }
+
+    // Carga en el formulario un alumno obtenido del servicio REST (AlumnoRS/buscar).
+    private void CargarAlumnoDesdeDto(AlumnoDto alumno)
+    {
+        idAlumno = alumno.IdAlumno;
+
+        dni = alumno.Dni;
+        nombres = alumno.Nombres;
+        apellidoPaterno = alumno.ApellidoPaterno;
+        apellidoMaterno = alumno.ApellidoMaterno;
+        fechaNacimiento = ParsearFechaNacimiento(alumno.FechaNacimiento);
+        telefono = alumno.Telefono;
+        correo = alumno.Correo;
+        direccion = alumno.Direccion;
+
+        // Modelo interno usado por los pasos siguientes (deudas / historial).
+        alumnoSeleccionado = new AlumnoMatriculaModel
+        {
+            Id = alumno.IdAlumno,
+            Dni = alumno.Dni,
+            Nombres = alumno.Nombres,
+            ApellidoPaterno = alumno.ApellidoPaterno,
+            ApellidoMaterno = alumno.ApellidoMaterno,
+            Direccion = alumno.Direccion,
+            Telefono = alumno.Telefono,
+            Correo = alumno.Correo,
+            FechaNacimiento = fechaNacimiento,
+            AlumnoNuevo = alumno.AlumnoNuevo,
+            Activo = alumno.Activo
+        };
+
+        // Los apoderados se registran/ajustan manualmente (con búsqueda por DNI vía REST).
+        apoderados.Clear();
+        deudasPendientes.Clear();
+        pagosGenerados.Clear();
+    }
+
+    // El backend envía LocalDate como "yyyy-MM-dd" (a veces con 'Z' al final).
+    private DateTime ParsearFechaNacimiento(string valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+        {
+            return fechaNacimiento;
+        }
+
+        var limpio = valor.Replace("Z", "").Trim();
+
+        return DateTime.TryParse(limpio, out var fecha)
+            ? fecha
+            : fechaNacimiento;
     }
 
     private void CargarAlumno(AlumnoMatriculaModel alumno)
     {
         alumnoSeleccionado = alumno;
+        idAlumno = alumno.Id;
 
         dni = alumno.Dni;
         nombres = alumno.Nombres;
@@ -1303,9 +1422,36 @@
         Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
     }
 
-    private void ConfirmarMatricula()
+    // TODO: derivar el idMatriculaCabecera real a partir de nivel/grado -> vacante seleccionada.
+    private const int IdMatriculaCabeceraDemo = 1;
+
+    private string errorConfirmacion = "";
+    private bool enviandoMatricula = false;
+
+    private async Task ConfirmarMatricula()
     {
-        if (MatriculaState.VacanteSeleccionada is not null && alumnoSeleccionado is not null)
+        errorConfirmacion = "";
+
+        if (alumnoSeleccionado is null)
+        {
+            errorConfirmacion = "No hay un alumno seleccionado.";
+            return;
+        }
+
+        var request = ConstruirSolicitud();
+
+        enviandoMatricula = true;
+        var (ok, _, error) = await MatriculaApi.MatricularAlumnoExistenteAsync(request);
+        enviandoMatricula = false;
+
+        if (!ok)
+        {
+            errorConfirmacion = error;
+            return;
+        }
+
+        // Reflejar el resultado en el estado demo (vacantes ocupadas / historial).
+        if (MatriculaState.VacanteSeleccionada is not null)
         {
             MatriculaState.RegistrarMatricula(MatriculaState.VacanteSeleccionada);
 
@@ -1318,6 +1464,61 @@
 
         confirmado = false;
         pasoActual = 8;
+    }
+
+    private SolicitudMatriculaRequestDto ConstruirSolicitud()
+    {
+        return new SolicitudMatriculaRequestDto
+        {
+            // TODO: reemplazar por el idMatriculaCabecera real (nivel/grado).
+            IdMatriculaCabecera = IdMatriculaCabeceraDemo,
+
+            // TODO: integrar descuento (mapear tipoDescuento -> idTipoDescuento real).
+            IdTipoDescuento = 0,
+            PorcentajeDescuentoAplicar = (double)porcentajeDescuento,
+            MotivoDescuento = motivoDescuento,
+
+            Estudiante = new EstudianteRequestDto
+            {
+                // ID real del alumno obtenido del servicio REST (AlumnoRS/buscar).
+                IdAlumno = idAlumno,
+                Dni = dni,
+                Nombres = nombres,
+                ApellidoPaterno = apellidoPaterno,
+                ApellidoMaterno = apellidoMaterno,
+                Direccion = direccion,
+                Telefono = telefono,
+                Correo = correo,
+                // El backend espera LocalDate con formato "yyyy-MM-dd'Z'".
+                FechaNacimiento = fechaNacimiento.ToString("yyyy-MM-dd") + "Z",
+                AlumnoNuevo = false,
+                Activo = true
+            },
+
+            ListaApoderados = apoderados.Select(a => new ApoderadoDetalleRequestDto
+            {
+                Parentesco = a.Parentesco,
+                ContactoEmergencia = a.ContactoEmergencia,
+                ObservacionesFamiliares = a.Observaciones,
+                Apoderado = new PersonaRequestDto
+                {
+                    // ID real de SIME_PERSONA si el apoderado ya existe (0 = crear nuevo).
+                    IdPersona = a.IdPersona,
+                    Dni = a.Dni,
+                    Nombres = a.Nombres,
+                    ApellidoPaterno = a.ApellidoPaterno,
+                    ApellidoMaterno = a.ApellidoMaterno,
+                    Telefono = a.Telefono,
+                    Correo = a.Correo,
+                    Direccion = a.Direccion,
+                    Tipo = a.Tipo,
+                    Especialidad = a.Especialidad,
+                    Cargo = a.Cargo,
+                    Area = a.Area,
+                    Activo = true
+                }
+            }).ToList()
+        };
     }
 
     private void NuevaMatricula()
@@ -1339,6 +1540,7 @@
 
         apoderadoEditando = null;
 
+        apoderadoIdPersona = 0;
         apoderadoDni = "";
         apoderadoNombres = "";
         apoderadoApellidoPaterno = "";
@@ -1354,6 +1556,7 @@
         apoderadoObservaciones = "";
         apoderadoContactoEmergencia = false;
         errorApoderado = "";
+        infoPersonaApoderado = "";
 
         mostrarFormularioApoderado = true;
     }
@@ -1362,6 +1565,7 @@
     {
         apoderadoEditando = apoderado;
 
+        apoderadoIdPersona = apoderado.IdPersona;
         apoderadoDni = apoderado.Dni;
         apoderadoNombres = apoderado.Nombres;
         apoderadoApellidoPaterno = apoderado.ApellidoPaterno;
@@ -1377,8 +1581,49 @@
         apoderadoObservaciones = apoderado.Observaciones;
         apoderadoContactoEmergencia = apoderado.ContactoEmergencia;
         errorApoderado = "";
+        infoPersonaApoderado = "";
 
         mostrarFormularioApoderado = true;
+    }
+
+    // Al salir del campo DNI: busca si la persona ya existe (trabajador o externo)
+    // y autocompleta el formulario. Si no existe, se llena a mano.
+    private async Task BuscarPersonaApoderado()
+    {
+        infoPersonaApoderado = "";
+
+        // Se reinicia: si el DNI no corresponde a una persona existente,
+        // el backend debe crearla (IdPersona = 0), no reutilizar un id previo.
+        apoderadoIdPersona = 0;
+
+        if (string.IsNullOrWhiteSpace(apoderadoDni))
+        {
+            return;
+        }
+
+        buscandoPersona = true;
+        var persona = await MatriculaApi.BuscarPersonaPorDniAsync(apoderadoDni.Trim());
+        buscandoPersona = false;
+
+        if (persona is null)
+        {
+            // No existe: el usuario completa los datos manualmente.
+            return;
+        }
+
+        apoderadoIdPersona = persona.IdPersona;
+        apoderadoNombres = persona.Nombres;
+        apoderadoApellidoPaterno = persona.ApellidoPaterno;
+        apoderadoApellidoMaterno = persona.ApellidoMaterno;
+        apoderadoTelefono = persona.Telefono;
+        apoderadoCorreo = persona.Correo;
+        apoderadoDireccion = persona.Direccion;
+        apoderadoTipo = string.IsNullOrWhiteSpace(persona.Tipo) ? "EXTERNO" : persona.Tipo;
+        apoderadoEspecialidad = persona.Especialidad;
+        apoderadoCargo = persona.Cargo;
+        apoderadoArea = persona.Area;
+
+        infoPersonaApoderado = $"Persona encontrada en el sistema ({apoderadoTipo}). Datos cargados automáticamente.";
     }
 
     private void GuardarApoderado()
@@ -1406,6 +1651,7 @@
 
         if (apoderadoEditando is not null)
         {
+            apoderadoEditando.IdPersona = apoderadoIdPersona;
             apoderadoEditando.Dni = apoderadoDni;
             apoderadoEditando.Nombres = apoderadoNombres;
             apoderadoEditando.ApellidoPaterno = apoderadoApellidoPaterno;
@@ -1433,6 +1679,7 @@
             {
                 Id = apoderados.Any() ? apoderados.Max(a => a.Id) + 1 : 1,
                 AlumnoId = alumnoSeleccionado?.Id ?? 0,
+                IdPersona = apoderadoIdPersona,
                 Dni = apoderadoDni,
                 Nombres = apoderadoNombres,
                 ApellidoPaterno = apoderadoApellidoPaterno,
@@ -1568,6 +1815,7 @@
         {
             Id = origen.Id,
             AlumnoId = origen.AlumnoId,
+            IdPersona = origen.IdPersona,
             Nombres = origen.Nombres,
             ApellidoPaterno = origen.ApellidoPaterno,
             ApellidoMaterno = origen.ApellidoMaterno,

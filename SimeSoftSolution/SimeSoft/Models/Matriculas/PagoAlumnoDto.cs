@@ -9,6 +9,9 @@ public class PagoAlumnoDto
     [JsonPropertyName("idPago")]
     public int IdPago { get; set; }
 
+    [JsonPropertyName("matriculaDetalle")]
+    public MatriculaDetalleAlumnoDto? MatriculaDetalle { get; set; }
+
     [JsonPropertyName("conceptoPago")]
     public ConceptoPagoAlumnoDto? ConceptoPago { get; set; }
 
@@ -34,6 +37,15 @@ public class PagoAlumnoDto
 
     [JsonPropertyName("observacion")]
     public string Observacion { get; set; } = "";
+}
+
+// Solo necesitamos el id para poder relacionar el pago con su matrícula
+// (PagosDelDetalle en la ficha del alumno). El backend manda el objeto
+// MatriculaDetalle completo, pero el resto de sus campos no se usan aquí.
+public class MatriculaDetalleAlumnoDto
+{
+    [JsonPropertyName("idMatriculaDetalle")]
+    public int IdMatriculaDetalle { get; set; }
 }
 
 public class ConceptoPagoAlumnoDto

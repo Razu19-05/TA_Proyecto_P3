@@ -323,6 +323,73 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
         return 0;
     }
 
+    @Override
+    public void actualizarApoderado(int idRelacionFamiliar, ApoderadoNuevoDTO apoderado) throws SQLException {
+        Connection connection = TransactionContext.getConnection();
+
+        // 1. Obtener el id_persona asociado a la relación familiar.
+        int idPersona;
+        String sqlBuscar = "SELECT id_persona FROM SIME_RELACION_FAMILIAR WHERE id_relacion_familiar = ?";
+
+        try (PreparedStatement pstm = connection.prepareStatement(sqlBuscar)) {
+            pstm.setInt(1, idRelacionFamiliar);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (!rs.next()) {
+                    throw new SQLException("No existe la relación familiar id=" + idRelacionFamiliar);
+                }
+                idPersona = rs.getInt("id_persona");
+            }
+        }
+
+        // 2. Actualizar los datos de la persona (apoderado).
+        String sqlPersona = """
+                UPDATE SIME_PERSONA SET
+                    nombres = ?,
+                    apellido_paterno = ?,
+                    apellido_materno = ?,
+                    telefono = ?,
+                    correo = ?,
+                    direccion = ?,
+                    tipo = ?,
+                    especialidad = ?,
+                    cargo = ?,
+                    area = ?
+                WHERE id_persona = ?
+                """;
+
+        try (PreparedStatement pstm = connection.prepareStatement(sqlPersona)) {
+            pstm.setString(1, apoderado.getNombres());
+            pstm.setString(2, apoderado.getApellidoPaterno());
+            pstm.setString(3, apoderado.getApellidoMaterno());
+            pstm.setString(4, apoderado.getTelefono());
+            pstm.setString(5, apoderado.getCorreo());
+            pstm.setString(6, apoderado.getDireccion());
+            pstm.setString(7, normalizarTipoPersona(apoderado.getTipo()));
+            pstm.setString(8, apoderado.getEspecialidad());
+            pstm.setString(9, apoderado.getCargo());
+            pstm.setString(10, apoderado.getArea());
+            pstm.setInt(11, idPersona);
+            pstm.executeUpdate();
+        }
+
+        // 3. Actualizar los datos propios de la relación familiar.
+        String sqlRelacion = """
+                UPDATE SIME_RELACION_FAMILIAR SET
+                    parentesco = ?,
+                    contacto_emergencia = ?,
+                    observaciones = ?
+                WHERE id_relacion_familiar = ?
+                """;
+
+        try (PreparedStatement pstm = connection.prepareStatement(sqlRelacion)) {
+            pstm.setString(1, normalizarParentesco(apoderado.getParentesco()));
+            pstm.setBoolean(2, apoderado.isContactoEmergencia());
+            pstm.setString(3, apoderado.getObservacion());
+            pstm.setInt(4, idRelacionFamiliar);
+            pstm.executeUpdate();
+        }
+    }
+
     private String normalizarTipoPersona(String tipo) {
         if (tipo == null || tipo.isBlank()) {
             return TipoPersona.EXTERNO.name();

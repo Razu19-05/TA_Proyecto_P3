@@ -7,6 +7,7 @@ import pe.edu.pucp.SIME.BL.AlumnoBLImpl;
 import pe.edu.pucp.SIME.BL.RelacionFamiliarBLImpl;
 import pe.edu.pucp.SIME.BL.impl.IAlumnoBL;
 import pe.edu.pucp.SIME.BL.impl.IRelacionFamiliarBL;
+import pe.edu.pucp.SIME.model.DTO.ApoderadoNuevoDTO;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 import pe.edu.pucp.SIME.model.gestionAlumnos.RelacionFamiliar;
 
@@ -54,5 +55,47 @@ public class ApoderadosRS {
         }
     }
 
+    @POST
+    @Path("agregar/{dni}")
+    public Response agregarApoderado(@PathParam("dni") String dni, ApoderadoNuevoDTO apoderado) {
+        try {
+            int idRelacion = relacionFamiliarBL.agregarApoderado(dni, apoderado);
+            return Response.ok(idRelacion).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("actualizar/{idRelacionFamiliar}")
+    public Response actualizarApoderado(@PathParam("idRelacionFamiliar") int idRelacionFamiliar,
+                                        ApoderadoNuevoDTO apoderado) {
+        try {
+            relacionFamiliarBL.editarApoderado(idRelacionFamiliar, apoderado);
+            return Response.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @DELETE
+    @Path("eliminar/{idRelacionFamiliar}")
+    public Response eliminarApoderado(@PathParam("idRelacionFamiliar") int idRelacionFamiliar) {
+        try {
+            relacionFamiliarBL.eliminarApoderado(idRelacionFamiliar);
+            return Response.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
 
 }

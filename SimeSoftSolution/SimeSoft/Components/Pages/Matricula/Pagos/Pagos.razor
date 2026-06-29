@@ -2,8 +2,14 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Models.Alumnos
+@using SimeSoft.Models.Matriculas
+@using SimeSoft.Services.Api
+
 @inject MenuState MenuState
 @inject MatriculaState MatriculaState
+@inject AlumnoApiService AlumnoApiService
+@inject PagoApiService PagoApiService
 @inject NavigationManager Navigation
 
 <div class="sime-layout">
@@ -305,7 +311,7 @@
         $"{nombres} {apellidoPaterno} {apellidoMaterno}";
 
     private bool TieneDeudasPendientes =>
-    pagos.Any(p => p.Estado == "PENDIENTE");
+        pagos.Any(p => p.Estado == "PENDIENTE");
 
     private IEnumerable<PagoGeneradoMatriculaModel> DeudasFiltradas =>
         pagos.Where(d =>
@@ -322,7 +328,7 @@
         pagos.Where(d => d.Estado == "PENDIENTE")
              .Sum(d => d.MontoFinal);
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (MatriculaState.LimpiarPagosAlVolver)
         {
@@ -339,18 +345,13 @@
 
             if (alumno is not null)
             {
-                CargarAlumno(alumno);
-
-                pagos = MatriculaState.ObtenerDeudasPendientes(alumno.Id);
+                await CargarAlumnoYPagosAsync(alumno, soloPendientes: true);
 
                 vieneDeMatriculaRegular = true;
-                alumnoEncontrado = true;
 
                 criterioBusqueda = string.IsNullOrWhiteSpace(MatriculaState.CriterioPagoActual)
                     ? alumno.Dni
                     : MatriculaState.CriterioPagoActual;
-
-                MatriculaState.AlumnoPagoSeleccionadoId = alumno.Id;
             }
 
             return;
@@ -364,13 +365,9 @@
 
             if (alumno is not null)
             {
-                CargarAlumno(alumno);
+                await CargarAlumnoYPagosAsync(alumno, soloPendientes: false);
 
-                pagos = MatriculaState.ObtenerPagosAlumno(alumno.Id);
-
-                alumnoEncontrado = true;
                 vieneDeMatriculaRegular = false;
-
                 criterioBusqueda = MatriculaState.CriterioPagoActual;
             }
 
@@ -385,7 +382,7 @@
         MenuState.CambiarMenu();
     }
 
-    private void BuscarAlumno()
+    private async Task BuscarAlumno()
     {
         mensajeError = "";
 
@@ -396,21 +393,53 @@
             pagos.Clear();
             return;
         }
-        MatriculaState.CriterioPagoActual = criterioBusqueda;
-        var alumno = MatriculaState.BuscarAlumno(criterioBusqueda);
 
-        if (alumno is null)
+        try
         {
-            mensajeError = "No se encontró ningún alumno con el criterio ingresado.";
+            MatriculaState.CriterioPagoActual = criterioBusqueda;
+
+            AlumnoDto? alumnoDto = await AlumnoApiService.BuscarAsync(criterioBusqueda);
+
+            if (alumnoDto is null)
+            {
+                mensajeError = "No se encontró ningún alumno con el criterio ingresado.";
+                alumnoEncontrado = false;
+                alumnoSeleccionado = null;
+                pagos.Clear();
+                return;
+            }
+
+            AlumnoMatriculaModel alumno = ConvertirAlumnoDtoAAlumnoModel(alumnoDto);
+
+            await CargarAlumnoYPagosAsync(alumno, soloPendientes: false);
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo cargar la información de pagos: {ex.Message}";
             alumnoEncontrado = false;
             alumnoSeleccionado = null;
             pagos.Clear();
-            return;
         }
+    }
 
+    private async Task CargarAlumnoYPagosAsync(
+        AlumnoMatriculaModel alumno,
+        bool soloPendientes)
+    {
         CargarAlumno(alumno);
+        GuardarAlumnoEnState(alumno);
+
         MatriculaState.AlumnoPagoSeleccionadoId = alumno.Id;
-        pagos = MatriculaState.ObtenerPagosAlumno(alumno.Id);
+
+        List<PagoAlumnoDto> pagosBackend = soloPendientes
+            ? await PagoApiService.ListarPagosPendientesAlumnoAsync(alumno.Id)
+            : await PagoApiService.ListarPagosAlumnoAsync(alumno.Id);
+
+        pagos = pagosBackend
+            .Select(p => ConvertirPagoDtoAModel(p, alumno.Id))
+            .ToList();
+
+        GuardarPagosEnState(alumno.Id, pagos);
 
         alumnoEncontrado = true;
     }
@@ -423,6 +452,138 @@
         nombres = alumno.Nombres;
         apellidoPaterno = alumno.ApellidoPaterno;
         apellidoMaterno = alumno.ApellidoMaterno;
+    }
+
+    private void GuardarAlumnoEnState(AlumnoMatriculaModel alumno)
+    {
+        var alumnoExistente = MatriculaState.Alumnos
+            .FirstOrDefault(a => a.Id == alumno.Id);
+
+        if (alumnoExistente is null)
+        {
+            MatriculaState.Alumnos.Add(alumno);
+            return;
+        }
+
+        alumnoExistente.Dni = alumno.Dni;
+        alumnoExistente.Nombres = alumno.Nombres;
+        alumnoExistente.ApellidoPaterno = alumno.ApellidoPaterno;
+        alumnoExistente.ApellidoMaterno = alumno.ApellidoMaterno;
+        alumnoExistente.Direccion = alumno.Direccion;
+        alumnoExistente.Telefono = alumno.Telefono;
+        alumnoExistente.Correo = alumno.Correo;
+        alumnoExistente.FechaNacimiento = alumno.FechaNacimiento;
+        alumnoExistente.AlumnoNuevo = alumno.AlumnoNuevo;
+        alumnoExistente.Activo = alumno.Activo;
+    }
+
+    private void GuardarPagosEnState(
+        int alumnoId,
+        List<PagoGeneradoMatriculaModel> pagosAlumno)
+    {
+        MatriculaState.PagosExistentes.RemoveAll(p => p.AlumnoId == alumnoId);
+        MatriculaState.PagosExistentes.AddRange(pagosAlumno);
+    }
+
+    private AlumnoMatriculaModel ConvertirAlumnoDtoAAlumnoModel(AlumnoDto dto)
+    {
+        return new AlumnoMatriculaModel
+        {
+            Id = dto.IdAlumno,
+            Dni = dto.Dni,
+            Nombres = dto.Nombres,
+            ApellidoPaterno = dto.ApellidoPaterno,
+            ApellidoMaterno = dto.ApellidoMaterno,
+            Direccion = dto.Direccion,
+            Telefono = dto.Telefono,
+            Correo = dto.Correo,
+            FechaNacimiento = ConvertirFechaBackend(dto.FechaNacimiento),
+            AlumnoNuevo = dto.AlumnoNuevo,
+            Activo = dto.Activo
+        };
+    }
+
+    private PagoGeneradoMatriculaModel ConvertirPagoDtoAModel(
+        PagoAlumnoDto dto,
+        int alumnoId)
+    {
+        return new PagoGeneradoMatriculaModel
+        {
+            IdPago = dto.IdPago,
+            AlumnoId = alumnoId,
+            Concepto = dto.ConceptoPago?.Nombre ?? "SIN CONCEPTO",
+            MontoOriginal = (decimal)(dto.ConceptoPago?.Monto ?? dto.MontoFinal),
+            MontoDescuento = (decimal)dto.MontoDescuento,
+            MontoFinal = (decimal)dto.MontoFinal,
+            FechaEmision = ConvertirFechaBackend(dto.FechaEmision),
+            FechaVencimiento = ConvertirFechaBackend(dto.FechaVencimiento),
+            FechaPago = ConvertirFechaBackendNullable(dto.FechaPago),
+            Estado = NormalizarEstado(dto.Estado),
+            Observacion = dto.Observacion ?? ""
+        };
+    }
+
+    private DateTime ConvertirFechaBackend(string? fecha)
+    {
+        if (string.IsNullOrWhiteSpace(fecha))
+        {
+            return DateTime.MinValue;
+        }
+
+        fecha = fecha.Replace("Z", "").Trim();
+
+        string[] formatos =
+        {
+            "yyyy-MM-dd",
+            "yyyy-MM-ddTHH:mm:ss",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "dd/MM/yyyy",
+            "d/M/yyyy"
+        };
+
+        if (DateTime.TryParseExact(
+                fecha,
+                formatos,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out DateTime fechaConvertida))
+        {
+            return fechaConvertida;
+        }
+
+        if (DateTime.TryParse(fecha, out fechaConvertida))
+        {
+            return fechaConvertida;
+        }
+
+        return DateTime.MinValue;
+    }
+
+    private DateTime? ConvertirFechaBackendNullable(string? fecha)
+    {
+        if (string.IsNullOrWhiteSpace(fecha))
+        {
+            return null;
+        }
+
+        DateTime fechaConvertida = ConvertirFechaBackend(fecha);
+
+        if (fechaConvertida == DateTime.MinValue)
+        {
+            return null;
+        }
+
+        return fechaConvertida;
+    }
+
+    private string NormalizarEstado(string? estado)
+    {
+        if (string.IsNullOrWhiteSpace(estado))
+        {
+            return "PENDIENTE";
+        }
+
+        return estado.Trim().ToUpper();
     }
 
     private void VerDetalle(PagoGeneradoMatriculaModel deuda)

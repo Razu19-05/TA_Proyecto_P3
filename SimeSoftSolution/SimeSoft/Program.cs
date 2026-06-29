@@ -19,6 +19,7 @@ builder.Services.AddScoped<ValidacionMatriculaAlumnoNuevoService>();
 builder.Services.AddScoped<PagoMatriculaAlumnoNuevoService>();
 builder.Services.AddScoped<MatriculaAlumnoNuevoRequestFactory>();
 
+
 builder.Services.AddHttpClient("SimeApi", client =>
 {
     client.BaseAddress = new Uri("http://localhost:8080/WebApplication/webresources/");
@@ -30,6 +31,11 @@ builder.Services.AddScoped<AsignacionDocenteApiService>();
 builder.Services.AddScoped<MatriculaApiService>();
 builder.Services.AddScoped<AlumnoApiService>();
 builder.Services.AddScoped<LoginApiService>();
+builder.Services.AddScoped<PagoApiService>();
+
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

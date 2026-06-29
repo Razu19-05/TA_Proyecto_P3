@@ -2,8 +2,11 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Services.Api
+
 @inject MenuState MenuState
 @inject MatriculaState MatriculaState
+@inject PagoApiService PagoApiService
 @inject NavigationManager Navigation
 
 <div class="sime-layout">
@@ -222,7 +225,7 @@
         }
     }
 
-    private void ConfirmarAnulacion()
+    private async Task ConfirmarAnulacion()
     {
         mensajeError = "";
         mensajeExito = "";
@@ -230,6 +233,12 @@
         if (deuda is null)
         {
             mensajeError = "No se seleccionó ninguna deuda.";
+            return;
+        }
+
+        if (deuda.IdPago <= 0)
+        {
+            mensajeError = "No se encontró el ID del pago. Vuelva a buscar al alumno e intente otra vez.";
             return;
         }
 
@@ -251,17 +260,29 @@
             return;
         }
 
-        deuda.Estado = "ANULADO";
-        deuda.Observacion = observacionAnulacion.Trim();
+        string observacionFinal = observacionAnulacion.Trim();
 
-        if (MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+        try
         {
-            MatriculaState.VieneDePagoAlumnoRegular = true;
-            Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
+            await PagoApiService.AnularPagoAsync(deuda.IdPago, observacionFinal);
+
+            deuda.Estado = "ANULADO";
+            deuda.FechaPago = null;
+            deuda.Observacion = observacionFinal;
+
+            if (MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+            {
+                MatriculaState.VieneDePagoAlumnoRegular = true;
+                Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
+            }
+            else
+            {
+                Navigation.NavigateTo("/matricula/pagos?retorno=pagos");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Navigation.NavigateTo("/matricula/pagos?retorno=pagos");
+            mensajeError = $"No se pudo anular la deuda: {ex.Message}";
         }
     }
 

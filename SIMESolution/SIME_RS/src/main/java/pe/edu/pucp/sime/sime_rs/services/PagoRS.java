@@ -28,7 +28,20 @@ public class PagoRS {
         }
 
     }
-    @PUT
+
+    @GET
+    @Path("listar_pagos_pendientes_alumno/{idAlumno}")
+    public Response listarPagosPendientesAlumno(@PathParam("idAlumno") int idAlumno) {
+        try{
+            List<Pago> pagos = pagoBL.listarPagosPendientesAlumno(idAlumno);
+            return Response.ok(pagos).build();
+        } catch (Exception e){
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+        }
+
+    }
+        @PUT
     @Path("actualizar/{idPago}")
     public Response actualizarPago(@PathParam("idPago") int idPago, Pago pagoAct) {
         try {

@@ -93,14 +93,23 @@ public class MatriculaBLImpl implements IMatriculaBL {
         return pagoDAO.save(pagoInscripcion);
     }
 
-    private Alumno registrarAlumno(Alumno alumno) throws Exception{
-        Alumno alumnoInscripcion = alumnoDAO.buscarPorDni(alumno.getDni());
-        if(alumnoInscripcion == null){
-            alumnoInscripcion = alumnoDAO.save(alumno);
-        } else {
-            alumnoInscripcion = alumnoDAO.update(alumno);
+    private Alumno registrarAlumno(Alumno alumnoSolicitud) throws Exception{
+        Alumno alumnoExistente = alumnoDAO.buscarPorDni(alumnoSolicitud.getDni());
+        if (alumnoExistente == null || !alumnoExistente.isActivo()) {
+            throw new Exception("El alumno no está registrado en la base de datos o está inactivo.");
         }
-        return alumnoInscripcion;
+
+        if (alumnoSolicitud.getDireccion() != null && !alumnoSolicitud.getDireccion().isBlank()) {
+            alumnoExistente.setDireccion(alumnoSolicitud.getDireccion());
+        }
+        if (alumnoSolicitud.getTelefono() != null && !alumnoSolicitud.getTelefono().isBlank()) {
+            alumnoExistente.setTelefono(alumnoSolicitud.getTelefono());
+        }
+        if (alumnoSolicitud.getCorreo() != null && !alumnoSolicitud.getCorreo().isBlank()) {
+            alumnoExistente.setCorreo(alumnoSolicitud.getCorreo());
+        }
+
+        return alumnoDAO.update(alumnoExistente);
     }
 
     private void validarApoderado(Alumno alumno,SolicitudMatriculaDTO solicitud) throws Exception{
@@ -122,6 +131,10 @@ public class MatriculaBLImpl implements IMatriculaBL {
             apoderado.setTipo(TipoPersona.EXTERNO);
             apoderado = personaDAO.save(apoderado);
         } else {
+            // La persona ya existe: se usa el id real encontrado en la BD
+            // (no el del DTO, que puede venir en 0) para evitar que la
+            // relación familiar quede con id_persona = 0 y falle la FK.
+            apoderado.setIdPersona(apoderadoBuscar.getIdPersona());
             apoderado = personaDAO.update(apoderado);
         }
         RelacionFamiliar relacion = new RelacionFamiliar();
@@ -178,16 +191,13 @@ public class MatriculaBLImpl implements IMatriculaBL {
             Descuento descuento = registrarDescuento(detalle, solicitud);
             porcentajeDescuento = descuento.getPorcentaje();
             //facturacion
+            //El descuento se aplica únicamente sobre la MATRICULA.
             //Concepto ID 1 = Matricula
-            guardarPagos(detalle,1,porcentajeDescuento);       // ==========================================================
-            //Concepto ID 2 = Pension
-            guardarPagos(detalle,2,porcentajeDescuento);
-            if (alumno.isAlumnoNuevo()) {
-                // Concepto ID 3 = Cuota de Ingreso / Inscripción
-                guardarPagos(detalle,3,porcentajeDescuento);
-                //  Concepto ID 4 = Examen psicologico
-                guardarPagos(detalle,4,porcentajeDescuento);
-            }
+            guardarPagos(detalle,1,porcentajeDescuento);
+            //Concepto ID 2 = Pension (sin descuento)
+            guardarPagos(detalle,2,0.0);
+            //Concepto ID 6 (sin descuento)
+            guardarPagos(detalle,6,0.0);
             cabecera.setVacantesOcupadas(cabecera.getVacantesOcupadas() + 1);
             cabeceraDAO.update(cabecera);
             TransactionContext.commit();

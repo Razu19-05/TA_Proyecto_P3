@@ -52,6 +52,22 @@ public class EmpleadosRS {
         }
     }
 
+    // Busca CUALQUIER persona por DNI (profesor, administrativo, personal de servicio o externo)..
+    @GET
+    @Path("buscarPersona/{dni}")
+    public Response cargarPersona(@PathParam("dni") String dni) {
+        try{
+            Persona persona = personalBL.buscarPersonaPorDni(dni);
+            if (persona == null) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+            return Response.ok(persona).build();
+        } catch (Exception e){
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+        }
+    }
+
     @POST
     @Path("crear")
     public Response crearEmpleado(Persona persona) {

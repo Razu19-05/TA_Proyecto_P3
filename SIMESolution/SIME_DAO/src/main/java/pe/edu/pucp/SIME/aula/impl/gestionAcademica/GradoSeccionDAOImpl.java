@@ -131,4 +131,19 @@ public class GradoSeccionDAOImpl implements GradoSeccionDAO {
             }
         }
     }
+    @Override
+    public int obtenerIdPorNivelYGrado(String nivel, String grado) throws SQLException {
+        String sql = "SELECT id_grado_seccion FROM SIME_GRADO_SECCION WHERE nivel = UPPER(?) AND grado = ? AND activo = 1";
+        Connection connection = TransactionContext.getConnection();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, nivel);
+            stmt.setString(2, grado);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_grado_seccion");
+                }
+            }
+        }
+        throw new SQLException("No se encontró el grado/sección para el nivel: " + nivel + " y grado: " + grado);
+    }
 }

@@ -42,7 +42,14 @@ public class AulaApiService
 
         return response.IsSuccessStatusCode;
     }
+    public async Task<bool> CrearPorNivelAsync(AulaGuardarDto aula)
+    {
+        // Llama al nuevo endpoint que crearemos en Java para la asignación por nivel
+        HttpResponseMessage response =
+            await _httpClient.PostAsJsonAsync("AulaRS/crear-por-nivel", aula);
 
+        return response.IsSuccessStatusCode;
+    }
     public async Task<bool> ActualizarAsync(AulaGuardarDto aula)
     {
         HttpResponseMessage response =
@@ -66,4 +73,5 @@ public class AulaApiService
 
         return response.IsSuccessStatusCode;
     }
+
 }

@@ -12,6 +12,6 @@ public interface IAulaBL {
     Aula actualizarAula(Aula aula) throws Exception;
     void eliminarAula(int idAula) throws Exception;
     boolean actualizarCapacidad(int idAula, int capacidad) throws Exception;
-
+    AulaDTO guardarAulaPorNivel(AulaDTO aulaDTO) throws Exception;
 
 }

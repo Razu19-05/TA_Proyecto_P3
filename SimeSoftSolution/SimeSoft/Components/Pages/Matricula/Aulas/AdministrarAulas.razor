@@ -4,6 +4,7 @@
 
 @using SimeSoft.Components.State
 @using SimeSoft.Models.Aulas
+@using SimeSoft.Models.PeriodoNivelGrado
 @using SimeSoft.Services.Api
 @inject MenuState MenuState
 @inject AulaApiService AulaApiService
@@ -703,7 +704,10 @@
             Codigo = modalCodigo.Trim(),
             Tipo = ConvertirTipoParaBackend(modalTipo),
             Capacidad = modalCapacidad,
-            Activo = modalEstado == "Activa"
+            Activo = modalEstado == "Activa",
+            Periodo = periodo, 
+            Nivel = modalCompartida ? "TODOS" : modalNivel,
+            Grado = modalCompartida ? "TODOS" : modalGrado
         };
 
         bool ok;

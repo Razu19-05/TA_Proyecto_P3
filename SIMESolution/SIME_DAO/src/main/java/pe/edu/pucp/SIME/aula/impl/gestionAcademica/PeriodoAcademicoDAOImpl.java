@@ -119,4 +119,18 @@ public class PeriodoAcademicoDAOImpl implements PeriodoAcademicoDAO {
             }
         }
     }
+    @Override
+    public int obtenerIdPorAnio(int anio) throws SQLException {
+        String sql = "SELECT id_periodo_academico FROM SIME_PERIODO_ACADEMICO WHERE anio_escolar = ? AND activo = 1";
+        Connection connection = TransactionContext.getConnection();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, anio);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_periodo_academico");
+                }
+            }
+        }
+        throw new SQLException("No se encontró un período académico activo para el año: " + anio);
+    }
 }

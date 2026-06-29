@@ -12,4 +12,5 @@ public interface MatriculaCabeceraDAO extends BaseDAO<MatriculaCabecera,Integer>
 	boolean existeVacanteDisponible(int idMatriculaCabecera) throws SQLException;
 	List<VacanteMatriculaDTO> listarVacantes(String periodo, String nivel, String grado) throws SQLException;
 	boolean incrementarVacanteOcupada(int idMatriculaCabecera) throws SQLException;
+
 }

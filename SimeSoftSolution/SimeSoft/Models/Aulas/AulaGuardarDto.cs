@@ -7,4 +7,8 @@ public class AulaGuardarDto
     public string Tipo { get; set; } = "AULA";
     public int Capacidad { get; set; }
     public bool Activo { get; set; } = true;
+
+    public string Periodo { get; set; } = "";
+    public string Nivel { get; set; } = "";
+    public string Grado { get; set; } = "";
 }

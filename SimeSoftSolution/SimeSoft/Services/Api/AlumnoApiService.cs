@@ -54,4 +54,18 @@ public class AlumnoApiService
 
         return await response.Content.ReadFromJsonAsync<bool>();
     }
+
+    // Actualiza los datos del alumno (PUT AlumnoRS/actualizar/{dni}).
+    // El backend ubica al alumno por DNI y actualiza el resto de campos.
+    public async Task<bool> ActualizarAsync(string dni, AlumnoDto alumno)
+    {
+        if (string.IsNullOrWhiteSpace(dni))
+            return false;
+
+        string url = $"AlumnoRS/actualizar/{Uri.EscapeDataString(dni)}";
+
+        HttpResponseMessage response = await _httpClient.PutAsJsonAsync(url, alumno);
+
+        return response.IsSuccessStatusCode;
+    }
 }

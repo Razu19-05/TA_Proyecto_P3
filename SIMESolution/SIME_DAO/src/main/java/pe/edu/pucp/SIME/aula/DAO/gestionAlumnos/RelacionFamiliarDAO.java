@@ -12,4 +12,5 @@ public interface RelacionFamiliarDAO extends BaseDAO <RelacionFamiliar, Integer>
     int contarApoderadosActivos(int idAlumno) throws SQLException;
     List<RelacionFamiliar> listarApoderadosActivos(Integer idAlumno) throws SQLException;
     int insertarApoderadoAlumno(int idAlumno, ApoderadoNuevoDTO apoderado) throws SQLException;
+    void actualizarApoderado(int idRelacionFamiliar, ApoderadoNuevoDTO apoderado) throws SQLException;
 }

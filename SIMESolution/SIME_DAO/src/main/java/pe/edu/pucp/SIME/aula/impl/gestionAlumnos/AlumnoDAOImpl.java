@@ -74,13 +74,32 @@ public class AlumnoDAOImpl implements AlumnoDAO {
     @Override
     public Alumno update(Alumno alumno) throws SQLException {
         alumno.setAlumnoNuevo(false);
-        String sql = "UPDATE SIME_ALUMNO SET direccion = ?, telefono = ?, correo = ? WHERE id_alumno = ?";
+        String sql = """
+                UPDATE SIME_ALUMNO 
+                SET dni = ?,
+                    nombres=?,
+                    apellido_paterno=?,
+                    apellido_materno=?,
+                    direccion=?,
+                    telefono=?,
+                    correo=?,
+                    fecha_nacimiento=?,
+                    alumno_nuevo=?,
+                    activo=? WHERE id_alumno=?
+                """;
         Connection connection = TransactionContext.getConnection();
         try (PreparedStatement pstm = connection.prepareStatement(sql)){
-            pstm.setString(1, alumno.getDireccion());
-            pstm.setString(2, alumno.getTelefono());
-            pstm.setString(3, alumno.getCorreo());
-            pstm.setInt(4,alumno.getIdAlumno());
+            pstm.setString(1, alumno.getDni());
+            pstm.setString(2, alumno.getNombres());
+            pstm.setString(3, alumno.getApellidoPaterno());
+            pstm.setString(4, alumno.getApellidoMaterno());
+            pstm.setString(5, alumno.getDireccion());
+            pstm.setString(6, alumno.getTelefono());
+            pstm.setString(7, alumno.getCorreo());
+            pstm.setObject(8, alumno.getFechaNacimiento());
+            pstm.setBoolean(9, alumno.isAlumnoNuevo());
+            pstm.setBoolean(10, alumno.isActivo());
+            pstm.setInt(11, alumno.getIdAlumno());
             int resultado = pstm.executeUpdate();
             if (resultado == 0) {
                 System.out.println("No se encontró el alumno con ID: " + alumno.getIdAlumno());

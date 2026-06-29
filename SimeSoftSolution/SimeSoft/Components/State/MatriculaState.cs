@@ -571,6 +571,10 @@ public class ApoderadoMatriculaModel
 
     public int AlumnoId { get; set; }
 
+    // ID real de SIME_PERSONA cuando el apoderado ya existe (obtenido vía REST).
+    // 0 si es una persona nueva que el backend debe crear.
+    public int IdPersona { get; set; }
+
     public string Nombres { get; set; } = "";
     public string ApellidoPaterno { get; set; } = "";
     public string ApellidoMaterno { get; set; } = "";

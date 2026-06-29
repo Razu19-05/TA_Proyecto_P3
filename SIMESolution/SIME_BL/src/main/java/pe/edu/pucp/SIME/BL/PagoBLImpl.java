@@ -54,4 +54,18 @@ public class PagoBLImpl implements IPagoBL {
             TransactionContext.close();
         }
     }
+
+    @Override
+    public List<Pago> listarPagosPendientesAlumno(int idALumno) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            List <Pago> pagosAlumno = pagoDAO.listarPagosPendientesdeAlumno(idALumno);
+            TransactionContext.commit();
+            return pagosAlumno;
+        }catch (Exception e){
+            throw new Exception("Error al listar pagos del alumno: " + e.getMessage());
+        }finally {
+            TransactionContext.close();
+        }
+    }
 }

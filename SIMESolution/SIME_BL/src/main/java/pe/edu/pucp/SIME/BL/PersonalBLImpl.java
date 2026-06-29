@@ -109,4 +109,19 @@ public class PersonalBLImpl implements IPersonalBL {
             TransactionContext.close();
         }
     }
+
+    @Override
+    public Persona buscarPersonaPorDni(String dni) throws Exception {
+        try{
+            TransactionContext.getConnection();
+            Persona persona = personaDAO.buscarPorDni(dni);
+            TransactionContext.commit();
+            return persona;
+        } catch (Exception e){
+            TransactionContext.rollback();
+            throw new Exception("Error al buscar persona por DNI: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

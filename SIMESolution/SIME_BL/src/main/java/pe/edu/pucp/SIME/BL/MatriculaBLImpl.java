@@ -186,7 +186,10 @@ public class MatriculaBLImpl implements IMatriculaBL {
             // REGISTRAR DESCUENTO Y CALCULAR
             double porcentajeDescuento = 0.0;
             Descuento descuento = registrarDescuento(detalle, solicitud);
-            porcentajeDescuento = descuento.getPorcentaje();
+            // descuento es null cuando no se aplica descuento (idTipoDescuento <= 0).
+            if (descuento != null) {
+                porcentajeDescuento = descuento.getPorcentaje();
+            }
             //facturacion
             //El descuento se aplica únicamente sobre la MATRICULA.
             //Concepto ID 1 = Matricula

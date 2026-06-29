@@ -2,8 +2,12 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Models.Alumnos
+@using SimeSoft.Services.Api
+
 @inject MenuState MenuState
 @inject AlumnoState AlumnoState
+@inject AlumnoApiService AlumnoApiService
 @inject NavigationManager Navigation
 
 <div class="dashboard-layout">
@@ -769,28 +773,88 @@
         MenuState.CambiarMenu();
     }
 
-    private void BuscarAlumno()
+    private async Task BuscarAlumno()
     {
         mensaje = "";
         error = "";
 
-        alumno = AlumnoState.BuscarAlumno(criterioBusqueda);
-
-        if (alumno is null)
+        if (string.IsNullOrWhiteSpace(criterioBusqueda))
         {
-            error = "No se encontró ningún alumno con el criterio ingresado.";
+            error = "Ingrese un DNI, nombre o apellido para buscar.";
+            alumno = null;
             apoderados.Clear();
             pagos.Clear();
             matriculas.Clear();
             return;
         }
 
-        AlumnoState.AlumnoSeleccionado = alumno;
+        try
+        {
+            AlumnoDto? alumnoDto = await AlumnoApiService.BuscarAsync(criterioBusqueda);
 
-        CargarDatosAlumno();
+            if (alumnoDto is null)
+            {
+                error = "No se encontró ningún alumno con el criterio ingresado.";
+                alumno = null;
+                apoderados.Clear();
+                pagos.Clear();
+                matriculas.Clear();
+                return;
+            }
 
-        mensaje = "Alumno encontrado correctamente.";
+            alumno = ConvertirAlumnoDtoAAlumnoModel(alumnoDto);
+
+            AlumnoState.AlumnoSeleccionado = alumno;
+
+            CargarDatosAlumno();
+
+            mensaje = "Alumno encontrado correctamente.";
+        }
+        catch
+        {
+            error = "No se pudo conectar con el servicio REST para buscar el alumno.";
+            alumno = null;
+            apoderados.Clear();
+            pagos.Clear();
+            matriculas.Clear();
+        }
     }
+
+    private AlumnoModel ConvertirAlumnoDtoAAlumnoModel(AlumnoDto dto)
+    {
+        return new AlumnoModel
+        {
+            Id = dto.IdAlumno,
+            Dni = dto.Dni ?? "",
+            Nombres = dto.Nombres ?? "",
+            ApellidoPaterno = dto.ApellidoPaterno ?? "",
+            ApellidoMaterno = dto.ApellidoMaterno ?? "",
+            Direccion = dto.Direccion ?? "",
+            Telefono = dto.Telefono ?? "",
+            Correo = dto.Correo ?? "",
+            FechaNacimiento = FormatearFecha(dto.FechaNacimiento),
+            AlumnoNuevo = dto.AlumnoNuevo,
+            Estado = dto.Activo ? "Activo" : "Inactivo",
+
+            TieneDescuento = false,
+            DescuentoActual = "",
+            PorcentajeDescuento = 0
+        };
+    }
+
+    private string FormatearFecha(string fecha)
+    {
+        if (string.IsNullOrWhiteSpace(fecha))
+            return "";
+
+        fecha = fecha.Replace("Z", "");
+
+        if (DateTime.TryParse(fecha, out DateTime fechaConvertida))
+            return fechaConvertida.ToString("dd/MM/yyyy");
+
+        return fecha;
+    }
+
 
     private void CargarDatosAlumno()
     {

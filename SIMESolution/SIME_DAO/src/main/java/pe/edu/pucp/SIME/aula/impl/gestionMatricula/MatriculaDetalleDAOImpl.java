@@ -198,4 +198,63 @@ public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
         }
         return matriculas;
     }
+
+    @Override
+    public boolean existeMatriculaActiva(int idAlumno, int idMatriculaCabecera) throws SQLException {
+
+        String sql = """
+        SELECT COUNT(*) AS total
+        FROM SIME_MATRICULA_DETALLE
+        WHERE id_alumno = ?
+          AND id_matricula_cabecera = ?
+          AND activo = 1
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setInt(1, idAlumno);
+            pstm.setInt(2, idMatriculaCabecera);
+
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total") > 0;
+                }
+            }
+        }
+
+        return false;
+    }
+    @Override
+    public int insertarMatriculaAlumnoNuevo(int idAlumno, int idMatriculaCabecera) throws SQLException {
+
+        String sql = """
+        INSERT INTO SIME_MATRICULA_DETALLE
+        (
+            id_alumno,
+            id_matricula_cabecera,
+            fecha_matricula,
+            estado,
+            activo
+        )
+        VALUES (?, ?, CURDATE(), 'MATRICULADO', 1)
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstm.setInt(1, idAlumno);
+            pstm.setInt(2, idMatriculaCabecera);
+
+            pstm.executeUpdate();
+
+            try (ResultSet rs = pstm.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+
+        return 0;
+    }
 }

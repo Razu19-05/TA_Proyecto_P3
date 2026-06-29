@@ -6,6 +6,7 @@ import pe.edu.pucp.SIME.aula.DAO.gestionPagos.PagoDAO;
 import pe.edu.pucp.SIME.aula.impl.gestionMatricula.MatriculaDetalleDAOImpl;
 import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
+import pe.edu.pucp.SIME.model.DTO.PagoMatriculaDTO;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
 import pe.edu.pucp.SIME.model.gestionPagos.ConceptoPago;
 import pe.edu.pucp.SIME.model.gestionPagos.Pago;
@@ -240,5 +241,69 @@ public class PagoDAOImpl implements PagoDAO {
             return pagos;
 
         }
+    }
+
+    @Override
+    public int insertarPagoMatricula(
+            int idAlumno,
+            int idMatriculaDetalle,
+            PagoMatriculaDTO pago
+    ) throws SQLException {
+
+        String sql = """
+        INSERT INTO SIME_PAGO
+        (
+            id_matricula_detalle,
+            id_concepto,
+            monto_descuento,
+            monto_final,
+            fecha_emision,
+            fecha_vencimiento,
+            fecha_pago,
+            estado,
+            observacion,
+            activo
+        )
+        SELECT
+            ?,
+            cp.id_concepto,
+            ?,
+            ?,
+            CURDATE(),
+            DATE_ADD(CURDATE(), INTERVAL 30 DAY),
+            NULL,
+            'PENDIENTE',
+            ?,
+            1
+        FROM SIME_CONCEPTO_PAGO cp
+        WHERE cp.activo = 1
+          AND UPPER(cp.nombre) = UPPER(?)
+        LIMIT 1
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstm.setInt(1, idMatriculaDetalle);
+            pstm.setDouble(2, pago.getMontoDescuento());
+            pstm.setDouble(3, pago.getMontoFinal());
+            pstm.setString(4, "Pago generado por matrícula de alumno nuevo");
+            pstm.setString(5, pago.getConcepto());
+
+            int affectedRows = pstm.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new SQLException("No se encontró el concepto de pago: " + pago.getConcepto());
+            }
+
+            try (ResultSet rs = pstm.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+
+        return 0;
     }
 }

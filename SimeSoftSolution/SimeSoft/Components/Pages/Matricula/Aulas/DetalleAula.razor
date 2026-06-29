@@ -1,8 +1,11 @@
-﻿@page "/matricula/aulas/detalle-aula"
+﻿@page "/matricula/aulas/detalle-aula/{IdAula:int}"
 @rendermode InteractiveServer
 @using SimeSoft.Components.State
+@using SimeSoft.Models.Aulas
+@using SimeSoft.Services.Api
+@inject AsignacionDocenteApiService AsignacionDocenteApiService
 @inject MenuState MenuState
-@inject AulaState AulaState
+@inject AulaApiService AulaApiService
 @inject NavigationManager Navigation
 
 <div class="dashboard-layout">
@@ -13,14 +16,28 @@
             <div class="breadcrumb-custom"><span>Aulas</span> / <span>Consultar</span> / <strong>Detalle</strong></div>
             <h2>Detalle del Aula</h2>
             <p class="page-description">Consulta la información detallada del aula seleccionada.</p>
+            @if (cargando)
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-hourglass-split me-2"></i>
+                    Cargando información del aula...
+                </div>
+            }
 
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    @error
+                </div>
+            }
             @if (aula is not null)
             {
                 <div class="detail-card">
                     <div class="detail-grid">
                         <div><span>Periodo</span><strong>@aula.Periodo</strong></div><div><span>Nivel</span><strong>@aula.Nivel</strong></div><div><span>Grado</span><strong>@aula.Grado</strong></div>
                         <div><span>Aula</span><strong>@aula.Codigo</strong></div><div><span>Tipo</span><strong>@aula.TipoAula</strong></div><div><span>Capacidad</span><strong>@aula.Capacidad</strong></div>
-                        <div><span>Totales</span><strong>@aula.VacantesTotales</strong></div><div><span>Ocupadas</span><strong class="text-warning">@aula.VacantesOcupadas</strong></div>
+                        <div><span>Totales</span><strong>@aula.Capacidad</strong></div><div><span>Ocupadas</span><strong class="text-warning">@aula.VacantesOcupadas</strong></div>
                         <div><span>Disponibles</span><strong class="text-success">@aula.VacantesDisponibles</strong></div><div><span>Estado</span><strong><span class="badge bg-success-subtle text-success">@aula.Estado</span></strong></div>
                     </div>
                 </div>
@@ -34,11 +51,11 @@
                             {
                                 <tr>
                                     <td>@p.Dni</td>
-                                    <td>@p.NombreCompleto</td>
-                                    <td>@p.Especialidad</td>
-                                    <td>@p.Cargo</td>
-                                    <td>@p.Telefono</td>
-                                    <td>@p.Correo</td>
+                                    <td>@p.NombresCompletos</td>
+                                    <td>@MostrarDato(p.Especialidad)</td>
+                                    <td>@MostrarDato(p.Cargo)</td>
+                                    <td>@MostrarDato(p.Telefono)</td>
+                                    <td>@MostrarDato(p.Correo)</td>
                                     <td>@if (p.EsTutor) {
                                         <span class="badge bg-success-subtle text-success">Sí (Tutor)</span>
                                     } else
@@ -62,17 +79,57 @@
 </div>
 
 @code {
-    private AulaModel? aula;
-    private List<ProfesorAulaModel> profesores = new();
+    [Parameter]
+    public int IdAula { get; set; }
 
-    protected override void OnInitialized()
+    private AulaDto? aula;
+    private List<ProfesorAulaDto> profesores = new();
+
+    private string error = "";
+    private bool cargando = false;
+
+    protected override async Task OnInitializedAsync()
     {
-        aula = AulaState.AulaSeleccionada ?? AulaState.Aulas.FirstOrDefault();
-        if (aula is not null)
-            profesores = AulaState.ProfesoresPorAula(aula.Periodo, aula.Codigo).ToList();
+        cargando = true;
+        error = "";
+
+        try
+        {
+            aula = await AulaApiService.ObtenerDetalleAsync(IdAula);
+
+            if (aula is null)
+            {
+                error = "No se encontró el aula seleccionada.";
+                return;
+            }
+
+            profesores = await AsignacionDocenteApiService.ListarPorAulaAsync(IdAula);
+        }
+        catch
+        {
+            error = "No se pudo conectar con el servicio REST para obtener el detalle del aula.";
+            aula = null;
+            profesores = new();
+        }
+        finally
+        {
+            cargando = false;
+        }
     }
 
-    private void CambiarMenu() => MenuState.CambiarMenu();
-    private void Volver() => Navigation.NavigateTo("/matricula/aulas/consultar");
+    private void CambiarMenu()
+    {
+        MenuState.CambiarMenu();
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo("/matricula/aulas/consultar");
+    }
+
+    private string MostrarDato(string? valor)
+    {
+        return string.IsNullOrWhiteSpace(valor) ? "-" : valor;
+    }
 }
 

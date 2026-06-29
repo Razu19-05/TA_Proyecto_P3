@@ -6,10 +6,13 @@ import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.aula.DAO.gestionDePersonal.PersonaDAO;
 import pe.edu.pucp.SIME.aula.impl.gestionDePersonal.PersonaDAOImpl;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
+import pe.edu.pucp.SIME.model.DTO.ApoderadoNuevoDTO;
 import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 import pe.edu.pucp.SIME.model.gestionAlumnos.RelacionFamiliar;
 import pe.edu.pucp.SIME.model.gestionAlumnos.TipoRelacionFamiliar;
 import pe.edu.pucp.SIME.model.gestionDePersonal.Persona;
+import pe.edu.pucp.SIME.model.gestionDePersonal.TipoPersona;
+
 
 import java.sql.*;
 import java.util.List;
@@ -167,5 +170,177 @@ public class RelacionFamiliarDAOImpl implements RelacionFamiliarDAO {
         }
 
         return apoderados;
+    }
+
+    @Override
+    public int insertarApoderadoAlumno(int idAlumno, ApoderadoNuevoDTO apoderado) throws SQLException {
+
+        Connection connection = TransactionContext.getConnection();
+
+        PersonaDAO personaDAO = new PersonaDAOImpl();
+
+        Persona persona = personaDAO.buscarPorDni(apoderado.getDni());
+
+        int idPersona;
+
+        if (persona == null) {
+            idPersona = insertarPersonaApoderado(connection, apoderado);
+        } else {
+            idPersona = persona.getIdPersona();
+        }
+
+        Integer idRelacionExistente = buscarRelacionActiva(connection, idAlumno, idPersona);
+
+        if (idRelacionExistente != null) {
+            return idRelacionExistente;
+        }
+
+        return insertarRelacionFamiliar(connection, idAlumno, idPersona, apoderado);
+    }
+
+    private int insertarPersonaApoderado(Connection connection, ApoderadoNuevoDTO apoderado) throws SQLException {
+        String sql = """
+        INSERT INTO SIME_PERSONA
+        (
+            nombres,
+            apellido_paterno,
+            apellido_materno,
+            dni,
+            telefono,
+            correo,
+            direccion,
+            tipo,
+            especialidad,
+            cargo,
+            area,
+            activo
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    """;
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            String tipo = normalizarTipoPersona(apoderado.getTipo());
+
+            pstm.setString(1, apoderado.getNombres());
+            pstm.setString(2, apoderado.getApellidoPaterno());
+            pstm.setString(3, apoderado.getApellidoMaterno());
+            pstm.setString(4, apoderado.getDni());
+            pstm.setString(5, apoderado.getTelefono());
+            pstm.setString(6, apoderado.getCorreo());
+            pstm.setString(7, apoderado.getDireccion());
+            pstm.setString(8, tipo);
+
+            if ("PROFESOR".equals(tipo)) {
+                pstm.setString(9, apoderado.getEspecialidad());
+                pstm.setNull(10, Types.VARCHAR);
+                pstm.setNull(11, Types.VARCHAR);
+            } else if ("ADMINISTRADOR".equals(tipo)) {
+                pstm.setNull(9, Types.VARCHAR);
+                pstm.setString(10, apoderado.getCargo());
+                pstm.setNull(11, Types.VARCHAR);
+            } else if ("PERSONAL_SERVICIO".equals(tipo)) {
+                pstm.setNull(9, Types.VARCHAR);
+                pstm.setNull(10, Types.VARCHAR);
+                pstm.setString(11, apoderado.getArea());
+            } else {
+                pstm.setNull(9, Types.VARCHAR);
+                pstm.setNull(10, Types.VARCHAR);
+                pstm.setNull(11, Types.VARCHAR);
+            }
+
+            pstm.executeUpdate();
+
+            try (ResultSet rs = pstm.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    private Integer buscarRelacionActiva(Connection connection, int idAlumno, int idPersona) throws SQLException {
+        String sql = """
+        SELECT id_relacion_familiar
+        FROM SIME_RELACION_FAMILIAR
+        WHERE id_alumno = ?
+          AND id_persona = ?
+          AND activo = 1
+        LIMIT 1
+    """;
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setInt(1, idAlumno);
+            pstm.setInt(2, idPersona);
+
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_relacion_familiar");
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private int insertarRelacionFamiliar(
+            Connection connection,
+            int idAlumno,
+            int idPersona,
+            ApoderadoNuevoDTO apoderado
+    ) throws SQLException {
+
+        String sql = """
+        INSERT INTO SIME_RELACION_FAMILIAR
+        (
+            id_alumno,
+            id_persona,
+            parentesco,
+            contacto_emergencia,
+            observaciones,
+            activo
+        )
+        VALUES (?, ?, ?, ?, ?, 1)
+    """;
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstm.setInt(1, idAlumno);
+            pstm.setInt(2, idPersona);
+            pstm.setString(3, normalizarParentesco(apoderado.getParentesco()));
+            pstm.setBoolean(4, apoderado.isContactoEmergencia());
+            pstm.setString(5, apoderado.getObservacion());
+
+            pstm.executeUpdate();
+
+            try (ResultSet rs = pstm.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    private String normalizarTipoPersona(String tipo) {
+        if (tipo == null || tipo.isBlank()) {
+            return TipoPersona.EXTERNO.name();
+        }
+
+        return tipo.trim().toUpperCase();
+    }
+
+    private String normalizarParentesco(String parentesco) {
+        if (parentesco == null || parentesco.isBlank()) {
+            return "OTRO";
+        }
+
+        return parentesco
+                .trim()
+                .toUpperCase()
+                .replace("HERMANO(A)", "HERMANO")
+                .replace("TIO(A)", "TIO")
+                .replace("ABUELO(A)", "ABUELO");
     }
 }

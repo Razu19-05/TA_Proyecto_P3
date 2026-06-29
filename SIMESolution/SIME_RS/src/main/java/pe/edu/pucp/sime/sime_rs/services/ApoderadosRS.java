@@ -31,4 +31,28 @@ public class ApoderadosRS {
         }
 
     }
+
+    @GET
+    @Path("existe-dni/{dni}")
+    public Response existeApoderadoPorDni(@PathParam("dni") String dni) {
+        try {
+            if (dni == null || !dni.matches("\\d{8}")) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("El DNI debe tener exactamente 8 dígitos numéricos.")
+                        .build();
+            }
+
+            boolean existe = relacionFamiliarBL.existePersonaPorDni(dni);
+
+            return Response.ok(existe).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+
 }

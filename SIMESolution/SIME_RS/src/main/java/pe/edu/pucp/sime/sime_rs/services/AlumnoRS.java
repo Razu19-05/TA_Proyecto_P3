@@ -23,6 +23,57 @@ public class AlumnoRS {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GET
+    @Path("existe-dni/{dni}")
+    public Response existeAlumnoPorDni(@PathParam("dni") String dni) {
+        try {
+            if (dni == null || !dni.matches("\\d{8}")) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("El DNI debe tener exactamente 8 dígitos numéricos.")
+                        .build();
+            }
+
+            boolean existe = alumnoBL.existeAlumnoPorDni(dni);
+
+            return Response.ok(existe).build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("buscar")
+    public Response buscarAlumnoPorCriterio(@QueryParam("criterio") String criterio) {
+        try {
+            if (criterio == null || criterio.trim().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Debe ingresar un criterio de búsqueda.")
+                        .build();
+            }
+
+            Alumno alumno = alumnoBL.buscarAlumnoPorCriterio(criterio);
+
+            if (alumno == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("No se encontró alumno con el criterio: " + criterio)
+                        .build();
+            }
+
+            return Response.ok(alumno).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
     @PUT
     @Path("actualizar/{dni}")
     public Response actualizarAlumnoPorDNI(@PathParam("dni") String dni, Alumno alumnoAct) {

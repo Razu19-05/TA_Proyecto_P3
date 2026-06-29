@@ -3,8 +3,10 @@
 
 
 @using SimeSoft.Components.State
+@using SimeSoft.Models.Aulas
+@using SimeSoft.Services.Api
 @inject MenuState MenuState
-@inject AulaState AulaState
+@inject AulaApiService AulaApiService
 @inject NavigationManager Navigation
 
 <div class="dashboard-layout">
@@ -63,15 +65,16 @@
                     <div class="col-md-3">
                         <label>Periodo académico</label>
                         <select class="form-select" @bind="periodo">
+                            <option>Todos</option>
                             <option>2026</option>
                             <option>2025</option>
-                            <option>Todos</option>
                         </select>
                     </div>
 
                     <div class="col-md-3">
-                        <label>Nivel</label>
-                        <select class="form-select" @bind="nivel">
+                        <select class="form-select"
+                                @bind="nivel"
+                                @bind:after="AjustarGradoFiltroSegunNivel">
                             <option>Todos</option>
                             <option>Inicial</option>
                             <option>Primaria</option>
@@ -82,12 +85,10 @@
                     <div class="col-md-3">
                         <label>Grado</label>
                         <select class="form-select" @bind="grado">
-                            <option>Todos</option>
-                            <option>1ro</option>
-                            <option>2do</option>
-                            <option>3ro</option>
-                            <option>4to</option>
-                            <option>5to</option>
+                            @foreach (var gradoOpcion in ObtenerGradosFiltroPorNivel(nivel))
+                            {
+                                <option value="@gradoOpcion">@gradoOpcion</option>
+                            }
                         </select>
                     </div>
 
@@ -218,7 +219,7 @@
 
                                             <li>
                                                 <button class="dropdown-item text-danger"
-                                                        @onclick="() => Eliminar(aula.Id)">
+                                                        @onclick="() => Eliminar(aula.IdAula)">
                                                     <i class="bi bi-trash-fill me-2"></i>
                                                     Eliminar aula
                                                 </button>
@@ -345,7 +346,9 @@
                     <div class="col-md-5">
                         <label>Nivel *</label>
 
-                        <select class="form-select" @bind="modalNivel">
+                        <select class="form-select"
+                                @bind="modalNivel"
+                                @bind:after="AjustarGradoModalSegunNivel">
                             <option>Inicial</option>
                             <option>Primaria</option>
                             <option>Secundaria</option>
@@ -356,11 +359,10 @@
                         <label>Grado *</label>
 
                         <select class="form-select" @bind="modalGrado">
-                            <option>1ro</option>
-                            <option>2do</option>
-                            <option>3ro</option>
-                            <option>4to</option>
-                            <option>5to</option>
+                            @foreach (var gradoOpcion in ObtenerGradosPorNivel(modalNivel))
+                            {
+                                <option value="@gradoOpcion">@gradoOpcion</option>
+                            }
                         </select>
                     </div>
 
@@ -506,7 +508,7 @@
     private string mensaje = "";
     private string error = "";
 
-    private List<AulaModel> aulas = new();
+    private List<AulaDto> aulas = new();
 
     private bool mostrarModal = false;
     private bool modoEdicion = false;
@@ -528,13 +530,58 @@
     modalTipo == "Laboratorio de Ciencias";
 
     private bool mostrarModalCapacidad = false;
-    private AulaModel? aulaCapacidad;
+    private AulaDto? aulaCapacidad;
     private int nuevaCapacidad = 15;
     private string errorCapacidad = "";
 
-    protected override void OnInitialized()
+
+    private List<string> ObtenerGradosPorNivel(string nivelSeleccionado)
     {
-        Buscar();
+        return nivelSeleccionado switch
+        {
+            "Inicial" => new List<string> { "3 años", "4 años", "5 años" },
+            "Primaria" => new List<string> { "1ro", "2do", "3ro", "4to", "5to", "6to" },
+            "Secundaria" => new List<string> { "1ro", "2do", "3ro", "4to", "5to" },
+            _ => new List<string> { "1ro", "2do", "3ro", "4to", "5to" }
+        };
+    }
+
+    private void AjustarGradoModalSegunNivel()
+    {
+        var gradosPermitidos = ObtenerGradosPorNivel(modalNivel);
+
+        if (!gradosPermitidos.Contains(modalGrado))
+        {
+            modalGrado = gradosPermitidos[0];
+        }
+    }
+
+    private List<string> ObtenerGradosFiltroPorNivel(string nivelSeleccionado)
+    {
+        return nivelSeleccionado switch
+        {
+            "Inicial" => new List<string> { "Todos", "3 años", "4 años", "5 años" },
+            "Primaria" => new List<string> { "Todos", "1ro", "2do", "3ro", "4to", "5to", "6to" },
+            "Secundaria" => new List<string> { "Todos", "1ro", "2do", "3ro", "4to", "5to" },
+            _ => new List<string> { "Todos" }
+        };
+    }
+
+    private void AjustarGradoFiltroSegunNivel()
+    {
+        var gradosPermitidos = ObtenerGradosFiltroPorNivel(nivel);
+
+        if (!gradosPermitidos.Contains(grado))
+        {
+            grado = "Todos";
+        }
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
     }
 
     private void CambiarMenu()
@@ -542,14 +589,28 @@
         MenuState.CambiarMenu();
     }
 
-    private void Buscar()
+    private async Task Buscar()
     {
-        aulas = AulaState
-            .FiltrarAulas(periodo, nivel, grado, estado, codigoAula)
-            .ToList();
+        mensaje = "";
+        error = "";
+
+        try
+        {
+            aulas = await AulaApiService.ListarAsync(
+                periodo,
+                nivel,
+                grado,
+                estado,
+                codigoAula);
+        }
+        catch
+        {
+            error = "No se pudo cargar la lista de aulas desde el servicio REST.";
+            aulas = new();
+        }
     }
 
-    private void Limpiar()
+    private async Task Limpiar()
     {
         periodo = "2026";
         nivel = "Todos";
@@ -557,19 +618,14 @@
         estado = "Todos";
         codigoAula = "";
 
-        Buscar();
+        await Buscar();
     }
 
-    private string ObtenerTutorOEncargado(AulaModel aula)
+    private string ObtenerTutorOEncargado(AulaDto aula)
     {
-        var profesor = AulaState
-            .ObtenerProfesoresPorAula(aula.Id)
-            .FirstOrDefault(p => p.EsTutor)
-            ?? AulaState
-                .ObtenerProfesoresPorAula(aula.Id)
-                .FirstOrDefault();
-
-        return profesor?.NombreCompleto ?? "Sin asignar";
+        return string.IsNullOrWhiteSpace(aula.ProfesorEncargado)
+            ? "Sin asignar"
+            : aula.ProfesorEncargado;
     }
 
     private void AbrirNuevo()
@@ -584,17 +640,18 @@
         modalEstado = "Activa";
         modalCompartida = false;
         modalNivel = "Primaria";
-        modalGrado = "5to";
+        modalGrado = "1ro";
+        AjustarGradoModalSegunNivel();
         errorModal = "";
 
         mostrarModal = true;
     }
 
-    private void AbrirEditar(AulaModel aula)
+    private void AbrirEditar(AulaDto aula)
     {
         modoEdicion = true;
 
-        modalId = aula.Id;
+        modalId = aula.IdAula;
         modalCodigo = aula.Codigo;
         modalTipo = aula.TipoAula;
         modalCapacidad = aula.Capacidad;
@@ -603,6 +660,7 @@
         modalCompartida = aula.EsCompartida;
         modalNivel = aula.EsCompartida ? "Primaria" : aula.Nivel;
         modalGrado = aula.EsCompartida ? "1ro" : aula.Grado;
+        AjustarGradoModalSegunNivel();
         errorModal = "";
 
         mostrarModal = true;
@@ -616,9 +674,11 @@
         }
     }
 
-    private void Guardar()
+    private async Task Guardar()
     {
         errorModal = "";
+        mensaje = "";
+        error = "";
 
         if (string.IsNullOrWhiteSpace(modalCodigo))
         {
@@ -632,31 +692,36 @@
             return;
         }
 
-        if (AulaState.ExisteCodigo(modalCodigo, modalId))
-        {
-            errorModal = "Ya existe un aula con ese código.";
-            return;
-        }
-
         if (TipoEsLaboratorio)
         {
             modalCompartida = true;
         }
 
-        AulaState.GuardarAula(new AulaModel
+        var dto = new AulaGuardarDto
         {
-            Id = modalId,
-            Periodo = periodo,
-            Nivel = modalCompartida ? "Todos" : modalNivel,
-            Grado = modalCompartida ? "Todos" : modalGrado,
-            Codigo = modalCodigo,
-            TipoAula = modalTipo,
+            IdAula = modalId,
+            Codigo = modalCodigo.Trim(),
+            Tipo = ConvertirTipoParaBackend(modalTipo),
             Capacidad = modalCapacidad,
-            VacantesOcupadas = modalVacantesOcupadas,
-            Estado = modalEstado,
-            EsCompartida = modalCompartida,
-            ProfesorEncargado = "Sin asignar"
-        });
+            Activo = modalEstado == "Activa"
+        };
+
+        bool ok;
+
+        if (modoEdicion)
+        {
+            ok = await AulaApiService.ActualizarAsync(dto);
+        }
+        else
+        {
+            ok = await AulaApiService.CrearAsync(dto);
+        }
+
+        if (!ok)
+        {
+            errorModal = "No se pudo guardar el aula. Verifique si el código ya existe.";
+            return;
+        }
 
         mensaje = modoEdicion
             ? "Aula editada correctamente."
@@ -664,10 +729,21 @@
 
         mostrarModal = false;
 
-        Buscar();
+        await Buscar();
     }
 
-    private void AbrirCambiarCapacidad(AulaModel aula)
+    private string ConvertirTipoParaBackend(string tipoPantalla)
+    {
+        return tipoPantalla switch
+        {
+            "Aula regular" => "AULA",
+            "Laboratorio de Cómputo" => "COMPUTO",
+            "Laboratorio de Ciencias" => "CIENCIAS",
+            _ => "AULA"
+        };
+    }
+
+    private void AbrirCambiarCapacidad(AulaDto aula)
     {
         aulaCapacidad = aula;
         nuevaCapacidad = aula.Capacidad;
@@ -675,9 +751,11 @@
         mostrarModalCapacidad = true;
     }
 
-    private void GuardarNuevaCapacidad()
+    private async Task GuardarNuevaCapacidad()
     {
         errorCapacidad = "";
+        mensaje = "";
+        error = "";
 
         if (aulaCapacidad is null)
         {
@@ -697,7 +775,9 @@
             return;
         }
 
-        bool actualizado = AulaState.CambiarCapacidad(aulaCapacidad.Id, nuevaCapacidad);
+        bool actualizado = await AulaApiService.ActualizarCapacidadAsync(
+            aulaCapacidad.IdAula,
+            nuevaCapacidad);
 
         if (!actualizado)
         {
@@ -706,12 +786,10 @@
         }
 
         mensaje = "Capacidad actualizada correctamente.";
-        error = "";
-
         mostrarModalCapacidad = false;
         aulaCapacidad = null;
 
-        Buscar();
+        await Buscar();
     }
 
     private void CerrarModalCapacidad()
@@ -721,20 +799,27 @@
         errorCapacidad = "";
     }
 
-    private void Eliminar(int id)
+    private async Task Eliminar(int id)
     {
-        AulaState.EliminarAula(id);
-
-        mensaje = "Aula eliminada correctamente.";
+        mensaje = "";
         error = "";
 
-        Buscar();
+        bool ok = await AulaApiService.EliminarAsync(id);
+
+        if (!ok)
+        {
+            error = "No se pudo eliminar el aula.";
+            return;
+        }
+
+        mensaje = "Aula eliminada correctamente.";
+
+        await Buscar();
     }
 
-    private void VerProfesores(AulaModel aula)
+    private void VerProfesores(AulaDto aula)
     {
-        AulaState.SeleccionarAula(aula);
-        Navigation.NavigateTo("/matricula/aulas/ver-profesores");
+        Navigation.NavigateTo($"/matricula/aulas/ver-profesores/{aula.IdAula}");
     }
 
     private void VolverMenu()

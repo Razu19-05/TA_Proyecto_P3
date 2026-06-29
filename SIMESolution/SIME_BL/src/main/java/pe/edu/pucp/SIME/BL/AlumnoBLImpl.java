@@ -12,6 +12,25 @@ public class AlumnoBLImpl implements IAlumnoBL {
     public Alumno buscarAlumnoPorDNI(String DNI) throws Exception{
         return alumnoDAO.buscarPorDni(DNI);
     }
+
+    @Override
+    public Alumno buscarAlumnoPorCriterio(String criterio) throws Exception {
+        try {
+            TransactionContext.getConnection();
+
+            Alumno alumno = alumnoDAO.buscarPorCriterio(criterio);
+
+            TransactionContext.commit();
+
+            return alumno;
+        } catch (Exception e) {
+            TransactionContext.rollback();
+            throw new Exception("Error al buscar alumno por criterio: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
     @Override
     public Alumno actualizar(Alumno alumno) throws Exception{
         try{
@@ -39,6 +58,24 @@ public class AlumnoBLImpl implements IAlumnoBL {
             TransactionContext.rollback();
             throw new Exception("Error al insertar alumno");
         } finally{
+            TransactionContext.close();
+        }
+    }
+
+    @Override
+    public boolean existeAlumnoPorDni(String dni) throws Exception {
+        try {
+            TransactionContext.getConnection();
+
+            boolean existe = alumnoDAO.existeAlumnoPorDni(dni);
+
+            TransactionContext.commit();
+
+            return existe;
+        } catch (Exception e) {
+            TransactionContext.rollback();
+            throw new Exception("Error al verificar si existe el alumno por DNI: " + e.getMessage());
+        } finally {
             TransactionContext.close();
         }
     }

@@ -12,7 +12,9 @@ import pe.edu.pucp.SIME.model.gestionAcademica.Aula;
 import pe.edu.pucp.SIME.model.gestionAcademica.GradoSeccion;
 import pe.edu.pucp.SIME.model.gestionAcademica.PeriodoAcademico;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
-
+import pe.edu.pucp.SIME.model.DTO.VacanteMatriculaDTO;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.*;
 
 public class MatriculaCabeceraDAOImpl implements MatriculaCabeceraDAO {
@@ -98,6 +100,54 @@ public class MatriculaCabeceraDAOImpl implements MatriculaCabeceraDAO {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    @Override
+    public boolean existeVacanteDisponible(int idMatriculaCabecera) throws SQLException {
+
+        String sql = """
+        SELECT 
+            total_vacantes,
+            vacantes_ocupadas,
+            (total_vacantes - vacantes_ocupadas) AS disponibles
+        FROM SIME_MATRICULA_CABECERA
+        WHERE id_matricula_cabecera = ?
+          AND activo = 1
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setInt(1, idMatriculaCabecera);
+
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("disponibles") > 0;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean incrementarVacanteOcupada(int idMatriculaCabecera) throws SQLException {
+
+        String sql = """
+        UPDATE SIME_MATRICULA_CABECERA
+        SET vacantes_ocupadas = vacantes_ocupadas + 1
+        WHERE id_matricula_cabecera = ?
+          AND activo = 1
+          AND vacantes_ocupadas < total_vacantes
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setInt(1, idMatriculaCabecera);
+
+            return pstm.executeUpdate() > 0;
+        }
     }
 
     @Override
@@ -209,5 +259,78 @@ public class MatriculaCabeceraDAOImpl implements MatriculaCabeceraDAO {
         }
     }
 
+    @Override
+    public List<VacanteMatriculaDTO> listarVacantes(String periodo, String nivel, String grado) throws SQLException {
+        List<VacanteMatriculaDTO> vacantes = new ArrayList<>();
 
+        String sql = """
+        SELECT
+            mc.id_matricula_cabecera,
+            CAST(pa.anio_escolar AS CHAR) AS periodo,
+
+            CASE
+                WHEN gs.nivel = 'INICIAL' THEN 'Inicial'
+                WHEN gs.nivel = 'PRIMARIA' THEN 'Primaria'
+                WHEN gs.nivel = 'SECUNDARIA' THEN 'Secundaria'
+                ELSE gs.nivel
+            END AS nivel,
+
+            gs.grado,
+            a.codigo AS aula,
+            mc.total_vacantes,
+            mc.vacantes_ocupadas,
+            (mc.total_vacantes - mc.vacantes_ocupadas) AS vacantes_disponibles,
+            mc.fecha_inicio_matricula,
+            mc.fecha_fin_matricula,
+            mc.activo
+
+        FROM SIME_MATRICULA_CABECERA mc
+
+        INNER JOIN SIME_PERIODO_ACADEMICO pa
+            ON pa.id_periodo_academico = mc.id_periodo_academico
+
+        INNER JOIN SIME_GRADO_SECCION gs
+            ON gs.id_grado_seccion = mc.id_grado_seccion
+
+        INNER JOIN SIME_AULA a
+            ON a.id_aula = mc.id_aula
+
+        WHERE mc.activo = 1
+          AND CAST(pa.anio_escolar AS CHAR) = ?
+          AND gs.nivel = UPPER(?)
+          AND gs.grado = ?
+
+        ORDER BY a.codigo
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setString(1, periodo);
+            pstm.setString(2, nivel);
+            pstm.setString(3, grado);
+
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    VacanteMatriculaDTO dto = new VacanteMatriculaDTO();
+
+                    dto.setIdMatriculaCabecera(rs.getInt("id_matricula_cabecera"));
+                    dto.setPeriodo(rs.getString("periodo"));
+                    dto.setNivel(rs.getString("nivel"));
+                    dto.setGrado(rs.getString("grado"));
+                    dto.setAula(rs.getString("aula"));
+                    dto.setTotalVacantes(rs.getInt("total_vacantes"));
+                    dto.setVacantesOcupadas(rs.getInt("vacantes_ocupadas"));
+                    dto.setVacantesDisponibles(rs.getInt("vacantes_disponibles"));
+                    dto.setFechaInicio(rs.getDate("fecha_inicio_matricula"));
+                    dto.setFechaFin(rs.getDate("fecha_fin_matricula"));
+                    dto.setActivo(rs.getBoolean("activo"));
+
+                    vacantes.add(dto);
+                }
+            }
+        }
+
+        return vacantes;
+    }
 }

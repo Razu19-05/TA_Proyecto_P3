@@ -1,6 +1,8 @@
 using SimeSoft.Components;
 using SimeSoft.Components.State;
 using SimeSoft.Services.Api;
+using SimeSoft.Services.Matriculas;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,6 +14,10 @@ builder.Services.AddScoped<PagoState>();
 builder.Services.AddScoped<AulaState>();
 builder.Services.AddScoped<AlumnoState>();
 builder.Services.AddScoped<MatriculaState>();
+builder.Services.AddScoped<ApoderadoApiService>();
+builder.Services.AddScoped<ValidacionMatriculaAlumnoNuevoService>();
+builder.Services.AddScoped<PagoMatriculaAlumnoNuevoService>();
+builder.Services.AddScoped<MatriculaAlumnoNuevoRequestFactory>();
 
 builder.Services.AddHttpClient("SimeApi", client =>
 {
@@ -19,6 +25,11 @@ builder.Services.AddHttpClient("SimeApi", client =>
 });
 
 builder.Services.AddScoped<PersonalApiService>();
+builder.Services.AddScoped<AulaApiService>();
+builder.Services.AddScoped<AsignacionDocenteApiService>();
+builder.Services.AddScoped<MatriculaApiService>();
+builder.Services.AddScoped<AlumnoApiService>();
+builder.Services.AddScoped<LoginApiService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

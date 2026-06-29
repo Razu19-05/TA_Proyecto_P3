@@ -1,9 +1,13 @@
-﻿@page "/matricula/aulas/ver-profesores"
+﻿@page "/matricula/aulas/ver-profesores/{IdAula:int}"
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Models.Aulas
+@using SimeSoft.Services.Api
+
 @inject MenuState MenuState
-@inject AulaState AulaState
+@inject AulaApiService AulaApiService
+@inject AsignacionDocenteApiService AsignacionDocenteApiService
 @inject NavigationManager Navigation
 
 <div class="dashboard-layout">
@@ -12,64 +16,64 @@
 
     <main class="main-content">
 
-        <Topbar Titulo="Profesores del Aula"
+        <Topbar Titulo="Aulas"
                 NombreUsuario="Admin Favio"
-                RolUsuario="Administrador"
+                RolUsuario="Personal de Matrícula"
                 OnToggleMenu="CambiarMenu" />
 
-        <section class="content-area">
+        <section class="content-area profesores-aula-page">
 
             <div class="breadcrumb-custom">
-                <span>Aulas</span> / <span>Administrar</span> / <strong>Profesores del Aula</strong>
+                <span>Aulas</span> / <strong>Profesores asignados</strong>
             </div>
 
-            @if (aula is null)
-            {
-                <div class="alert alert-warning">
-                    No se seleccionó ningún aula.
+            <div class="page-header">
+                <div>
+                    <h2>Profesores Asignados al Aula</h2>
+                    <p>
+                        Consulte, agregue, edite o elimine los docentes asignados al aula seleccionada.
+                    </p>
                 </div>
 
-                <button class="btn btn-outline-secondary fw-bold px-4"
+                <button class="btn btn-outline-secondary btn-lg fw-bold px-4"
                         @onclick="Volver">
                     <i class="bi bi-arrow-left me-2"></i>
                     Volver
                 </button>
-            }
-            else
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(error))
             {
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h2>Profesores del Aula</h2>
-
-                        <p class="page-description">
-                            Desde esta pantalla puedes ver, asignar, editar o quitar profesores del aula seleccionada.
-                        </p>
-                    </div>
-
-                    <button class="btn btn-outline-secondary fw-bold px-4"
-                            @onclick="Volver">
-                        <i class="bi bi-arrow-left me-2"></i>
-                        Volver
-                    </button>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    @error
                 </div>
+            }
 
-                @if (!string.IsNullOrWhiteSpace(mensaje))
-                {
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        @mensaje
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @mensaje
+                </div>
+            }
+
+            @if (cargando)
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-hourglass-split me-2"></i>
+                    Cargando información desde el servicio REST...
+                </div>
+            }
+
+            @if (aula is not null)
+            {
+                <div class="aula-summary-card">
+
+                    <div>
+                        <span>Código de aula</span>
+                        <strong>@aula.Codigo</strong>
                     </div>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(error))
-                {
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-circle-fill me-2"></i>
-                        @error
-                    </div>
-                }
-
-                <div class="readonly-card">
 
                     <div>
                         <span>Periodo</span>
@@ -78,17 +82,12 @@
 
                     <div>
                         <span>Nivel</span>
-                        <strong>@(aula.EsCompartida ? "Todos" : aula.Nivel)</strong>
+                        <strong>@aula.Nivel</strong>
                     </div>
 
                     <div>
                         <span>Grado</span>
-                        <strong>@(aula.EsCompartida ? "Todos" : aula.Grado)</strong>
-                    </div>
-
-                    <div>
-                        <span>Aula</span>
-                        <strong>@aula.Codigo</strong>
+                        <strong>@aula.Grado</strong>
                     </div>
 
                     <div>
@@ -96,236 +95,94 @@
                         <strong>@aula.TipoAula</strong>
                     </div>
 
-                    <div>
-                        <span>Capacidad</span>
-                        <strong>@aula.Capacidad</strong>
-                    </div>
-
-                    <div>
-                        <span>Ocupadas</span>
-                        <strong class="text-warning">@aula.VacantesOcupadas</strong>
-                    </div>
-
-                    <div>
-                        <span>Disponibles</span>
-                        <strong class="text-success">@aula.VacantesDisponibles</strong>
-                    </div>
-
-                </div>
-
-                <div class="row g-4 mt-2">
-
-                    <div class="col-lg-7">
-                        <div class="panel-card">
-
-                            <h3>
-                                <i class="bi bi-people-fill me-2"></i>
-                                Profesores asignados
-                            </h3>
-
-                            <div class="table-responsive mt-3">
-                                <table class="table table-bordered text-center align-middle mb-0">
-
-                                    <thead>
-                                        <tr>
-                                            <th>DNI</th>
-                                            <th>Profesor</th>
-                                            <th>Especialidad</th>
-                                            <th>Teléfono</th>
-                                            <th>Correo</th>
-                                            <th>¿Tutor?</th>
-                                            <th>Observación</th>
-                                            <th>Estado</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        @foreach (var profesor in profesoresAsignados)
-                                        {
-                                            <tr>
-                                                <td>@profesor.Dni</td>
-
-                                                <td>@profesor.NombreCompleto</td>
-
-                                                <td>@profesor.Especialidad</td>
-
-                                                <td>@profesor.Telefono</td>
-
-                                                <td>@profesor.Correo</td>
-
-                                                <td>
-                                                    @if (profesor.EsTutor)
-                                                    {
-                                                        <span class="badge bg-success-subtle text-success">
-                                                            Sí
-                                                        </span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-light text-dark border">
-                                                            No
-                                                        </span>
-                                                    }
-                                                </td>
-
-                                                <td>@profesor.Observacion</td>
-
-                                                <td>
-                                                    <span class="badge bg-success-subtle text-success">
-                                                        @profesor.Estado
-                                                    </span>
-                                                </td>
-
-                                                <td>
-                                                    <button class="btn btn-link text-primary fw-bold text-decoration-none"
-                                                            disabled="@(aula.Periodo != "2026")"
-                                                            @onclick="() => AbrirEditarAsignacion(profesor)">
-                                                        <i class="bi bi-pencil-fill me-1"></i>
-                                                        Editar
-                                                    </button>
-
-                                                    <button class="btn btn-link text-danger fw-bold text-decoration-none"
-                                                            @onclick="() => QuitarAsignacion(profesor.Id)">
-                                                        <i class="bi bi-trash-fill me-1"></i>
-                                                        Quitar
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-
-                                </table>
-                            </div>
-
-                            @if (!profesoresAsignados.Any())
-                            {
-                                <div class="alert alert-warning mt-3">
-                                    Esta aula todavía no tiene profesores asignados.
-                                </div>
-                            }
-
-                            <div class="info-box mt-3">
-                                <i class="bi bi-info-circle-fill"></i>
-
-                                <div>
-                                    Solo se puede editar la asignación en el periodo actual 2026.
-                                    Para periodos antiguos solo se puede consultar o quitar la asignación si el administrador lo permite.
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="col-lg-5">
-                        <div class="panel-card">
-
-                            <h3>
-                                <i class="bi bi-person-plus-fill me-2"></i>
-                                Asignar profesor
-                            </h3>
-
-                            <label>Buscar profesor</label>
-
-                            <input class="form-control mb-3"
-                                   placeholder="Buscar por DNI, nombre o especialidad"
-                                   @bind="criterioProfesor"
-                                   @bind:event="oninput" />
-
-                            @if (string.IsNullOrWhiteSpace(criterioProfesor))
-                            {
-                                <div class="alert alert-info py-2">
-                                    Escribe un DNI, nombre o especialidad para buscar profesores.
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="table-responsive">
-                                    <table class="table table-bordered text-center align-middle mb-0">
-
-                                        <thead>
-                                            <tr>
-                                                <th>DNI</th>
-                                                <th>Profesor</th>
-                                                <th>Especialidad</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            @foreach (var profesor in ProfesoresEncontrados)
-                                            {
-                                                <tr>
-                                                    <td>@profesor.Dni</td>
-
-                                                    <td>@profesor.NombreCompleto</td>
-
-                                                    <td>@profesor.Especialidad</td>
-
-                                                    <td>
-                                                        <input type="radio"
-                                                               name="profesorSeleccionado"
-                                                               @onchange="() => profesorSeleccionado = profesor" />
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-
-                                    </table>
-                                </div>
-
-                                @if (!ProfesoresEncontrados.Any())
-                                {
-                                    <div class="alert alert-warning mt-3">
-                                        No se encontraron profesores con ese criterio.
-                                    </div>
-                                }
-                            }
-
-                            <div class="form-check mt-3">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       @bind="nuevoEsTutor" />
-
-                                <label class="form-check-label fw-bold">
-                                    Marcar como tutor del aula
-                                </label>
-                            </div>
-
-                            <small class="text-muted">
-                                Solo puede haber un tutor por aula. Si marcas esta opción, se reemplazará al tutor anterior.
-                            </small>
-
-                            <div class="mt-3">
-                                <label>Observación</label>
-
-                                <textarea class="form-control"
-                                          rows="3"
-                                          maxlength="200"
-                                          placeholder="Ej.: Tutor del aula, enseña matemática, encargado del laboratorio, etc."
-                                          @bind="nuevaObservacion"></textarea>
-                            </div>
-
-                            <div class="d-grid gap-3 mt-3">
-
-                                <button class="btn btn-primary btn-lg fw-bold"
-                                        @onclick="AsignarProfesor">
-                                    <i class="bi bi-person-plus-fill me-2"></i>
-                                    Asignar profesor
-                                </button>
-
-                                <button class="btn btn-outline-secondary btn-lg fw-bold"
-                                        @onclick="LimpiarAsignacion">
-                                    Limpiar
-                                </button>
-
-                            </div>
-
-                        </div>
-                    </div>
-
                 </div>
             }
+
+            <div class="actions-card">
+                <div>
+                    <h3>Docentes asignados</h3>
+                    <p>
+                        Solo puede existir un tutor principal por aula.
+                    </p>
+                </div>
+
+                <button class="btn btn-success btn-lg fw-bold px-4"
+                        @onclick="AbrirAgregar">
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Asignar profesor
+                </button>
+            </div>
+
+            <div class="table-card">
+
+                @if (!profesoresAsignados.Any())
+                {
+                    <div class="empty-box">
+                        <i class="bi bi-person-x-fill"></i>
+                        <h4>No hay profesores asignados</h4>
+                        <p>Agregue un docente para esta aula.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle text-center">
+                            <thead>
+                                <tr>
+                                    <th>DNI</th>
+                                    <th>Profesor</th>
+                                    <th>Especialidad</th>
+                                    <th>Teléfono</th>
+                                    <th>Correo</th>
+                                    <th>Tutor</th>
+                                    <th>Observación</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var profesor in profesoresAsignados)
+                                {
+                                    <tr>
+                                        <td>@profesor.Dni</td>
+                                        <td class="text-start fw-bold">@profesor.NombresCompletos</td>
+                                        <td>@MostrarDato(profesor.Especialidad)</td>
+                                        <td>@MostrarDato(profesor.Telefono)</td>
+                                        <td>@MostrarDato(profesor.Correo)</td>
+                                        <td>
+                                            @if (profesor.EsTutor)
+                                            {
+                                                <span class="badge bg-success">Tutor</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Docente</span>
+                                            }
+                                        </td>
+                                        <td>@MostrarDato(profesor.Observacion)</td>
+                                        <td>
+                                            <span class="badge bg-primary">@profesor.Estado</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm fw-bold me-1"
+                                                    @onclick="() => AbrirEditar(profesor)">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </button>
+
+                                            <button class="btn btn-danger btn-sm fw-bold"
+                                                    @onclick="() => Eliminar(profesor)">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+            </div>
 
         </section>
 
@@ -333,93 +190,131 @@
 
 </div>
 
-@if (asignacionEditando is not null)
+@if (mostrarModal)
 {
-    <div class="modal-backdrop-custom">
+    <div class="modal-backdrop-custom profesores-modal">
+        <div class="modal-profesor">
 
-        <div class="modal-editar">
-
-            <div class="d-flex justify-content-between align-items-start">
+            <div class="modal-header-custom">
                 <div>
-                    <h3>Editar asignación</h3>
-
-                    <p class="mb-0">
-                        @asignacionEditando.NombreCompleto
-                    </p>
+                    <h3>@(modoEdicion ? "Editar asignación docente" : "Asignar profesor")</h3>
+                    <p>Seleccione el profesor y configure si será tutor principal.</p>
                 </div>
 
-                <button class="btn-close" @onclick="CancelarEdicion"></button>
+                <button class="btn-close-modal" @onclick="CerrarModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
 
-            <hr />
+            @if (!string.IsNullOrWhiteSpace(errorModal))
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    @errorModal
+                </div>
+            }
 
-            <div class="form-check mb-3">
-                <input class="form-check-input"
-                       type="checkbox"
-                       @bind="editarEsTutor" />
+            <div class="row g-3">
 
-                <label class="form-check-label fw-bold">
-                    Es tutor del aula
-                </label>
-            </div>
+                <div class="col-md-12">
+                    <label>Buscar profesor</label>
 
-            <div>
-                <label>Observación</label>
+                    <div class="search-row">
+                        <input class="form-control form-control-lg"
+                               placeholder="Buscar por DNI, nombres o apellidos"
+                               @bind="criterioProfesor"
+                               @bind:event="oninput" />
 
-                <textarea class="form-control"
-                          rows="3"
-                          maxlength="200"
-                          @bind="editarObservacion"></textarea>
+                        <button class="btn btn-primary btn-lg fw-bold"
+                                @onclick="BuscarProfesoresDisponibles">
+                            <i class="bi bi-search me-2"></i>
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <label>Profesor seleccionado</label>
+
+                    <select class="form-select form-select-lg"
+                            @bind="idPersonaSeleccionada"
+                            disabled="@modoEdicion">
+                        <option value="0">Seleccione un profesor...</option>
+
+                        @foreach (var profesor in profesoresDisponibles)
+                        {
+                            <option value="@profesor.IdPersona">
+                                @profesor.Dni - @profesor.NombresCompletos
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="tutor-check">
+                        <input type="checkbox" @bind="modalEsTutor" />
+
+                        <div>
+                            <strong>Marcar como tutor principal</strong>
+                            <p>Solo puede existir un tutor principal por aula.</p>
+                        </div>
+
+                        <i class="bi bi-award-fill"></i>
+                    </label>
+                </div>
+
+                <div class="col-md-12">
+                    <label>Observación</label>
+                    <textarea class="form-control form-control-lg"
+                              rows="3"
+                              maxlength="100"
+                              placeholder="Ej. Tutor principal del aula"
+                              @bind="modalObservacion"></textarea>
+                </div>
+
             </div>
 
             <div class="modal-actions">
-                <button class="btn btn-primary fw-bold px-4"
-                        @onclick="GuardarEdicion">
-                    Guardar
+                <button class="btn btn-outline-secondary fw-bold px-4"
+                        @onclick="CerrarModal">
+                    Cancelar
                 </button>
 
-                <button class="btn btn-outline-secondary fw-bold px-4"
-                        @onclick="CancelarEdicion">
-                    Cancelar
+                <button class="btn btn-success fw-bold px-4"
+                        @onclick="Guardar">
+                    @(modoEdicion ? "Guardar cambios" : "Asignar")
                 </button>
             </div>
 
         </div>
-
     </div>
 }
 
 @code {
-    private AulaModel? aula;
+    [Parameter]
+    public int IdAula { get; set; }
 
-    private List<ProfesorAulaModel> profesoresAsignados = new();
+    private AulaDto? aula;
+    private List<ProfesorAulaDto> profesoresAsignados = new();
+    private List<ProfesorAulaDto> profesoresDisponibles = new();
 
-    private string criterioProfesor = "";
-
-    private ProfesorDisponibleModel? profesorSeleccionado;
-
-    private bool nuevoEsTutor = false;
-
-    private string nuevaObservacion = "";
-
-    private ProfesorAulaModel? asignacionEditando;
-
-    private bool editarEsTutor = false;
-
-    private string editarObservacion = "";
-
+    private bool cargando = false;
+    private string error = "";
     private string mensaje = "";
 
-    private string error = "";
+    private bool mostrarModal = false;
+    private bool modoEdicion = false;
+    private string errorModal = "";
 
-    private IEnumerable<ProfesorDisponibleModel> ProfesoresEncontrados =>
-        AulaState.BuscarProfesoresDisponibles(criterioProfesor);
+    private int idAsignacionEditando = 0;
+    private int idPersonaSeleccionada = 0;
+    private bool modalEsTutor = false;
+    private string modalObservacion = "";
+    private string criterioProfesor = "";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        aula = AulaState.AulaSeleccionada;
-
-        CargarProfesoresAsignados();
+        await CargarDatos();
     }
 
     private void CambiarMenu()
@@ -427,113 +322,156 @@
         MenuState.CambiarMenu();
     }
 
-    private void CargarProfesoresAsignados()
+    private async Task CargarDatos()
     {
-        if (aula is null)
+        cargando = true;
+        error = "";
+        mensaje = "";
+
+        try
         {
-            profesoresAsignados = new List<ProfesorAulaModel>();
+            aula = await AulaApiService.ObtenerDetalleAsync(IdAula);
+            profesoresAsignados = await AsignacionDocenteApiService.ListarPorAulaAsync(IdAula);
+            profesoresDisponibles = await AsignacionDocenteApiService.ListarProfesoresDisponiblesAsync("");
+        }
+        catch
+        {
+            error = "No se pudo cargar la información de profesores del aula.";
+            profesoresAsignados = new();
+            profesoresDisponibles = new();
+        }
+
+        cargando = false;
+    }
+
+    private async Task BuscarProfesoresDisponibles()
+    {
+        errorModal = "";
+
+        try
+        {
+            profesoresDisponibles =
+                await AsignacionDocenteApiService.ListarProfesoresDisponiblesAsync(criterioProfesor);
+        }
+        catch
+        {
+            errorModal = "No se pudo buscar profesores disponibles.";
+        }
+    }
+
+    private async Task AbrirAgregar()
+    {
+        modoEdicion = false;
+        idAsignacionEditando = 0;
+        idPersonaSeleccionada = 0;
+        modalEsTutor = false;
+        modalObservacion = "";
+        criterioProfesor = "";
+        errorModal = "";
+
+        profesoresDisponibles =
+            await AsignacionDocenteApiService.ListarProfesoresDisponiblesAsync("");
+
+        mostrarModal = true;
+    }
+
+    private void AbrirEditar(ProfesorAulaDto profesor)
+    {
+        modoEdicion = true;
+        idAsignacionEditando = profesor.IdAsignacionDocente;
+        idPersonaSeleccionada = profesor.IdPersona;
+        modalEsTutor = profesor.EsTutor;
+        modalObservacion = profesor.Observacion;
+        criterioProfesor = "";
+
+        profesoresDisponibles = new List<ProfesorAulaDto> { profesor };
+
+        errorModal = "";
+        mostrarModal = true;
+    }
+
+    private async Task Guardar()
+    {
+        errorModal = "";
+        mensaje = "";
+        error = "";
+
+        if (idPersonaSeleccionada <= 0)
+        {
+            errorModal = "Debe seleccionar un profesor.";
             return;
         }
 
-        profesoresAsignados = AulaState.ObtenerProfesoresPorAula(aula.Id);
+        if (modalObservacion.Length > 100)
+        {
+            errorModal = "La observación no debe superar los 100 caracteres.";
+            return;
+        }
+
+        var request = new AsignacionDocenteRequestDto
+        {
+            IdPersona = idPersonaSeleccionada,
+            IdAula = IdAula,
+            IdMatriculaCabecera = aula?.IdMatriculaCabecera,
+            EsTutor = modalEsTutor,
+            Observacion = modalObservacion
+        };
+
+        bool ok;
+
+        if (modoEdicion)
+        {
+            ok = await AsignacionDocenteApiService.ActualizarAsync(idAsignacionEditando, request);
+        }
+        else
+        {
+            ok = await AsignacionDocenteApiService.AsignarAsync(request);
+        }
+
+        if (!ok)
+        {
+            errorModal = "No se pudo guardar la asignación. Revise si ya existe el profesor o tutor.";
+            return;
+        }
+
+        mensaje = modoEdicion
+            ? "Asignación actualizada correctamente."
+            : "Profesor asignado correctamente.";
+
+        mostrarModal = false;
+        await CargarDatos();
     }
 
-    private void AsignarProfesor()
+    private async Task Eliminar(ProfesorAulaDto profesor)
     {
         mensaje = "";
         error = "";
 
-        if (aula is null)
+        bool ok = await AsignacionDocenteApiService.EliminarAsync(profesor.IdAsignacionDocente);
+
+        if (!ok)
         {
-            error = "No se seleccionó ningún aula.";
+            error = "No se pudo eliminar la asignación docente.";
             return;
         }
-
-        if (profesorSeleccionado is null)
-        {
-            error = "Debe seleccionar un profesor para asignarlo al aula.";
-            return;
-        }
-
-        bool yaExiste = profesoresAsignados.Any(p => p.Dni == profesorSeleccionado.Dni);
-
-        if (yaExiste)
-        {
-            error = "El profesor ya está asignado a esta aula.";
-            return;
-        }
-
-        AulaState.AsignarProfesor(
-            aula.Id,
-            profesorSeleccionado,
-            nuevoEsTutor,
-            nuevaObservacion
-        );
-
-        mensaje = "Profesor asignado correctamente.";
-
-        LimpiarAsignacion();
-
-        CargarProfesoresAsignados();
-    }
-
-    private void AbrirEditarAsignacion(ProfesorAulaModel profesor)
-    {
-        asignacionEditando = profesor;
-        editarEsTutor = profesor.EsTutor;
-        editarObservacion = profesor.Observacion;
-    }
-
-    private void GuardarEdicion()
-    {
-        mensaje = "";
-        error = "";
-
-        if (asignacionEditando is null)
-        {
-            return;
-        }
-
-        AulaState.EditarAsignacion(
-            asignacionEditando.Id,
-            editarEsTutor,
-            editarObservacion
-        );
-
-        mensaje = "Asignación actualizada correctamente.";
-
-        asignacionEditando = null;
-
-        CargarProfesoresAsignados();
-    }
-
-    private void QuitarAsignacion(int id)
-    {
-        mensaje = "";
-        error = "";
-
-        AulaState.QuitarAsignacion(id);
 
         mensaje = "Asignación eliminada correctamente.";
-
-        CargarProfesoresAsignados();
+        await CargarDatos();
     }
 
-    private void LimpiarAsignacion()
+    private void CerrarModal()
     {
-        criterioProfesor = "";
-        profesorSeleccionado = null;
-        nuevoEsTutor = false;
-        nuevaObservacion = "";
-    }
-
-    private void CancelarEdicion()
-    {
-        asignacionEditando = null;
+        mostrarModal = false;
+        errorModal = "";
     }
 
     private void Volver()
     {
         Navigation.NavigateTo("/matricula/aulas/administrar");
+    }
+
+    private string MostrarDato(string? valor)
+    {
+        return string.IsNullOrWhiteSpace(valor) ? "-" : valor;
     }
 }

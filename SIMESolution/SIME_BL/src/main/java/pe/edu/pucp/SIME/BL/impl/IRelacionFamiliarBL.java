@@ -8,4 +8,6 @@ import java.util.List;
 public interface IRelacionFamiliarBL
 {
     List<RelacionFamiliar> listarApoderados(Integer idAlumno) throws Exception;
+
+    boolean existePersonaPorDni(String dni) throws Exception;
 }

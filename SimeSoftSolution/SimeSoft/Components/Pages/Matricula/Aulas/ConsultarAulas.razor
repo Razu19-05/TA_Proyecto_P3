@@ -2,8 +2,10 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Models.Aulas
+@using SimeSoft.Services.Api
 @inject MenuState MenuState
-@inject AulaState AulaState
+@inject AulaApiService AulaApiService
 @inject NavigationManager Navigation
 
 <div class="dashboard-layout">
@@ -36,15 +38,18 @@
                     <div class="col-md-3">
                         <label>Periodo académico</label>
                         <select class="form-select" @bind="periodo">
+                            <option>Todos</option>
                             <option>2026</option>
                             <option>2025</option>
-                            <option>Todos</option>
+                            
                         </select>
                     </div>
 
                     <div class="col-md-3">
                         <label>Nivel</label>
-                        <select class="form-select" @bind="nivel">
+                        <select class="form-select"
+                                @bind="nivel"
+                                @bind:after="AjustarGradoFiltroSegunNivel">
                             <option>Todos</option>
                             <option>Inicial</option>
                             <option>Primaria</option>
@@ -55,12 +60,10 @@
                     <div class="col-md-3">
                         <label>Grado</label>
                         <select class="form-select" @bind="grado">
-                            <option>Todos</option>
-                            <option>1ro</option>
-                            <option>2do</option>
-                            <option>3ro</option>
-                            <option>4to</option>
-                            <option>5to</option>
+                            @foreach (var gradoOpcion in ObtenerGradosFiltroPorNivel(nivel))
+                            {
+                                <option value="@gradoOpcion">@gradoOpcion</option>
+                            }
                         </select>
                     </div>
 
@@ -99,6 +102,22 @@
 
                 </div>
             </div>
+
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    @error
+                </div>
+            }
+
+            @if (cargando)
+            {
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-hourglass-split me-2"></i>
+                    Cargando aulas desde el servicio REST...
+                </div>
+            }
 
             <div class="table-responsive table-card mt-3">
                 <table class="table table-bordered align-middle text-center mb-0">
@@ -196,11 +215,37 @@
     private string estado = "Todos";
     private string codigoAula = "";
 
-    private List<AulaModel> aulas = new();
+    private bool cargando = false;
+    private string error = "";
 
-    protected override void OnInitialized()
+    private List<AulaDto> aulas = new();
+
+    private List<string> ObtenerGradosFiltroPorNivel(string nivelSeleccionado)
     {
-        Buscar();
+        return nivelSeleccionado switch
+        {
+            "Inicial" => new List<string> { "Todos", "3 años", "4 años", "5 años" },
+            "Primaria" => new List<string> { "Todos", "1ro", "2do", "3ro", "4to", "5to", "6to" },
+            "Secundaria" => new List<string> { "Todos", "1ro", "2do", "3ro", "4to", "5to" },
+            _ => new List<string> { "Todos" }
+        };
+    }
+
+    private void AjustarGradoFiltroSegunNivel()
+    {
+        var gradosPermitidos = ObtenerGradosFiltroPorNivel(nivel);
+
+        if (!gradosPermitidos.Contains(grado))
+        {
+            grado = "Todos";
+        }
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
     }
 
     private void CambiarMenu()
@@ -208,14 +253,30 @@
         MenuState.CambiarMenu();
     }
 
-    private void Buscar()
+    private async Task Buscar()
     {
-        aulas = AulaState
-            .FiltrarAulas(periodo, nivel, grado, estado, codigoAula)
-            .ToList();
+        cargando = true;
+        error = "";
+
+        try
+        {
+            aulas = await AulaApiService.ListarAsync(
+                periodo,
+                nivel,
+                grado,
+                estado,
+                codigoAula);
+        }
+        catch
+        {
+            error = "No se pudo conectar con el servicio REST de aulas.";
+            aulas = new();
+        }
+
+        cargando = false;
     }
 
-    private void Limpiar()
+    private async Task Limpiar()
     {
         periodo = "2026";
         nivel = "Todos";
@@ -223,25 +284,19 @@
         estado = "Todos";
         codigoAula = "";
 
-        Buscar();
+        await Buscar();
     }
 
-    private string ObtenerTutorOEncargado(AulaModel aula)
+    private string ObtenerTutorOEncargado(AulaDto aula)
     {
-        var profesor = AulaState
-            .ObtenerProfesoresPorAula(aula.Id)
-            .FirstOrDefault(p => p.EsTutor)
-            ?? AulaState
-                .ObtenerProfesoresPorAula(aula.Id)
-                .FirstOrDefault();
-
-        return profesor?.NombreCompleto ?? "Sin asignar";
+        return string.IsNullOrWhiteSpace(aula.ProfesorEncargado)
+            ? "Sin asignar"
+            : aula.ProfesorEncargado;
     }
 
-    private void VerDetalle(AulaModel aula)
+    private void VerDetalle(AulaDto aula)
     {
-        AulaState.SeleccionarAula(aula);
-        Navigation.NavigateTo("/matricula/aulas/detalle-aula");
+        Navigation.NavigateTo($"/matricula/aulas/detalle-aula/{aula.IdAula}");
     }
 
     private void VolverMenu()

@@ -2,9 +2,20 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Models.Matriculas
+@using SimeSoft.Services.Api
+@using SimeSoft.Services.Matriculas
+
 @inject MenuState MenuState
 @inject MatriculaState MatriculaState
+@inject MatriculaApiService MatriculaApiService
 @inject NavigationManager Navigation
+@inject AlumnoApiService AlumnoApiService
+@inject ApoderadoApiService ApoderadoApiService
+@inject ValidacionMatriculaAlumnoNuevoService ValidacionService
+@inject PagoMatriculaAlumnoNuevoService PagoService
+@inject MatriculaAlumnoNuevoRequestFactory RequestFactory
+
 
 <div class="dashboard-layout">
 
@@ -115,6 +126,14 @@
                     <div class="alert alert-danger mt-3">
                         <i class="bi bi-exclamation-circle-fill me-2"></i>
                         @mensajeError
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(mensajeAviso))
+                {
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        @mensajeAviso
                     </div>
                 }
 
@@ -479,41 +498,6 @@
                             </div>
                         }
 
-                        <div class="table-responsive mt-4">
-                            <table class="table table-bordered align-middle text-center">
-                                <thead>
-                                    <tr>
-                                        <th>Concepto</th>
-                                        <th>Monto original</th>
-                                        <th>Monto descuento</th>
-                                        <th>Monto final</th>
-                                        <th>Fecha emisión</th>
-                                        <th>Fecha vencimiento</th>
-                                        <th>Estado</th>
-                                        <th>Observación</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @foreach (var pago in pagosGenerados)
-                                    {
-                                        <tr>
-                                            <td>@pago.Concepto</td>
-                                            <td>S/ @pago.MontoOriginal.ToString("N2")</td>
-                                            <td>S/ @pago.MontoDescuento.ToString("N2")</td>
-                                            <td class="fw-bold">S/ @pago.MontoFinal.ToString("N2")</td>
-                                            <td>@pago.FechaEmision.ToString("dd/MM/yyyy")</td>
-                                            <td>@pago.FechaVencimiento.ToString("dd/MM/yyyy")</td>
-                                            <td>
-                                                <span class="badge bg-warning text-dark">@pago.Estado</span>
-                                            </td>
-                                            <td>@pago.Observacion</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-
                         <div class="economic-summary">
                             <div class="economic-header">
                                 <i class="bi bi-card-checklist"></i>
@@ -550,6 +534,14 @@
 
                 @if (pasoActual == 4)
                 {
+                    @if (!string.IsNullOrWhiteSpace(errorMatricula))
+                    {
+                        <div class="alert alert-danger mt-3">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            @errorMatricula
+                        </div>
+                    }
+
                     <div class="confirm-layout">
                         <div class="confirm-left">
                             <i class="bi bi-person-circle perfil-icon"></i>
@@ -643,10 +635,22 @@
                     else
                     {
                         <button class="btn btn-success btn-lg fw-bold px-5"
-                                disabled="@(!confirmoInformacion)"
+                                disabled="@guardandoMatricula"
                                 @onclick="FinalizarMatricula">
-                            Finalizar Matrícula
-                            <i class="bi bi-arrow-right ms-2"></i>
+                            @if (guardandoMatricula)
+                            {
+                                <span>
+                                    <i class="bi bi-hourglass-split me-2"></i>
+                                    Registrando...
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    Finalizar matrícula
+                                </span>
+                            }
                         </button>
                     }
                 </div>
@@ -802,6 +806,10 @@
 @code {
     private int pasoActual = 1;
 
+
+    private bool guardandoMatricula = false;
+    private string errorMatricula = "";
+
     private string dni = "";
     private string nombres = "";
     private string apellidoPaterno = "";
@@ -812,6 +820,7 @@
     private string direccion = "";
 
     private string mensajeError = "";
+    private string mensajeAviso = "";
     private string errorDni = "";
     private string errorNombres = "";
     private string errorApellidoPaterno = "";
@@ -947,17 +956,35 @@
         Navigation.NavigateTo("/matricula/matriculas/vacantes?tipo=nuevo");
     }
 
-    private void Siguiente()
+    private async Task Siguiente()
     {
-        if (pasoActual == 1 && !ValidarDatosPersonales())
+        if (pasoActual == 1)
         {
-            return;
+            if (!ValidarDatosPersonales())
+            {
+                return;
+            }
+
+            bool dniDisponible = await ValidarDniDisponibleAsync();
+
+            if (!dniDisponible)
+            {
+                return;
+            }
         }
 
-        if (pasoActual == 2 && !PuedeContinuarApoderados)
+        if (pasoActual == 2)
         {
-            mensajeError = "Debe registrar al menos un apoderado y marcar un contacto de emergencia.";
-            return;
+            var validacionApoderados = ValidacionService.ValidarPasoApoderados(
+                apoderados.Count,
+                TieneContactoEmergencia
+            );
+
+            if (!validacionApoderados.EsValido)
+            {
+                mensajeError = validacionApoderados.Mensaje;
+                return;
+            }
         }
 
         if (pasoActual == 3 && !ValidarDescuento())
@@ -994,63 +1021,52 @@
     {
         LimpiarErrores();
 
-        bool valido = true;
+        var resultado = ValidacionService.ValidarDatosAlumnoNuevo(
+            dni,
+            nombres,
+            apellidoPaterno,
+            apellidoMaterno,
+            fechaNacimiento,
+            telefono,
+            correo,
+            direccion
+        );
 
-        if (string.IsNullOrWhiteSpace(dni))
-        {
-            errorDni = "El DNI es obligatorio.";
-            valido = false;
-        }
+        errorDni = resultado.ErrorDni;
+        errorNombres = resultado.ErrorNombres;
+        errorApellidoPaterno = resultado.ErrorApellidoPaterno;
+        errorApellidoMaterno = resultado.ErrorApellidoMaterno;
+        errorFecha = resultado.ErrorFecha;
+        errorTelefono = resultado.ErrorTelefono;
+        errorCorreo = resultado.ErrorCorreo;
+        errorDireccion = resultado.ErrorDireccion;
+        mensajeError = resultado.MensajeGeneral;
 
-        if (string.IsNullOrWhiteSpace(nombres))
-        {
-            errorNombres = "Los nombres son obligatorios.";
-            valido = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(apellidoPaterno))
-        {
-            errorApellidoPaterno = "El apellido paterno es obligatorio.";
-            valido = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(apellidoMaterno))
-        {
-            errorApellidoMaterno = "El apellido materno es obligatorio.";
-            valido = false;
-        }
-
-        if (fechaNacimiento is null)
-        {
-            errorFecha = "La fecha de nacimiento es obligatoria.";
-            valido = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(telefono))
-        {
-            errorTelefono = "El teléfono es obligatorio.";
-            valido = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(correo))
-        {
-            errorCorreo = "El correo electrónico es obligatorio.";
-            valido = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(direccion))
-        {
-            errorDireccion = "La dirección es obligatoria.";
-            valido = false;
-        }
-
-        if (!valido)
-        {
-            mensajeError = "Complete todos los campos obligatorios antes de continuar.";
-        }
-
-        return valido;
+        return resultado.EsValido;
     }
+
+    private async Task<bool> ValidarDniDisponibleAsync()
+    {
+        try
+        {
+            bool existe = await AlumnoApiService.ExisteDniAsync(dni.Trim());
+
+            if (existe)
+            {
+                errorDni = "Ya existe un alumno registrado con este DNI.";
+                mensajeError = "No se puede registrar al alumno porque el DNI ya existe en la base de datos.";
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo validar el DNI con el servicio REST: {ex.Message}";
+            return false;
+        }
+    }
+
 
     private void LimpiarErrores()
     {
@@ -1102,10 +1118,34 @@
         mostrarModal = true;
     }
 
-    private void GuardarApoderado()
+    private async Task GuardarApoderado()
     {
+        mensajeAviso = "";
+
         if (!ValidarModal())
         {
+            return;
+        }
+
+        bool dniRepetidoEnLista = apoderados.Any(a =>
+            a.Dni == modalDni.Trim() &&
+            (!modoEdicion || a.Id != idEditando));
+
+        if (dniRepetidoEnLista)
+        {
+            errorModal = "Ya agregaste un apoderado con este DNI en esta matrícula.";
+            return;
+        }
+
+        bool existeEnBd = false;
+
+        try
+        {
+            existeEnBd = await ApoderadoApiService.ExisteDniAsync(modalDni.Trim());
+        }
+        catch (Exception ex)
+        {
+            errorModal = $"No se pudo verificar el DNI del apoderado: {ex.Message}";
             return;
         }
 
@@ -1123,19 +1163,19 @@
 
             if (apoderado is not null)
             {
-                apoderado.Dni = modalDni;
-                apoderado.Nombres = modalNombres;
-                apoderado.ApellidoPaterno = modalApellidoPaterno;
-                apoderado.ApellidoMaterno = modalApellidoMaterno;
+                apoderado.Dni = modalDni.Trim();
+                apoderado.Nombres = modalNombres.Trim();
+                apoderado.ApellidoPaterno = modalApellidoPaterno.Trim();
+                apoderado.ApellidoMaterno = modalApellidoMaterno.Trim();
                 apoderado.Parentesco = modalParentesco;
-                apoderado.Telefono = modalTelefono;
-                apoderado.Correo = modalCorreo;
-                apoderado.Direccion = modalDireccion;
+                apoderado.Telefono = modalTelefono.Trim();
+                apoderado.Correo = modalCorreo.Trim();
+                apoderado.Direccion = modalDireccion.Trim();
                 apoderado.Tipo = modalTipo;
-                apoderado.Especialidad = modalEspecialidad;
-                apoderado.Cargo = modalCargo;
-                apoderado.Area = modalArea;
-                apoderado.Observaciones = modalObservaciones;
+                apoderado.Especialidad = modalEspecialidad.Trim();
+                apoderado.Cargo = modalCargo.Trim();
+                apoderado.Area = modalArea.Trim();
+                apoderado.Observaciones = modalObservaciones.Trim();
                 apoderado.ContactoEmergencia = modalEmergencia;
             }
         }
@@ -1144,59 +1184,56 @@
             apoderados.Add(new ApoderadoNuevoModel
             {
                 Id = apoderados.Any() ? apoderados.Max(a => a.Id) + 1 : 1,
-                Dni = modalDni,
-                Nombres = modalNombres,
-                ApellidoPaterno = modalApellidoPaterno,
-                ApellidoMaterno = modalApellidoMaterno,
+                Dni = modalDni.Trim(),
+                Nombres = modalNombres.Trim(),
+                ApellidoPaterno = modalApellidoPaterno.Trim(),
+                ApellidoMaterno = modalApellidoMaterno.Trim(),
                 Parentesco = modalParentesco,
-                Telefono = modalTelefono,
-                Correo = modalCorreo,
-                Direccion = modalDireccion,
+                Telefono = modalTelefono.Trim(),
+                Correo = modalCorreo.Trim(),
+                Direccion = modalDireccion.Trim(),
                 Tipo = modalTipo,
-                Especialidad = modalEspecialidad,
-                Cargo = modalCargo,
-                Area = modalArea,
-                Observaciones = modalObservaciones,
+                Especialidad = modalEspecialidad.Trim(),
+                Cargo = modalCargo.Trim(),
+                Area = modalArea.Trim(),
+                Observaciones = modalObservaciones.Trim(),
                 ContactoEmergencia = modalEmergencia
             });
         }
 
+        if (existeEnBd)
+        {
+            mensajeAviso = "El apoderado ya existía en la base de datos. No se duplicará, solo se vinculará con este alumno.";
+        }
+
         mostrarModal = false;
         mensajeError = "";
+        errorModal = "";
     }
+
 
     private bool ValidarModal()
     {
         errorModal = "";
 
-        if (string.IsNullOrWhiteSpace(modalDni) ||
-            string.IsNullOrWhiteSpace(modalNombres) ||
-            string.IsNullOrWhiteSpace(modalApellidoPaterno) ||
-            string.IsNullOrWhiteSpace(modalApellidoMaterno) ||
-            string.IsNullOrWhiteSpace(modalParentesco) ||
-            string.IsNullOrWhiteSpace(modalTelefono) ||
-            string.IsNullOrWhiteSpace(modalCorreo) ||
-            string.IsNullOrWhiteSpace(modalDireccion))
-        {
-            errorModal = "Complete todos los campos obligatorios del apoderado.";
-            return false;
-        }
+        var resultado = ValidacionService.ValidarApoderado(
+            modalDni,
+            modalNombres,
+            modalApellidoPaterno,
+            modalApellidoMaterno,
+            modalParentesco,
+            modalTelefono,
+            modalCorreo,
+            modalDireccion,
+            modalTipo,
+            modalEspecialidad,
+            modalCargo,
+            modalArea
+        );
 
-        if (modalTipo == "PROFESOR" && string.IsNullOrWhiteSpace(modalEspecialidad))
+        if (!resultado.EsValido)
         {
-            errorModal = "Si el apoderado es profesor, debe ingresar la especialidad.";
-            return false;
-        }
-
-        if (modalTipo == "ADMINISTRADOR" && string.IsNullOrWhiteSpace(modalCargo))
-        {
-            errorModal = "Si el apoderado es administrador, debe ingresar el cargo.";
-            return false;
-        }
-
-        if (modalTipo == "PERSONAL_SERVICIO" && string.IsNullOrWhiteSpace(modalArea))
-        {
-            errorModal = "Si el apoderado es personal de servicio, debe ingresar el área.";
+            errorModal = resultado.Mensaje;
             return false;
         }
 
@@ -1225,12 +1262,14 @@
     {
         mostrarModal = false;
         errorModal = "";
+        mensajeAviso = "";
     }
 
     private void LimpiarModal()
     {
         idEditando = 0;
         errorModal = "";
+        mensajeAviso = "";
 
         modalDni = "";
         modalNombres = "";
@@ -1250,27 +1289,22 @@
 
     private void GenerarPagosMatricula()
     {
-        pagosGenerados = MatriculaState.GenerarPagos(
-            false,
+        pagosGenerados = PagoService.GenerarPagosAlumnoNuevo(
+            MatriculaState.ConceptosPago,
             porcentajeDescuento,
             tipoDescuento,
-            motivoDescuento);
+            motivoDescuento
+        );
     }
 
     private void CambiarTipoDescuento()
     {
         errorDescuento = "";
 
-        if (tipoDescuento == "NINGUNO")
-        {
-            motivoDescuento = "Sin descuento";
-            porcentajeDescuento = 0;
-        }
-        else
-        {
-            motivoDescuento = "";
-            porcentajeDescuento = 0;
-        }
+        var estadoDescuento = PagoService.CambiarTipoDescuento(tipoDescuento);
+
+        motivoDescuento = estadoDescuento.MotivoDescuento;
+        porcentajeDescuento = estadoDescuento.PorcentajeDescuento;
 
         RecalcularPagos();
     }
@@ -1279,22 +1313,14 @@
     {
         errorDescuento = "";
 
-        if (tipoDescuento == "NINGUNO")
-        {
-            motivoDescuento = "Sin descuento";
-            porcentajeDescuento = 0;
-            RecalcularPagos();
-            return;
-        }
+        var estadoDescuento = PagoService.AplicarMotivoDescuento(
+            tipoDescuento,
+            motivoDescuento
+        );
 
-        if (string.IsNullOrWhiteSpace(motivoDescuento))
-        {
-            porcentajeDescuento = 0;
-            RecalcularPagos();
-            return;
-        }
+        motivoDescuento = estadoDescuento.MotivoDescuento;
+        porcentajeDescuento = estadoDescuento.PorcentajeDescuento;
 
-        porcentajeDescuento = ObtenerPorcentajePorMotivo(tipoDescuento, motivoDescuento);
         RecalcularPagos();
     }
 
@@ -1302,55 +1328,26 @@
     {
         errorDescuento = "";
 
-        if (tipoDescuento == "NINGUNO")
-        {
-            motivoDescuento = "Sin descuento";
-            porcentajeDescuento = 0;
-            return true;
-        }
+        porcentajeDescuento = PagoService.ObtenerPorcentajePorMotivo(
+            tipoDescuento,
+            motivoDescuento
+        );
 
-        if (string.IsNullOrWhiteSpace(motivoDescuento))
-        {
-            errorDescuento = "Debe seleccionar el motivo del descuento.";
-            return false;
-        }
+        var resultado = ValidacionService.ValidarDescuento(
+            tipoDescuento,
+            motivoDescuento,
+            porcentajeDescuento
+        );
 
-        porcentajeDescuento = ObtenerPorcentajePorMotivo(tipoDescuento, motivoDescuento);
-
-        if (porcentajeDescuento <= 0)
+        if (!resultado.EsValido)
         {
-            errorDescuento = "No se pudo determinar el porcentaje del descuento seleccionado.";
+            errorDescuento = resultado.Mensaje;
             return false;
         }
 
         return true;
     }
 
-    private decimal ObtenerPorcentajePorMotivo(string tipo, string motivo)
-    {
-        if (tipo == "HERMANOS")
-        {
-            return motivo switch
-            {
-                "Primer hermano matriculado" => 12.50m,
-                "Segundo hermano matriculado" => 25.00m,
-                "Tercer hermano matriculado" => 50.00m,
-                _ => 0m
-            };
-        }
-
-        if (tipo == "BECA_CONCURSO")
-        {
-            return motivo switch
-            {
-                "Primer puesto en concurso del colegio" => 50.00m,
-                "Segundo puesto en concurso del colegio" => 25.00m,
-                _ => 0m
-            };
-        }
-
-        return 0m;
-    }
 
     private void RecalcularPagos()
     {
@@ -1359,105 +1356,123 @@
             GenerarPagosMatricula();
         }
 
-        foreach (var pago in pagosGenerados)
-        {
-            pago.MontoDescuento = 0;
-            pago.MontoFinal = pago.MontoOriginal;
-            pago.Observacion = "Pago generado por matrícula";
-        }
+        porcentajeDescuento = PagoService.ObtenerPorcentajePorMotivo(
+            tipoDescuento,
+            motivoDescuento
+        );
 
-        if (tipoDescuento == "NINGUNO" || string.IsNullOrWhiteSpace(motivoDescuento))
-        {
-            porcentajeDescuento = 0;
-            return;
-        }
-
-        porcentajeDescuento = ObtenerPorcentajePorMotivo(tipoDescuento, motivoDescuento);
-
-        var pagoMatricula = pagosGenerados.FirstOrDefault(p => p.Concepto == "MATRICULA");
-
-        if (pagoMatricula is not null && porcentajeDescuento > 0)
-        {
-            pagoMatricula.MontoDescuento = Math.Round(pagoMatricula.MontoOriginal * porcentajeDescuento / 100m, 2);
-            pagoMatricula.MontoFinal = pagoMatricula.MontoOriginal - pagoMatricula.MontoDescuento;
-            pagoMatricula.Observacion = $"Descuento {tipoDescuento}. Motivo: {motivoDescuento}";
-        }
+        PagoService.RecalcularPagos(
+            pagosGenerados,
+            tipoDescuento,
+            motivoDescuento
+        );
     }
 
-    private void FinalizarMatricula()
+    private async Task FinalizarMatricula()
     {
+        errorMatricula = "";
+        mensajeError = "";
+
         if (!confirmoInformacion)
         {
-            mensajeError = "Debe confirmar que revisó la información antes de finalizar.";
+            errorMatricula = "Debe confirmar que revisó la información antes de finalizar la matrícula.";
             return;
         }
 
         if (MatriculaState.VacanteSeleccionada is null)
         {
-            mensajeError = "No hay una vacante seleccionada.";
+            errorMatricula = "Debe seleccionar una vacante antes de finalizar la matrícula.";
             return;
         }
 
-        var nuevoAlumnoId = MatriculaState.Alumnos.Any()
-            ? MatriculaState.Alumnos.Max(a => a.Id) + 1
-            : 1;
-
-        var nuevoAlumno = new AlumnoMatriculaModel
+        if (!ValidarDatosPersonales())
         {
-            Id = nuevoAlumnoId,
-            Dni = dni,
-            Nombres = nombres,
-            ApellidoPaterno = apellidoPaterno,
-            ApellidoMaterno = apellidoMaterno,
-            FechaNacimiento = fechaNacimiento ?? DateTime.Today,
-            Telefono = telefono,
-            Correo = correo,
-            Direccion = direccion,
-            AlumnoNuevo = true,
-            Activo = true
-        };
+            errorMatricula = "Debe completar correctamente los datos del alumno.";
+            pasoActual = 1;
+            return;
+        }
 
-        MatriculaState.Alumnos.Add(nuevoAlumno);
-
-        foreach (var apoderado in apoderados)
+        if (!await ValidarDniDisponibleAsync())
         {
-            MatriculaState.Apoderados.Add(new ApoderadoMatriculaModel
+            errorMatricula = "No se puede finalizar la matrícula porque el DNI ya existe.";
+            pasoActual = 1;
+            return;
+        }
+
+        if (apoderados is null || !apoderados.Any())
+        {
+            errorMatricula = "Debe registrar al menos un apoderado.";
+            pasoActual = 2;
+            return;
+        }
+
+        if (!TieneContactoEmergencia)
+        {
+            errorMatricula = "Debe marcar al menos un apoderado como contacto de emergencia.";
+            pasoActual = 2;
+            return;
+        }
+
+        if (!ValidarDescuento())
+        {
+            errorMatricula = "Debe corregir la información del descuento.";
+            pasoActual = 3;
+            return;
+        }
+
+        guardandoMatricula = true;
+
+        try
+        {
+            var request = RequestFactory.CrearRequestAlumnoNuevo(
+            dni,
+            nombres,
+            apellidoPaterno,
+            apellidoMaterno,
+            fechaNacimiento,
+            direccion,
+            telefono,
+            correo,
+            apoderados,
+            MatriculaState.VacanteSeleccionada.Id,
+            tipoDescuento,
+            motivoDescuento,
+            porcentajeDescuento
+            );
+
+            var resultado = await MatriculaApiService.MatricularAlumnoNuevoAsync(request);
+
+            if (!resultado.Ok || resultado.Data is null)
             {
-                Id = MatriculaState.Apoderados.Any()
-                    ? MatriculaState.Apoderados.Max(a => a.Id) + 1
-                    : 1,
-                AlumnoId = nuevoAlumnoId,
-                Dni = apoderado.Dni,
-                Nombres = apoderado.Nombres,
-                ApellidoPaterno = apoderado.ApellidoPaterno,
-                ApellidoMaterno = apoderado.ApellidoMaterno,
-                Telefono = apoderado.Telefono,
-                Correo = apoderado.Correo,
-                Direccion = apoderado.Direccion,
-                Tipo = apoderado.Tipo,
-                Especialidad = apoderado.Especialidad,
-                Cargo = apoderado.Cargo,
-                Area = apoderado.Area,
-                Parentesco = apoderado.Parentesco,
-                ContactoEmergencia = apoderado.ContactoEmergencia,
-                Observaciones = apoderado.Observaciones,
-                Activo = true
-            });
-        }
+                errorMatricula = resultado.Error;
+                return;
+            }
 
-        foreach (var pago in pagosGenerados)
+            pagosGenerados = resultado.Data.Pagos.Select(p => new PagoGeneradoMatriculaModel
+            {
+                AlumnoId = resultado.Data.IdAlumno,
+                Concepto = p.Concepto,
+                MontoOriginal = (decimal)p.MontoOriginal,
+                MontoDescuento = (decimal)p.MontoDescuento,
+                MontoFinal = (decimal)p.MontoFinal,
+                FechaEmision = DateTime.Today,
+                FechaVencimiento = DateTime.TryParse(p.FechaVencimiento, out var fecha)
+                    ? fecha
+                    : DateTime.Today.AddDays(30),
+                Estado = string.IsNullOrWhiteSpace(p.Estado) ? "PENDIENTE" : p.Estado,
+                Observacion = "Pago generado por matrícula de alumno nuevo"
+            }).ToList();
+
+            matriculaFinalizada = true;
+        }
+        catch (Exception ex)
         {
-            pago.AlumnoId = nuevoAlumnoId;
-            MatriculaState.PagosExistentes.Add(pago);
+            errorMatricula = $"Ocurrió un error al conectar con el servicio REST de matrícula: {ex.Message}";
         }
-
-        MatriculaState.RegistrarMatricula(MatriculaState.VacanteSeleccionada);
-
-        MatriculaState.RegistrarHistorialMatricula(
-            nuevoAlumno,
-            MatriculaState.VacanteSeleccionada);
-
-        matriculaFinalizada = true;
+        finally
+        {
+            guardandoMatricula = false;
+        }
     }
 
     private void NuevaMatricula()
@@ -1470,24 +1485,4 @@
         Navigation.NavigateTo("/matricula/inicio");
     }
 
-    private class ApoderadoNuevoModel
-    {
-        public int Id { get; set; }
-        public string Dni { get; set; } = "";
-        public string Nombres { get; set; } = "";
-        public string ApellidoPaterno { get; set; } = "";
-        public string ApellidoMaterno { get; set; } = "";
-        public string Parentesco { get; set; } = "";
-        public string Telefono { get; set; } = "";
-        public string Correo { get; set; } = "";
-        public string Direccion { get; set; } = "";
-        public string Tipo { get; set; } = "EXTERNO";
-        public string Especialidad { get; set; } = "";
-        public string Cargo { get; set; } = "";
-        public string Area { get; set; } = "";
-        public string Observaciones { get; set; } = "";
-        public bool ContactoEmergencia { get; set; }
-
-        public string NombreCompleto => $"{Nombres} {ApellidoPaterno} {ApellidoMaterno}";
-    }
 }

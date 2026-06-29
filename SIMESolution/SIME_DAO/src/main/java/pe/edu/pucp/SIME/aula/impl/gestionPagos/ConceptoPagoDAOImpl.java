@@ -3,9 +3,12 @@ package pe.edu.pucp.SIME.aula.impl.gestionPagos;
 import pe.edu.pucp.SIME.aula.DAO.gestionPagos.ConceptoPagoDAO;
 import pe.edu.pucp.SIME.configuracion.DBManager;
 import pe.edu.pucp.SIME.configuracion.TransactionContext;
+import pe.edu.pucp.SIME.model.DTO.PagoMatriculaDTO;
 import pe.edu.pucp.SIME.model.gestionPagos.ConceptoPago;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConceptoPagoDAOImpl implements ConceptoPagoDAO {
     @Override
@@ -94,5 +97,51 @@ public class ConceptoPagoDAOImpl implements ConceptoPagoDAO {
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<PagoMatriculaDTO> listarConceptosAlumnoNuevo() throws SQLException {
+
+        List<PagoMatriculaDTO> lista = new ArrayList<>();
+
+        String sql = """
+        SELECT 
+            nombre AS concepto,
+            monto
+        FROM SIME_CONCEPTO_PAGO
+        WHERE activo = 1
+          AND UPPER(nombre) IN (
+              'INSCRIPCION',
+              'INSCRIPCIÓN',
+              'MATRICULA',
+              'MATRÍCULA',
+              'PENSION',
+              'PENSIÓN',
+              'UTILES',
+              'ÚTILES',
+              'EXAMEN PSICOLOGICO',
+              'EXAMEN PSICOLÓGICO'
+          )
+        ORDER BY id_concepto
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql);
+             ResultSet rs = pstm.executeQuery()) {
+
+            while (rs.next()) {
+                PagoMatriculaDTO dto = new PagoMatriculaDTO();
+                dto.setConcepto(rs.getString("concepto"));
+                dto.setMontoOriginal(rs.getDouble("monto"));
+                dto.setMontoDescuento(0);
+                dto.setMontoFinal(rs.getDouble("monto"));
+                dto.setEstado("PENDIENTE");
+
+                lista.add(dto);
+            }
+        }
+
+        return lista;
     }
 }

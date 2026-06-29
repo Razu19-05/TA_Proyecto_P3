@@ -2,9 +2,14 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Models.Matriculas
+@using SimeSoft.Services.Api
+
 @inject MenuState MenuState
 @inject MatriculaState MatriculaState
 @inject NavigationManager Navigation
+@inject MatriculaApiService MatriculaApiService
+
 
 <div class="dashboard-layout">
 
@@ -302,14 +307,56 @@
         grado = gradosDisponibles.FirstOrDefault() ?? "";
     }
 
-    private void BuscarVacantes()
+    private async Task BuscarVacantes()
     {
         vacantesBuscadas = true;
+        vacantesFiltradas.Clear();
+        vacanteSeleccionada = null;
 
-        vacantesFiltradas = MatriculaState.FiltrarVacantes(periodo, nivel, grado);
+        try
+        {
+            List<VacanteMatriculaResponseDto> vacantesBackend =
+                await MatriculaApiService.BuscarVacantesAsync(periodo, nivel, grado);
 
-        vacanteSeleccionada = vacantesFiltradas
-            .FirstOrDefault(v => v.VacantesDisponibles > 0);
+            vacantesFiltradas = vacantesBackend.Select(v => new VacanteMatriculaModel
+            {
+                Id = v.IdMatriculaCabecera,
+                Periodo = v.Periodo,
+                Nivel = v.Nivel,
+                Grado = v.Grado,
+                Aula = v.Aula,
+                TotalVacantes = v.TotalVacantes,
+                VacantesOcupadas = v.VacantesOcupadas,
+                FechaInicio = ConvertirFechaBackend(v.FechaInicio),
+                FechaFin = ConvertirFechaBackend(v.FechaFin),
+                Activo = v.Activo
+            }).ToList();
+
+            vacanteSeleccionada = vacantesFiltradas
+                .FirstOrDefault(v => v.VacantesDisponibles > 0);
+        }
+        catch
+        {
+            vacantesFiltradas.Clear();
+            vacanteSeleccionada = null;
+        }
+    }
+
+    private DateTime ConvertirFechaBackend(string fecha)
+    {
+        if (string.IsNullOrWhiteSpace(fecha))
+        {
+            return DateTime.MinValue;
+        }
+
+        fecha = fecha.Replace("Z", "").Trim();
+
+        if (DateTime.TryParse(fecha, out DateTime fechaConvertida))
+        {
+            return fechaConvertida;
+        }
+
+        return DateTime.MinValue;
     }
 
     private void SeleccionarVacante(VacanteMatriculaModel vacante)

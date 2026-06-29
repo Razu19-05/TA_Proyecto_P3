@@ -2,7 +2,10 @@
 @page "/login"
 @rendermode InteractiveServer
 
+@using SimeSoft.Services.Api
+
 @inject NavigationManager Navigation
+@inject LoginApiService LoginApiService
 
 <div class="container-fluid min-vh-100 p-0">
     <div class="row g-0 min-vh-100">
@@ -251,7 +254,7 @@
         tipoPassword = tipoPassword == "password" ? "text" : "password";
     }
 
-    private void IniciarSesion()
+    private async Task IniciarSesion()
     {
         LimpiarErrores();
 
@@ -267,43 +270,40 @@
             return;
         }
 
-        if (rol == "ADMIN")
+        try
         {
-            if (usuario != "admin")
+            LoginResponseDto usuarioLogueado = await LoginApiService.AutenticarAsync(usuario.Trim(), password);
+
+            if (rol == "ADMIN" && usuarioLogueado.Rol != "EJECUTIVO")
             {
-                errorUsuario = "El usuario administrador no existe.";
+                errorUsuario = "El usuario ingresado no pertenece al rol Ejecutivo.";
                 return;
             }
 
-            if (password != "123")
+            if (rol == "MATRICULA" && usuarioLogueado.Rol != "PERSONAL_MATRICULA")
             {
-                errorPassword = "La contraseña del administrador es incorrecta.";
+                errorUsuario = "El usuario ingresado no pertenece al rol Personal de Matrícula.";
                 return;
             }
 
-            Navigation.NavigateTo("/admin");
-            return;
+            if (usuarioLogueado.Rol == "EJECUTIVO")
+            {
+                Navigation.NavigateTo("/admin");
+                return;
+            }
+
+            if (usuarioLogueado.Rol == "PERSONAL_MATRICULA")
+            {
+                Navigation.NavigateTo("/matricula/inicio");
+                return;
+            }
+
+            errorGeneral = "Rol de usuario no válido.";
         }
-
-        if (rol == "MATRICULA")
+        catch (Exception ex)
         {
-            if (usuario != "matricula")
-            {
-                errorUsuario = "El usuario de matrícula no existe.";
-                return;
-            }
-
-            if (password != "123")
-            {
-                errorPassword = "La contraseña del personal de matrícula es incorrecta.";
-                return;
-            }
-
-            Navigation.NavigateTo("/matricula/inicio");
-            return;
+            errorGeneral = ex.Message;
         }
-
-        errorGeneral = "Rol de usuario no válido.";
     }
 
     private void LimpiarErrores()

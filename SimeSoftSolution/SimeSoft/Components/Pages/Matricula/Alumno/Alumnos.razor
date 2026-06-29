@@ -1,13 +1,17 @@
 ﻿@page "/matricula/alumnos"
 @rendermode InteractiveServer
 
+@using System.Globalization
 @using SimeSoft.Components.State
 @using SimeSoft.Models.Alumnos
+@using SimeSoft.Models.Matriculas
 @using SimeSoft.Services.Api
 
 @inject MenuState MenuState
 @inject AlumnoState AlumnoState
 @inject AlumnoApiService AlumnoApiService
+@inject MatriculaApiService MatriculaApiService
+@inject ApoderadoApiService ApoderadoApiService
 @inject NavigationManager Navigation
 
 <div class="dashboard-layout">
@@ -156,11 +160,20 @@
                                 <h3>Apoderados</h3>
 
                                 <button class="btn btn-primary fw-bold"
+                                        disabled="@(apoderados.Count >= 3)"
                                         @onclick="AbrirNuevoApoderado">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Agregar apoderado
                                 </button>
                             </div>
+
+                            @if (apoderados.Count >= 3)
+                            {
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    El alumno ya tiene el máximo de 3 apoderados registrados.
+                                </div>
+                            }
 
                             @foreach (var apoderado in apoderados)
                             {
@@ -758,13 +771,13 @@
     private decimal TotalPendiente =>
         pagos.Where(p => p.Estado == "PENDIENTE").Sum(p => p.MontoFinal);
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         alumno = AlumnoState.AlumnoSeleccionado;
 
         if (alumno is not null)
         {
-            CargarDatosAlumno();
+            await CargarDatosAlumno();
         }
     }
 
@@ -806,7 +819,7 @@
 
             AlumnoState.AlumnoSeleccionado = alumno;
 
-            CargarDatosAlumno();
+            await CargarDatosAlumno();
 
             mensaje = "Alumno encontrado correctamente.";
         }
@@ -842,7 +855,7 @@
         };
     }
 
-    private string FormatearFecha(string fecha)
+    private string FormatearFecha(string? fecha)
     {
         if (string.IsNullOrWhiteSpace(fecha))
             return "";
@@ -855,15 +868,77 @@
         return fecha;
     }
 
+    // Convierte la fecha mostrada (dd/MM/yyyy) al formato LocalDate que espera el backend.
+    private string ConvertirFechaParaBackend(string fecha)
+    {
+        if (DateTime.TryParseExact(fecha, "dd/MM/yyyy", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out DateTime d) ||
+            DateTime.TryParse(fecha, out d))
+        {
+            return d.ToString("yyyy-MM-dd") + "Z";
+        }
 
-    private void CargarDatosAlumno()
+        return fecha;
+    }
+
+    private async Task CargarDatosAlumno()
     {
         if (alumno is null)
             return;
 
-        apoderados = AlumnoState.ObtenerApoderados(alumno.Id);
-        pagos = AlumnoState.ObtenerPagos(alumno.Id);
+        // Apoderados reales (GET ApoderadosRS/listar/{dni}).
+        apoderados = (await MatriculaApiService.ListarApoderadosAsync(alumno.Dni))
+            .Select(MapearApoderado)
+            .ToList();
+
+        // Situación económica: todos los pagos (GET PagoRS/listar_pagos_alumno/{idAlumno}).
+        pagos = (await MatriculaApiService.ListarPagosCompletosAlumnoAsync(alumno.Id))
+            .Select(MapearPago)
+            .ToList();
+
+        // Historial de matrículas: aún sin endpoint REST disponible.
         matriculas = AlumnoState.ObtenerMatriculas(alumno.Id);
+    }
+
+    private ApoderadoModel MapearApoderado(RelacionFamiliarDto r)
+    {
+        return new ApoderadoModel
+        {
+            Id = r.IdRelacionFamiliar,
+            AlumnoId = alumno?.Id ?? 0,
+            Nombres = r.Persona.Nombres,
+            ApellidoPaterno = r.Persona.ApellidoPaterno,
+            ApellidoMaterno = r.Persona.ApellidoMaterno,
+            Dni = r.Persona.Dni,
+            Telefono = r.Persona.Telefono,
+            Correo = r.Persona.Correo,
+            Direccion = r.Persona.Direccion,
+            Parentesco = r.Parentesco,
+            ContactoEmergencia = r.ContactoEmergencia,
+            Observacion = r.Observaciones,
+            TipoPersona = r.Persona.Tipo,
+            Especialidad = r.Persona.Especialidad,
+            Cargo = r.Persona.Cargo,
+            Area = r.Persona.Area,
+            Activo = r.Persona.Activo
+        };
+    }
+
+    private PagoAlumnoModel MapearPago(PagoAlumnoDto p)
+    {
+        return new PagoAlumnoModel
+        {
+            Id = p.IdPago,
+            AlumnoId = alumno?.Id ?? 0,
+            Concepto = p.ConceptoPago?.Nombre ?? "",
+            MontoDescuento = (decimal)p.MontoDescuento,
+            MontoFinal = (decimal)p.MontoFinal,
+            FechaEmision = FormatearFecha(p.FechaEmision),
+            FechaVencimiento = FormatearFecha(p.FechaVencimiento),
+            FechaPago = FormatearFecha(p.FechaPago),
+            Estado = p.Estado,
+            Observacion = p.Observacion
+        };
     }
 
     private void AbrirEditarAlumno()
@@ -882,10 +957,36 @@
         mostrarModalAlumno = true;
     }
 
-    private void GuardarAlumno()
+    private async Task GuardarAlumno()
     {
         if (alumno is null)
             return;
+
+        mensaje = "";
+        error = "";
+
+        var dto = new AlumnoDto
+        {
+            IdAlumno = alumno.Id,
+            Dni = alumno.Dni,
+            Nombres = editNombres,
+            ApellidoPaterno = editApellidoPaterno,
+            ApellidoMaterno = editApellidoMaterno,
+            Telefono = editTelefono,
+            Correo = editCorreo,
+            Direccion = editDireccion,
+            FechaNacimiento = ConvertirFechaParaBackend(editFechaNacimiento),
+            AlumnoNuevo = alumno.AlumnoNuevo,
+            Activo = alumno.Estado == "Activo"
+        };
+
+        bool ok = await AlumnoApiService.ActualizarAsync(alumno.Dni, dto);
+
+        if (!ok)
+        {
+            error = "No se pudo actualizar la ficha del alumno en el servicio REST.";
+            return;
+        }
 
         alumno.Nombres = editNombres;
         alumno.ApellidoPaterno = editApellidoPaterno;
@@ -904,6 +1005,12 @@
     {
         if (alumno is null)
             return;
+
+        if (apoderados.Count >= 3)
+        {
+            error = "El alumno ya tiene el máximo de 3 apoderados registrados.";
+            return;
+        }
 
         apoId = 0;
         apoNombres = "";
@@ -949,7 +1056,7 @@
         mostrarModalApoderado = true;
     }
 
-    private void GuardarApoderado()
+    private async Task GuardarApoderado()
     {
         errorModalApoderado = "";
 
@@ -968,28 +1075,36 @@
             return;
         }
 
-        AlumnoState.GuardarApoderado(new ApoderadoModel
+        var dto = new ApoderadoNuevoRequestDto
         {
-            Id = apoId,
-            AlumnoId = alumno.Id,
+            Dni = apoDni,
             Nombres = apoNombres,
             ApellidoPaterno = apoApellidoPaterno,
             ApellidoMaterno = apoApellidoMaterno,
-            Dni = apoDni,
             Telefono = apoTelefono,
             Correo = apoCorreo,
             Direccion = apoDireccion,
-            Parentesco = apoParentesco,
-            ContactoEmergencia = apoContactoEmergencia,
-            Observacion = apoObservacion,
-            TipoPersona = apoTipoPersona,
+            Tipo = string.IsNullOrWhiteSpace(apoTipoPersona) ? "EXTERNO" : apoTipoPersona,
             Especialidad = apoEspecialidad,
             Cargo = apoCargo,
             Area = apoArea,
-            Activo = apoActivo
-        });
+            Parentesco = apoParentesco,
+            ContactoEmergencia = apoContactoEmergencia,
+            Observacion = apoObservacion
+        };
 
-        CargarDatosAlumno();
+        // apoId es el id_relacion_familiar (0 = nuevo apoderado).
+        var (ok, error) = apoId == 0
+            ? await ApoderadoApiService.AgregarAsync(alumno.Dni, dto)
+            : await ApoderadoApiService.ActualizarAsync(apoId, dto);
+
+        if (!ok)
+        {
+            errorModalApoderado = error;
+            return;
+        }
+
+        await CargarDatosAlumno();
 
         mensaje = apoId == 0
             ? "Apoderado agregado correctamente."
@@ -998,10 +1113,20 @@
         mostrarModalApoderado = false;
     }
 
-    private void EliminarApoderado(int id)
+    private async Task EliminarApoderado(int id)
     {
-        AlumnoState.EliminarApoderado(id);
-        CargarDatosAlumno();
+        if (alumno is null)
+            return;
+
+        var (ok, errorEliminar) = await ApoderadoApiService.EliminarAsync(id);
+
+        if (!ok)
+        {
+            error = errorEliminar;
+            return;
+        }
+
+        await CargarDatosAlumno();
         mensaje = "Apoderado eliminado correctamente.";
     }
 

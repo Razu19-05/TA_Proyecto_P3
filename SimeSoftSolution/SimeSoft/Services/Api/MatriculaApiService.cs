@@ -109,6 +109,24 @@ public class MatriculaApiService
         return (true, pagos ?? new(), "");
     }
 
+    // Lista TODOS los pagos del alumno (pagados, pendientes, anulados) para la
+    // ficha / situación económica (GET PagoRS/listar_pagos_alumno/{idAlumno}).
+    public async Task<List<PagoAlumnoDto>> ListarPagosCompletosAlumnoAsync(int idAlumno)
+    {
+        HttpResponseMessage response =
+            await _httpClient.GetAsync($"PagoRS/listar_pagos_alumno/{idAlumno}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return new();
+        }
+
+        List<PagoAlumnoDto>? pagos =
+            await response.Content.ReadFromJsonAsync<List<PagoAlumnoDto>>();
+
+        return pagos ?? new();
+    }
+
     // Busca cualquier persona por DNI (trabajador o externo ya registrado).
     // Devuelve null si no existe (HTTP 404) -> el formulario se llena a mano.
     public async Task<PersonaRequestDto?> BuscarPersonaPorDniAsync(string dni)

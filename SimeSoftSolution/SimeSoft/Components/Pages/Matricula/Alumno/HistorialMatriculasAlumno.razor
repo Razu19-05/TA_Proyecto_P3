@@ -2,8 +2,10 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Services.Api
 @inject MenuState MenuState
 @inject AlumnoState AlumnoState
+@inject MatriculaApiService MatriculaApi
 @inject NavigationManager Navigation
 
 <div class="dashboard-layout">
@@ -425,15 +427,47 @@
             ? Enumerable.Empty<PagoAlumnoModel>()
             : pagos.Where(p => p.MatriculaId == matriculaSeleccionada.Id);
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         alumno = AlumnoState.AlumnoSeleccionado;
 
         if (alumno is null)
             return;
 
-        matriculas = AlumnoState.ObtenerMatriculas(alumno.Id);
-        pagos = AlumnoState.ObtenerPagos(alumno.Id);
+        var matriculasApi = await MatriculaApi.ListarMatriculasPorAlumnoAsync(alumno.Id);
+
+        matriculas = matriculasApi
+            .Select(m => new MatriculaAlumnoModel
+            {
+                Id = m.IdMatriculaDetalle,
+                AlumnoId = alumno.Id,
+                Periodo = m.Periodo,
+                Nivel = m.Nivel,
+                Grado = m.Grado,
+                FechaInicio = m.FechaInicio,
+                FechaFin = m.FechaFin,
+                FechaMatricula = m.FechaMatricula,
+                Estado = m.Estado,
+                Activo = m.Activo
+            })
+            .ToList();
+
+        pagos = (await MatriculaApi.ListarPagosCompletosAlumnoAsync(alumno.Id))
+            .Select(p => new PagoAlumnoModel
+            {
+                Id = p.IdPago,
+                AlumnoId = alumno.Id,
+                MatriculaId = p.MatriculaDetalle?.IdMatriculaDetalle ?? 0,
+                Concepto = p.ConceptoPago?.Nombre ?? "",
+                MontoDescuento = (decimal)p.MontoDescuento,
+                MontoFinal = (decimal)p.MontoFinal,
+                FechaEmision = p.FechaEmision ?? "",
+                FechaVencimiento = p.FechaVencimiento ?? "",
+                FechaPago = p.FechaPago ?? "",
+                Estado = p.Estado,
+                Observacion = p.Observacion
+            })
+            .ToList();
 
         var apoderado = AlumnoState.ObtenerApoderados(alumno.Id)
             .FirstOrDefault();

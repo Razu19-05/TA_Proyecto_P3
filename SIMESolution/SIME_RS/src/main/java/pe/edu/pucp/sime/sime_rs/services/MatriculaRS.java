@@ -4,6 +4,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
@@ -13,6 +14,7 @@ import pe.edu.pucp.SIME.BL.MatriculaAlumnoNuevoBL;
 import pe.edu.pucp.SIME.BL.impl.IMatriculaBL;
 import pe.edu.pucp.SIME.BL.impl.IMatriculaAlumnoNuevoBL;
 import pe.edu.pucp.SIME.model.DTO.SolicitudMatriculaDTO;
+import pe.edu.pucp.SIME.model.DTO.MatriculaAlumnoDTO;
 import pe.edu.pucp.SIME.model.DTO.MatriculaAlumnoNuevoRequestDTO;
 import pe.edu.pucp.SIME.model.DTO.MatriculaAlumnoNuevoResponseDTO;
 import pe.edu.pucp.SIME.model.DTO.VacanteMatriculaDTO;
@@ -79,6 +81,24 @@ public class MatriculaRS {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.BAD_REQUEST)
+					.entity(e.getMessage())
+					.build();
+		}
+	}
+
+	@GET
+	@Path("listar_por_alumno/{idAlumno}")
+	public Response listarMatriculasPorAlumno(@PathParam("idAlumno") int idAlumno) {
+		try {
+			List<MatriculaAlumnoDTO> matriculas =
+					matriculaBL.listarMatriculasPorAlumno(idAlumno);
+
+			return Response.ok(matriculas).build();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 					.entity(e.getMessage())
 					.build();
 		}

@@ -10,4 +10,6 @@ public interface IPagoBL {
     Pago actualizarPago(int id,Pago pagoAct) throws Exception;
 
     void eliminarPago(int idPago) throws Exception;
+
+    List<Pago> listarPagosPendientesAlumno(int idALumno) throws Exception;
 }

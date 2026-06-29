@@ -36,7 +36,7 @@ public class PagoBLImpl implements IPagoBL {
         }catch (Exception e){
             throw new Exception("Error al actualizar pago: " + e.getMessage());
         }finally {
-            TransactionContext.commit();
+            TransactionContext.close();
         }
     }
 
@@ -65,6 +65,60 @@ public class PagoBLImpl implements IPagoBL {
         }catch (Exception e){
             throw new Exception("Error al listar pagos del alumno: " + e.getMessage());
         }finally {
+            TransactionContext.close();
+        }
+    }
+
+    @Override
+    public Pago pagarPago(int idPago, String observacion) throws Exception {
+        try {
+            TransactionContext.getConnection();
+
+            if (idPago <= 0) {
+                throw new Exception("El ID del pago no es válido.");
+            }
+
+            if (observacion == null || observacion.isBlank()) {
+                observacion = "Pago confirmado";
+            }
+
+            Pago pago = pagoDAO.marcarComoPagado(idPago, observacion.trim());
+
+            TransactionContext.commit();
+
+            return pago;
+
+        } catch (Exception e) {
+            TransactionContext.rollback();
+            throw new Exception("Error al pagar deuda: " + e.getMessage());
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
+    @Override
+    public Pago anularPago(int idPago, String observacion) throws Exception {
+        try {
+            TransactionContext.getConnection();
+
+            if (idPago <= 0) {
+                throw new Exception("El ID del pago no es válido.");
+            }
+
+            if (observacion == null || observacion.isBlank()) {
+                throw new Exception("Debe ingresar una observación para anular el pago.");
+            }
+
+            Pago pago = pagoDAO.marcarComoAnulado(idPago, observacion.trim());
+
+            TransactionContext.commit();
+
+            return pago;
+
+        } catch (Exception e) {
+            TransactionContext.rollback();
+            throw new Exception("Error al anular deuda: " + e.getMessage());
+        } finally {
             TransactionContext.close();
         }
     }

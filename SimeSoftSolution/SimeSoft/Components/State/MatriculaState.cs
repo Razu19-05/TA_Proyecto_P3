@@ -642,6 +642,9 @@ public class TipoDescuentoMatriculaModel
 
 public class PagoGeneradoMatriculaModel
 {
+
+    public int IdPago { get; set; }
+
     public int AlumnoId { get; set; }
 
     public string Concepto { get; set; } = "";

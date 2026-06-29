@@ -2,9 +2,13 @@
 @rendermode InteractiveServer
 
 @using SimeSoft.Components.State
+@using SimeSoft.Services.Api
+
 @inject MenuState MenuState
 @inject MatriculaState MatriculaState
+@inject PagoApiService PagoApiService
 @inject NavigationManager Navigation
+
 
 <div class="sime-layout">
 
@@ -214,7 +218,7 @@
         }
     }
 
-    private void ConfirmarPago()
+    private async Task ConfirmarPago()
     {
         mensajeError = "";
         mensajeExito = "";
@@ -225,27 +229,45 @@
             return;
         }
 
+        if (deuda.IdPago <= 0)
+        {
+            mensajeError = "No se encontró el ID del pago. Vuelva a buscar al alumno e intente otra vez.";
+            return;
+        }
+
         if (deuda.Estado != "PENDIENTE")
         {
             mensajeError = "Solo se puede pagar una deuda en estado PENDIENTE.";
             return;
         }
 
-        deuda.Estado = "PAGADO";
-        deuda.FechaPago = DateTime.Today;
-        deuda.Observacion = string.IsNullOrWhiteSpace(observacion)
-            ? "Pago registrado correctamente"
-            : observacion;
+        string observacionFinal = string.IsNullOrWhiteSpace(observacion)
+            ? "Pago confirmado"
+            : observacion.Trim();
 
-        if (MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+        try
         {
-            MatriculaState.VieneDePagoAlumnoRegular = true;
-            Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
+            await PagoApiService.PagarPagoAsync(deuda.IdPago, observacionFinal);
+
+            deuda.Estado = "PAGADO";
+            deuda.FechaPago = DateTime.Today;
+            deuda.Observacion = observacionFinal;
+
+            if (MatriculaState.AlumnoRegularEnProcesoId.HasValue)
+            {
+                MatriculaState.VieneDePagoAlumnoRegular = true;
+                Navigation.NavigateTo("/matricula/pagos?origen=matricula-regular");
+            }
+            else
+            {
+                Navigation.NavigateTo("/matricula/pagos?retorno=pagos");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Navigation.NavigateTo("/matricula/pagos?retorno=pagos");
+            mensajeError = $"No se pudo registrar el pago: {ex.Message}";
         }
+    
     }
 
     private string ClaseEstado(string estado)
@@ -258,4 +280,6 @@
             _ => "bg-light text-dark"
         };
     }
+
+    
 }

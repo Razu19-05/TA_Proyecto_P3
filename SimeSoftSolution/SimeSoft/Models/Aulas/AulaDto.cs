@@ -19,4 +19,5 @@ public class AulaDto
     public string ProfesorEncargado { get; set; } = "Sin asignar";
     public string Estado { get; set; } = "";
     public bool EsCompartida { get; set; }
+
 }

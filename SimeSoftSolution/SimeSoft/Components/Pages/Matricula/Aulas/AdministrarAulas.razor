@@ -4,11 +4,12 @@
 
 @using SimeSoft.Components.State
 @using SimeSoft.Models.Aulas
-
 @using SimeSoft.Services.Api
+
 @inject MenuState MenuState
 @inject AulaApiService AulaApiService
 @inject NavigationManager Navigation
+@inject AsignacionDocenteApiService AsignacionDocenteApiService
 
 <div class="dashboard-layout">
 
@@ -209,7 +210,13 @@
                                                     Cambiar capacidad
                                                 </button>
                                             </li>
-
+                                            <li>
+                                                <button class="dropdown-item text-success"
+                                                        @onclick="() => AbrirAsignarProfesor(aula)">
+                                                    <i class="bi bi-person-plus-fill me-2"></i>
+                                                    Asignar profesor
+                                                </button>
+                                            </li>
                                             <li>
                                                 <button class="dropdown-item text-primary"
                                                         @onclick="() => VerProfesores(aula)">
@@ -499,6 +506,87 @@
     </div>
 }
 
+@if (mostrarModalAsignar && aulaAsignar is not null)
+{
+    <div class="modal-backdrop-custom">
+        <div class="modal-aula">
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3>Asignar Profesor</h3>
+                    <p>Buscar y asignar un profesor al aula <strong>@aulaAsignar.Codigo</strong></p>
+                </div>
+                <button class="btn-close" @onclick="CerrarModalAsignar"></button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorAsignar))
+            {
+                <div class="alert alert-warning mt-3">@errorAsignar</div>
+            }
+
+            <div class="row g-3 mt-2">
+                <div class="col-md-9">
+                    <input class="form-control" placeholder="Buscar por DNI o Nombre..." @bind="criterioProfesor" />
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-secondary w-100 fw-bold" @onclick="BuscarProfesoresDisponibles">Buscar</button>
+                </div>
+            </div>
+
+            @if (profesoresBuscados.Any())
+            {
+                <div class="table-responsive mt-3" style="max-height: 200px; overflow-y: auto;">
+                    <table class="table table-sm table-hover table-bordered text-center align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Seleccionar</th>
+                                <th>DNI</th>
+                                <th>Nombre</th>
+                                <th>Especialidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var prof in profesoresBuscados)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="radio" name="profSeleccion"
+                                               checked="@(idProfesorSeleccionado == prof.IdPersona)"
+                                               @onchange="() => SeleccionarProfesor(prof.IdPersona)" />
+                                    </td>
+                                    <td>@prof.Dni</td>
+                                    <td>@prof.NombresCompletos</td>
+                                    <td>@prof.Especialidad</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <div class="row g-3 mt-3">
+                <div class="col-md-4">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" @bind="esTutorAsignacion" id="checkTutor" />
+                        <label class="form-check-label fw-bold" for="checkTutor">¿Es Tutor?</label>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <label>Observación (Opcional)</label>
+                    <input class="form-control" maxlength="100" placeholder="Ej. Encargado temporal..." @bind="observacionAsignacion" />
+                </div>
+            </div>
+
+            <div class="modal-actions mt-4">
+                <button class="btn btn-primary fw-bold px-5" @onclick="GuardarAsignacionProfesor">Asignar</button>
+                <button class="btn btn-outline-primary fw-bold px-5" @onclick="CerrarModalAsignar">Cancelar</button>
+            </div>
+
+        </div>
+    </div>
+}
+
+
 @code {
     private string periodo = "2026";
     private string nivel = "Primaria";
@@ -534,6 +622,15 @@
     private AulaDto? aulaCapacidad;
     private int nuevaCapacidad = 15;
     private string errorCapacidad = "";
+
+    private bool mostrarModalAsignar = false;
+    private AulaDto? aulaAsignar;
+    private string criterioProfesor = "";
+    private List<ProfesorAulaDto> profesoresBuscados = new();
+    private int idProfesorSeleccionado = 0;
+    private bool esTutorAsignacion = false;
+    private string observacionAsignacion = "";
+    private string errorAsignar = "";
 
 
     private List<string> ObtenerGradosPorNivel(string nivelSeleccionado)
@@ -834,5 +931,83 @@
     private void CerrarModal()
     {
         mostrarModal = false;
+    }
+
+    private void AbrirAsignarProfesor(AulaDto aula)
+    {
+        aulaAsignar = aula;
+        criterioProfesor = "";
+        profesoresBuscados.Clear();
+        idProfesorSeleccionado = 0;
+        esTutorAsignacion = false;
+        observacionAsignacion = "";
+        errorAsignar = "";
+
+        mostrarModalAsignar = true;
+    }
+
+    private async Task BuscarProfesoresDisponibles()
+    {
+        errorAsignar = "";
+        if (string.IsNullOrWhiteSpace(criterioProfesor))
+        {
+            errorAsignar = "Ingrese un DNI o nombre para buscar.";
+            return;
+        }
+
+        // Llamamos a tu servicio existente de Profesores
+        profesoresBuscados = await AsignacionDocenteApiService.ListarProfesoresDisponiblesAsync(criterioProfesor);
+
+        if (!profesoresBuscados.Any())
+        {
+            errorAsignar = "No se encontraron profesores disponibles con ese criterio.";
+        }
+    }
+
+    private void SeleccionarProfesor(int idPersona)
+    {
+        idProfesorSeleccionado = idPersona;
+    }
+
+    private async Task GuardarAsignacionProfesor()
+    {
+        errorAsignar = "";
+
+        if (idProfesorSeleccionado == 0)
+        {
+            errorAsignar = "Debe seleccionar un profesor de la lista haciendo clic en la burbuja.";
+            return;
+        }
+
+        // Construimos el Request. Nota que mandamos el IdAula tal como lo diseñaste en Java.
+        var request = new AsignacionDocenteRequestDto
+        {
+            IdPersona = idProfesorSeleccionado,
+            IdAula = aulaAsignar!.IdAula,
+            EsTutor = esTutorAsignacion,
+            Observacion = observacionAsignacion
+        };
+
+        // Tu backend validará automáticamente si el profesor ya está asignado o si el aula ya tiene tutor
+        bool ok = await AsignacionDocenteApiService.AsignarAsync(request);
+
+        if (!ok)
+        {
+            errorAsignar = "Error al asignar: Verifica que el profesor no esté ya asignado o que el aula no tenga otro tutor.";
+            return;
+        }
+
+        // Si todo va bien:
+        mostrarModalAsignar = false;
+        mensaje = $"Profesor asignado correctamente al aula {aulaAsignar.Codigo}.";
+
+        // Recargamos la tabla principal para que los datos estén frescos
+        await Buscar();
+    }
+
+    private void CerrarModalAsignar()
+    {
+        mostrarModalAsignar = false;
+        aulaAsignar = null;
     }
 }

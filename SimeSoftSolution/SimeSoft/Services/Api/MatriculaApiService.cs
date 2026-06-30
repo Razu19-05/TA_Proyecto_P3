@@ -194,4 +194,64 @@ public class MatriculaApiService
 
         return apoderados ?? new();
     }
+
+    public async Task<List<HistorialMatriculaResponseDto>> ListarHistorialMatriculasAsync()
+    {
+        HttpResponseMessage response =
+            await _httpClient.GetAsync("MatriculaRS/historial");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            string error = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(error))
+            {
+                error = "No se pudo cargar el historial de matrículas.";
+            }
+
+            throw new Exception(error);
+        }
+
+        List<HistorialMatriculaResponseDto>? historial =
+            await response.Content.ReadFromJsonAsync<List<HistorialMatriculaResponseDto>>();
+
+        return historial ?? new List<HistorialMatriculaResponseDto>();
+    }
+
+    public string ObtenerUrlReporteHistorialMatriculas(
+    string periodo,
+    string nivel,
+    string grado)
+    {
+        List<string> parametros = new();
+
+        if (!string.IsNullOrWhiteSpace(periodo))
+        {
+            parametros.Add($"periodo={Uri.EscapeDataString(periodo.Trim())}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(nivel))
+        {
+            parametros.Add($"nivel={Uri.EscapeDataString(nivel.Trim())}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(grado))
+        {
+            parametros.Add($"grado={Uri.EscapeDataString(grado.Trim())}");
+        }
+
+        string urlRelativa = "MatriculaRS/historial/reporte";
+
+        if (parametros.Any())
+        {
+            urlRelativa += "?" + string.Join("&", parametros);
+        }
+
+        if (_httpClient.BaseAddress is null)
+        {
+            return urlRelativa;
+        }
+
+        return new Uri(_httpClient.BaseAddress, urlRelativa).ToString();
+    }
 }

@@ -3,6 +3,7 @@ package pe.edu.pucp.SIME.BL.impl;
 import pe.edu.pucp.SIME.model.DTO.MatriculaAlumnoDTO;
 import pe.edu.pucp.SIME.model.DTO.SolicitudMatriculaDTO;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
+import pe.edu.pucp.SIME.model.DTO.HistorialMatriculaDTO;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface IMatriculaBL
     MatriculaDetalle cargarMatriculaAlumno(int idAlumno) throws Exception;
 
     List<MatriculaAlumnoDTO> listarMatriculasPorAlumno(int idAlumno) throws Exception;
+
+    List<HistorialMatriculaDTO> listarHistorialMatriculas() throws Exception;
 }

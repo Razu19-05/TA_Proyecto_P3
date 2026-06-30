@@ -10,6 +10,8 @@ import pe.edu.pucp.SIME.model.gestionAlumnos.Alumno;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaCabecera;
 import pe.edu.pucp.SIME.model.gestionMatricula.MatriculaDetalle;
 import pe.edu.pucp.SIME.model.gestionMatricula.TipoMatricula;
+import pe.edu.pucp.SIME.model.DTO.HistorialMatriculaDTO;
+
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -257,4 +259,87 @@ public class MatriculaDetalleDAOImpl implements MatriculaDetalleDAO {
 
         return 0;
     }
+
+    @Override
+    public List<HistorialMatriculaDTO> listarHistorialMatriculas() throws SQLException {
+        List<HistorialMatriculaDTO> historial = new ArrayList<>();
+
+        String sql = """
+        SELECT
+            md.id_matricula_detalle,
+            al.id_alumno,
+            al.dni,
+            CONCAT(al.nombres, ' ', al.apellido_paterno, ' ', al.apellido_materno) AS nombres_completos,
+            CAST(pa.anio_escolar AS CHAR) AS periodo,
+
+            CASE
+                WHEN gs.nivel = 'INICIAL' THEN 'Inicial'
+                WHEN gs.nivel = 'PRIMARIA' THEN 'Primaria'
+                WHEN gs.nivel = 'SECUNDARIA' THEN 'Secundaria'
+                ELSE gs.nivel
+            END AS nivel,
+
+            gs.grado,
+            au.codigo AS aula,
+            md.fecha_matricula,
+            md.estado,
+            md.activo
+
+        FROM SIME_MATRICULA_DETALLE md
+
+        INNER JOIN SIME_ALUMNO al
+            ON al.id_alumno = md.id_alumno
+
+        INNER JOIN SIME_MATRICULA_CABECERA mc
+            ON mc.id_matricula_cabecera = md.id_matricula_cabecera
+
+        INNER JOIN SIME_PERIODO_ACADEMICO pa
+            ON pa.id_periodo_academico = mc.id_periodo_academico
+
+        INNER JOIN SIME_GRADO_SECCION gs
+            ON gs.id_grado_seccion = mc.id_grado_seccion
+
+        INNER JOIN SIME_AULA au
+            ON au.id_aula = mc.id_aula
+
+        WHERE md.activo = 1
+          AND al.activo = 1
+
+        ORDER BY
+            md.fecha_matricula DESC,
+            pa.anio_escolar DESC,
+            gs.nivel,
+            gs.grado,
+            al.apellido_paterno,
+            al.apellido_materno,
+            al.nombres
+    """;
+
+        Connection connection = TransactionContext.getConnection();
+
+        try (PreparedStatement pstm = connection.prepareStatement(sql);
+             ResultSet rs = pstm.executeQuery()) {
+
+            while (rs.next()) {
+                HistorialMatriculaDTO dto = new HistorialMatriculaDTO();
+
+                dto.setIdMatriculaDetalle(rs.getInt("id_matricula_detalle"));
+                dto.setIdAlumno(rs.getInt("id_alumno"));
+                dto.setDni(rs.getString("dni"));
+                dto.setNombresCompletos(rs.getString("nombres_completos"));
+                dto.setPeriodo(rs.getString("periodo"));
+                dto.setNivel(rs.getString("nivel"));
+                dto.setGrado(rs.getString("grado"));
+                dto.setAula(rs.getString("aula"));
+                dto.setFechaMatricula(rs.getDate("fecha_matricula"));
+                dto.setEstado(rs.getString("estado"));
+                dto.setActivo(rs.getBoolean("activo"));
+
+                historial.add(dto);
+            }
+        }
+
+        return historial;
+    }
+
 }

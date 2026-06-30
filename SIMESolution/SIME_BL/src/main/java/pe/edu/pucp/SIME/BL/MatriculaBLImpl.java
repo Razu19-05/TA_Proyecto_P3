@@ -36,6 +36,8 @@ import pe.edu.pucp.SIME.model.gestionMatricula.TipoMatricula;
 import pe.edu.pucp.SIME.model.gestionPagos.ConceptoPago;
 import pe.edu.pucp.SIME.model.gestionPagos.Pago;
 import pe.edu.pucp.SIME.model.gestionPagos.TipoEstado;
+import pe.edu.pucp.SIME.model.DTO.HistorialMatriculaDTO;
+
 
 import java.util.Date;
 import java.util.ArrayList;
@@ -311,5 +313,26 @@ public class MatriculaBLImpl implements IMatriculaBL {
         }
 
         return resultado;
+    }
+
+    @Override
+    public List<HistorialMatriculaDTO> listarHistorialMatriculas() throws Exception {
+        try {
+            TransactionContext.getConnection();
+
+            List<HistorialMatriculaDTO> historial =
+                    detalleDAO.listarHistorialMatriculas();
+
+            TransactionContext.commit();
+
+            return historial;
+
+        } catch (Exception e) {
+            TransactionContext.rollback();
+            throw new Exception("Error al listar historial de matrículas: " + e.getMessage());
+
+        } finally {
+            TransactionContext.close();
+        }
     }
 }

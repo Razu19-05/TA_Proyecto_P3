@@ -18,6 +18,19 @@ import pe.edu.pucp.SIME.model.DTO.MatriculaAlumnoDTO;
 import pe.edu.pucp.SIME.model.DTO.MatriculaAlumnoNuevoRequestDTO;
 import pe.edu.pucp.SIME.model.DTO.MatriculaAlumnoNuevoResponseDTO;
 import pe.edu.pucp.SIME.model.DTO.VacanteMatriculaDTO;
+import pe.edu.pucp.SIME.model.DTO.HistorialMatriculaDTO;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+
+import java.io.InputStream;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import java.util.List;
 
@@ -102,5 +115,105 @@ public class MatriculaRS {
 					.entity(e.getMessage())
 					.build();
 		}
+	}
+
+	@GET
+	@Path("historial")
+	public Response listarHistorialMatriculas() {
+		try {
+			List<HistorialMatriculaDTO> historial =
+					matriculaBL.listarHistorialMatriculas();
+
+			return Response.ok(historial).build();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(e.getMessage())
+					.build();
+		}
+	}
+
+	@GET
+	@Path("historial/reporte")
+	@Produces("application/pdf")
+	public Response generarReporteHistorialMatriculas(
+			@QueryParam("periodo") String periodo,
+			@QueryParam("nivel") String nivel,
+			@QueryParam("grado") String grado) {
+		try {
+			List<HistorialMatriculaDTO> historial =
+					matriculaBL.listarHistorialMatriculas();
+
+			List<HistorialMatriculaDTO> historialFiltrado = historial.stream()
+					.filter(HistorialMatriculaDTO::isActivo)
+					.filter(h -> coincideFiltro(h.getPeriodo(), periodo))
+					.filter(h -> coincideFiltro(h.getNivel(), nivel))
+					.filter(h -> coincideFiltro(h.getGrado(), grado))
+					.collect(Collectors.toList());
+
+			InputStream reporteStream = Thread.currentThread()
+					.getContextClassLoader()
+					.getResourceAsStream("reports/reporte_historial_matriculas.jrxml");
+
+			if (reporteStream == null) {
+				throw new Exception("No se encontró el archivo reporte_historial_matriculas.jrxml.");
+			}
+
+			JasperReport jasperReport =
+					JasperCompileManager.compileReport(reporteStream);
+
+			Map<String, Object> parametros = new HashMap<>();
+			parametros.put("titulo", "Reporte de Alumnos Matriculados");
+			parametros.put("periodoFiltro", textoFiltro(periodo));
+			parametros.put("nivelFiltro", textoFiltro(nivel));
+			parametros.put("gradoFiltro", textoFiltro(grado));
+			parametros.put("fechaGeneracion", new Date());
+			parametros.put("totalRegistros", historialFiltrado.size());
+
+			JRBeanCollectionDataSource dataSource =
+					new JRBeanCollectionDataSource(historialFiltrado);
+
+			JasperPrint jasperPrint =
+					JasperFillManager.fillReport(jasperReport, parametros, dataSource);
+
+			byte[] pdf =
+					JasperExportManager.exportReportToPdf(jasperPrint);
+
+			return Response.ok(pdf)
+					.type("application/pdf")
+					.header("Content-Disposition", "inline; filename=reporte_historial_matriculas.pdf")
+					.build();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.type("text/plain")
+					.entity("Error al generar el reporte de historial: " + e.getMessage())
+					.build();
+		}
+
+	}
+
+	private boolean coincideFiltro(String valor, String filtro) {
+		if (filtro == null || filtro.isBlank()) {
+			return true;
+		}
+
+		if (valor == null) {
+			return false;
+		}
+
+		return valor.trim().equalsIgnoreCase(filtro.trim());
+	}
+
+	private String textoFiltro(String filtro) {
+		if (filtro == null || filtro.isBlank()) {
+			return "Todos";
+		}
+
+		return filtro.trim();
 	}
 }
